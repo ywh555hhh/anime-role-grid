@@ -1,4 +1,4 @@
-# Anime Role Grid (动画角色喜好表)
+# 我推的格子 (Anime Role Grid)
 
 一个现代化的、高颜值的动画角色喜好表生成器。
 
