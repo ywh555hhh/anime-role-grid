@@ -50,7 +50,7 @@
       <!-- Artistic Note -->
       <p class="italic opacity-60 text-xs mt-8 tracking-widest flex items-center justify-center gap-2">
         <span class="i-carbon-quotes text-gray-300" />
-        "Create, Share, and Discover your Anime Taste."
+        Create, Share, and Discover your Anime Taste
         <span class="i-carbon-quotes text-gray-300 transform rotate-180" />
       </p>
 

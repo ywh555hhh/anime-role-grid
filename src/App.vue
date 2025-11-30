@@ -120,8 +120,8 @@ async function handleSave() {
           :disabled="saving"
           @click="handleSave"
         >
-          <div v-if="saving" i-carbon-circle-dash class="animate-spin text-xl" />
-          <div v-else i-carbon-image class="text-xl" />
+          <div v-if="saving" class="i-carbon-circle-dash animate-spin text-xl" />
+          <div v-else class="i-carbon-image text-xl" />
           <span>{{ saving ? '生成中...' : '保存高清图片' }}</span>
         </button>
 
@@ -139,8 +139,7 @@ async function handleSave() {
             >
               <span>{{ currentTemplate.name }}</span>
               <div 
-                i-carbon-chevron-down 
-                class="text-xs transition-transform duration-200" 
+                class="i-carbon-chevron-down text-xs transition-transform duration-200"
                 :class="{ 'rotate-180': isDropdownOpen }" 
               />
             </button>
