@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, computed } from 'vue'
+import { ref, computed, nextTick } from 'vue'
 import { onClickOutside } from '@vueuse/core'
 // import html2canvas from 'html2canvas'
 import Header from '~/components/Header.vue'
@@ -60,6 +60,7 @@ function handleAdd(character: GridItemCharacter) {
 
 const saving = ref(false)
 const imageLoadError = ref(false)
+const exportGridKey = ref(0) // Key to force re-render of export grid
 
 import { exportGridAsImage } from '~/logic/export'
 
@@ -68,6 +69,12 @@ async function handleSave() {
   saving.value = true
   
   try {
+    // Force re-render of the export grid to ensure latest data
+    exportGridKey.value++
+    await nextTick()
+    // Give Vue a moment to mount the new DOM
+    await new Promise(resolve => setTimeout(resolve, 200))
+
     await exportGridAsImage('grid-export-target', 'anime-grid')
     showShareModal.value = true
   } catch (error: any) {
@@ -106,6 +113,7 @@ async function handleSave() {
       >
         <Grid 
           id="grid-export-target"
+          :key="exportGridKey"
           :list="list" 
           :cols="currentTemplate.cols"
           :title="currentTemplate.name"
