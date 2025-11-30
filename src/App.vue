@@ -62,6 +62,7 @@ const saving = ref(false)
 const imageLoadError = ref(false)
 
 import { exportGridAsImage } from '~/logic/export'
+import canaImg from '~/assets/cana.png'
 
 async function handleSave() {
   if (saving.value) return
@@ -228,7 +229,7 @@ async function handleSave() {
           <div class="w-32 h-32 mx-auto mb-4 flex items-center justify-center">
             <img 
               v-if="!imageLoadError"
-              src="/cana.png?v=1" 
+              :src="canaImg" 
               class="w-full h-full object-contain animate-bounce" 
               alt="Success"
               @error="imageLoadError = true"
