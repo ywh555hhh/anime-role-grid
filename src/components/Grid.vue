@@ -59,7 +59,7 @@ function getImageUrl(url: string) {
             v-if="item.character"
             :src="getImageUrl(item.character.image)" 
             class="absolute inset-0 w-full h-full object-cover object-top"
-            loading="lazy"
+            :loading="forExport ? 'eager' : 'lazy'"
             :crossorigin="forExport ? 'anonymous' : undefined"
           >
           <!-- Empty State Placeholder -->

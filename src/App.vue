@@ -38,43 +38,16 @@ function handleAdd(character: GridItemCharacter) {
 
 const saving = ref(false)
 
+import { exportGridAsImage } from '~/logic/export'
+
+// ...
+
 async function handleSave() {
-  // Target the HIDDEN export grid
-  const element = document.getElementById('grid-export-target')
-  if (!element || saving.value) return
-  
+  if (saving.value) return
   saving.value = true
   
   try {
-    // Dynamic import
-    let toPng
-    try {
-      const module = await import('html-to-image')
-      toPng = module.toPng
-    } catch (e) {
-      console.error('Failed to load html-to-image:', e)
-      alert('组件加载失败，请尝试重启开发服务器 (npm run dev)')
-      return
-    }
-
-    // Wait a bit to ensure any pending renders/fetches in the hidden grid are done
-    await new Promise(resolve => setTimeout(resolve, 500))
-
-    const currentCols = currentTemplate.value.cols
-    const targetWidth = currentCols * 120
-    
-    const dataUrl = await toPng(element, {
-      backgroundColor: '#ffffff',
-      pixelRatio: 3,
-      cacheBust: true,
-      width: targetWidth,
-      skipOnError: true,
-    } as any)
-    
-    const link = document.createElement('a')
-    link.download = `anime-grid-${Date.now()}.png`
-    link.href = dataUrl
-    link.click()
+    await exportGridAsImage('grid-export-target', 'anime-grid')
   } catch (error: any) {
     console.error('Export failed:', error)
     let msg = error.message || error
@@ -105,7 +78,7 @@ async function handleSave() {
       <!-- Hidden Export Grid (Fixed Desktop Size, Proxy URLs) -->
       <!-- Positioned off-screen but rendered -->
       <div 
-        class="fixed top-0 left-0 -z-50 opacity-0 pointer-events-none"
+        class="fixed top-0 left-[-9999px] pointer-events-none"
         :style="{ width: `${currentTemplate.cols * 120}px` }"
       >
         <Grid 
