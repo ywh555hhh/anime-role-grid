@@ -228,7 +228,7 @@ async function handleSave() {
           <div class="w-32 h-32 mx-auto mb-4 flex items-center justify-center">
             <img 
               v-if="!imageLoadError"
-              src="/cana.webp" 
+              src="/cana.png" 
               class="w-full h-full object-contain animate-bounce" 
               alt="Success"
               @error="imageLoadError = true"
