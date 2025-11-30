@@ -22,15 +22,15 @@ if (legacyList.value.length > 0 && !savedGrids.value['classic']) {
 export const list = computed({
     get: () => {
         const tid = currentTemplateId.value
-        // If data doesn't exist for this template, initialize it
-        if (!savedGrids.value[tid]) {
-            const template = TEMPLATES.find(t => t.id === tid) || TEMPLATES[0]!
-            savedGrids.value[tid] = template.items.map(label => ({
-                label,
-                character: undefined,
-            }))
-        }
-        return savedGrids.value[tid]
+        const template = TEMPLATES.find(t => t.id === tid) || TEMPLATES[0]!
+        const savedList = savedGrids.value[tid] || []
+
+        // Always use labels from the current template definition (code)
+        // Only preserve the character data from storage
+        return template.items.map((label, index) => ({
+            label,
+            character: savedList[index]?.character,
+        }))
     },
     set: (val) => {
         savedGrids.value[currentTemplateId.value] = val
