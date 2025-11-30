@@ -37,5 +37,16 @@ export default defineConfig({
                 950: '#172554',
             },
         },
+        animation: {
+            keyframes: {
+                'bounce-low': '{ 0%, 100% { transform: translateY(-18.75%); animation-timing-function: cubic-bezier(0.8,0,1,1) } 50% { transform: translateY(0); animation-timing-function: cubic-bezier(0,0,0.2,1) } }',
+            },
+            durations: {
+                'bounce-low': '1s',
+            },
+            counts: {
+                'bounce-low': 'infinite',
+            },
+        },
     },
 })

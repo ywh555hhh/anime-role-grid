@@ -225,7 +225,7 @@ async function handleSave() {
           class="bg-white p-8 rounded-2xl shadow-2xl text-center max-w-sm w-full transform transition-all border-2 border-[#e4007f]" 
           @click.stop
         >
-          <div class="w-32 h-32 mx-auto mb-4 flex items-center justify-center animate-bounce">
+          <div class="w-32 h-32 mx-auto mb-4 flex items-center justify-center animate-bounce-low">
             <img 
               v-if="!imageLoadError"
               src="/cana.png" 
