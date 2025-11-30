@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue'
+import { onClickOutside } from '@vueuse/core'
 // import html2canvas from 'html2canvas'
 import Header from '~/components/Header.vue'
 import Grid from '~/components/Grid.vue'
@@ -11,6 +12,19 @@ import type { GridItemCharacter } from '~/types'
 
 const showSearch = ref(false)
 const currentSlotIndex = ref<number | null>(null)
+
+// Dropdown Logic
+const isDropdownOpen = ref(false)
+const dropdownRef = ref<HTMLElement | null>(null)
+
+onClickOutside(dropdownRef, () => {
+  isDropdownOpen.value = false
+})
+
+function selectTemplate(id: string) {
+  currentTemplateId.value = id
+  isDropdownOpen.value = false
+}
 
 const currentTemplate = computed(() => 
   TEMPLATES.find(t => t.id === currentTemplateId.value) || TEMPLATES[0]!
@@ -73,7 +87,7 @@ async function handleSave() {
     <!-- Header no longer needs search event or name prop -->
     <Header />
     
-    <div class="container mx-auto flex flex-col items-center gap-6 px-4 max-w-full overflow-x-hidden">
+    <div class="container mx-auto flex flex-col items-center gap-6 px-4 max-w-full">
       <!-- Live Interactive Grid (Responsive, Direct URLs) -->
       <Grid 
         id="grid-capture-target"
@@ -115,20 +129,45 @@ async function handleSave() {
         <div class="flex items-center gap-2">
           <img src="/logo.png" class="w-5 h-5 object-contain" />
           <label for="template-select" class="text-sm text-black font-bold">当前模板:</label>
-          <div class="relative">
-            <select
-              id="template-select"
-              v-model="currentTemplateId"
-              class="appearance-none bg-white border-2 border-black text-black py-1 pl-3 pr-8 rounded-md text-sm font-bold focus:outline-none focus:border-[#e4007f] cursor-pointer text-center"
-              style="text-align-last: center;"
+          <div class="relative" ref="dropdownRef">
+            <!-- Trigger Button -->
+            <button
+              @click="isDropdownOpen = !isDropdownOpen"
+              class="flex items-center justify-center gap-2 bg-white border-2 border-black px-4 py-1 rounded-md text-sm font-bold min-w-[160px] transition-colors hover:border-[#e4007f] focus:outline-none"
+              :class="{ 'border-[#e4007f] text-[#e4007f]': isDropdownOpen }"
             >
-              <option v-for="template in TEMPLATES" :key="template.id" :value="template.id">
-                {{ template.name }}
-              </option>
-            </select>
-            <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-black">
-              <div i-carbon-chevron-down class="text-xs" />
-            </div>
+              <span>{{ currentTemplate.name }}</span>
+              <div 
+                i-carbon-chevron-down 
+                class="text-xs transition-transform duration-200" 
+                :class="{ 'rotate-180': isDropdownOpen }" 
+              />
+            </button>
+
+            <!-- Dropdown Menu -->
+            <Transition
+              enter-active-class="transition duration-100 ease-out"
+              enter-from-class="transform scale-95 opacity-0"
+              enter-to-class="transform scale-100 opacity-100"
+              leave-active-class="transition duration-75 ease-in"
+              leave-from-class="transform scale-100 opacity-100"
+              leave-to-class="transform scale-95 opacity-0"
+            >
+              <div 
+                v-if="isDropdownOpen"
+                class="absolute top-full left-0 w-full mt-1 bg-white border-2 border-black rounded-md shadow-xl overflow-hidden z-20 flex flex-col"
+              >
+                <button
+                  v-for="template in TEMPLATES" 
+                  :key="template.id"
+                  @click="selectTemplate(template.id)"
+                  class="px-2 py-2 text-sm font-bold text-center cursor-pointer hover:bg-pink-50 hover:text-[#e4007f] transition-colors border-b border-gray-100 last:border-none"
+                  :class="{ 'bg-pink-50 text-[#e4007f]': currentTemplateId === template.id }"
+                >
+                  {{ template.name }}
+                </button>
+              </div>
+            </Transition>
           </div>
         </div>
       </div>
