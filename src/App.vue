@@ -39,17 +39,14 @@ function handleAdd(character: GridItemCharacter) {
 const saving = ref(false)
 
 async function handleSave() {
-  const element = document.getElementById('grid-capture-target')
+  // Target the HIDDEN export grid
+  const element = document.getElementById('grid-export-target')
   if (!element || saving.value) return
   
   saving.value = true
   
-  // Store original srcs to restore later
-  const images = Array.from(element.getElementsByTagName('img'))
-  const originalSrcs = images.map(img => img.src)
-  
   try {
-    // Dynamic import to prevent page load crashes
+    // Dynamic import
     let toPng
     try {
       const module = await import('html-to-image')
@@ -60,61 +57,18 @@ async function handleSave() {
       return
     }
 
-    // Pre-process images: Fetch and convert to Base64
-    // This is CRITICAL for html-to-image to work with cross-origin images reliably
-    await Promise.all(images.map(async (img) => {
-      try {
-        // Skip if already base64
-        if (img.src.startsWith('data:')) return
+    // Wait a bit to ensure any pending renders/fetches in the hidden grid are done
+    await new Promise(resolve => setTimeout(resolve, 500))
 
-        // Use wsrv.nl proxy for export to avoid CORS issues
-        const proxyUrl = `https://wsrv.nl/?url=${encodeURIComponent(img.src)}&output=png`
-        
-        const response = await fetch(proxyUrl, { cache: 'force-cache' })
-        const blob = await response.blob()
-        return new Promise<void>((resolve) => {
-          const reader = new FileReader()
-          reader.onloadend = () => {
-            img.removeAttribute('crossorigin') // Remove crossorigin for Base64
-            img.src = (reader.result as string) || ''
-            resolve()
-          }
-          reader.readAsDataURL(blob)
-        })
-      } catch (e) {
-        console.warn('Failed to convert image:', img.src, e)
-      }
-    }))
-
-    // Wait a bit for DOM to update
-    await new Promise(resolve => setTimeout(resolve, 100))
-
-    // Calculate target width for high-res desktop view
     const currentCols = currentTemplate.value.cols
-    // 120px per column. 
-    // We force the container to this width during capture.
     const targetWidth = currentCols * 120
     
-    // Use html-to-image which uses SVG foreignObject
-    // This supports oklch and modern CSS natively.
     const dataUrl = await toPng(element, {
       backgroundColor: '#ffffff',
-      pixelRatio: 3, // High resolution
+      pixelRatio: 3,
       cacheBust: true,
       width: targetWidth,
-      // Force the element to layout at desktop size
-      style: {
-        width: `${targetWidth}px`,
-        maxWidth: 'none',
-        height: 'auto',
-        transform: 'none',
-        margin: '0',
-        // Ensure grid layout uses fixed px columns instead of minmax(0, 1fr)
-        gridTemplateColumns: `repeat(${currentCols}, 120px)`,
-      },
-      // Robustness settings
-      skipOnError: true, // Ignore failed resources (like fonts or broken images)
-      fontEmbedCSS: '', // Skip font embedding if it causes issues
+      skipOnError: true,
     } as any)
     
     const link = document.createElement('a')
@@ -123,20 +77,12 @@ async function handleSave() {
     link.click()
   } catch (error: any) {
     console.error('Export failed:', error)
-    
-    // Try to extract meaningful message from Event objects
     let msg = error.message || error
     if (Object.prototype.toString.call(error) === '[object Event]' && error.type === 'error') {
       msg = '资源加载失败 (可能是网络问题或图片跨域)'
     }
-    
     alert(`图片生成失败: ${msg}`)
   } finally {
-    // Restore original images
-    images.forEach((img, i) => {
-      img.setAttribute('crossorigin', 'anonymous') // Restore crossorigin
-      img.src = originalSrcs[i] || ''
-    })
     saving.value = false
   }
 }
@@ -148,11 +94,27 @@ async function handleSave() {
     <Header v-model:name="name" @search="() => {}" />
     
     <div class="container mx-auto flex flex-col items-center gap-6 px-4 max-w-full overflow-x-hidden">
+      <!-- Live Interactive Grid (Responsive, Direct URLs) -->
       <Grid 
+        id="grid-capture-target"
         :list="list" 
         :cols="currentTemplate.cols"
         @select-slot="handleSelectSlot"
       />
+
+      <!-- Hidden Export Grid (Fixed Desktop Size, Proxy URLs) -->
+      <!-- Positioned off-screen but rendered -->
+      <div 
+        class="fixed top-0 left-0 -z-50 opacity-0 pointer-events-none"
+        :style="{ width: `${currentTemplate.cols * 120}px` }"
+      >
+        <Grid 
+          id="grid-export-target"
+          :list="list" 
+          :cols="currentTemplate.cols"
+          :for-export="true"
+        />
+      </div>
 
       <div class="flex flex-col items-center gap-4">
         <button 

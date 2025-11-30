@@ -5,6 +5,7 @@ import type { GridItem } from '~/types'
 const props = defineProps<{
   list: GridItem[]
   cols?: number
+  forExport?: boolean
 }>()
 
 const gridCols = computed(() => props.cols || 5)
@@ -15,7 +16,15 @@ function handleSelect(index: number) {
   emit('select-slot', index)
 }
 
-
+function getImageUrl(url: string) {
+  if (!url) return ''
+  if (props.forExport) {
+    // Use proxy for export to ensure CORS headers are correct
+    // wsrv.nl is reliable and fast
+    return `https://wsrv.nl/?url=${encodeURIComponent(url)}&output=png`
+  }
+  return url
+}
 </script>
 
 <template>
@@ -48,22 +57,16 @@ function handleSelect(index: number) {
         <div class="flex-grow w-full relative overflow-hidden">
           <img 
             v-if="item.character"
-            :src="item.character.image" 
+            :src="getImageUrl(item.character.image)" 
             class="absolute inset-0 w-full h-full object-cover object-top"
             loading="lazy"
+            :crossorigin="forExport ? 'anonymous' : undefined"
           >
           <!-- Empty State Placeholder -->
           <div v-else class="absolute inset-0 bg-white" />
         </div>
 
         <!-- Label Area (Bottom) -->
-        <!-- Fixed height ratio or fixed height? 
-             Original was 25px on 187px height (~13%). 
-             Let's use a fixed height but scaled with text. 
-             Actually, for pixel perfect look on desktop, we want 25px. 
-             On mobile, we might want it smaller. 
-             Let's try a percentage height or flex basis.
-        -->
         <div class="h-[20px] md:h-[25px] flex-shrink-0 flex items-center justify-center text-center bg-white border-t-2 border-black overflow-hidden px-1">
           <span class="truncate w-full text-[10px] md:text-sm font-bold text-black leading-none">{{ item.label }}</span>
         </div>
