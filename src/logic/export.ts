@@ -17,38 +17,43 @@ export async function exportGridAsImage(elementId: string, fileName: string) {
     const images = Array.from(element.getElementsByTagName('img'))
     const originalSrcs = new Map<HTMLImageElement, string>()
 
-    await Promise.all(images.map(async (img) => {
-        try {
-            const src = img.getAttribute('src')
-            if (!src || src.startsWith('data:')) return
-
-            originalSrcs.set(img, src)
-
-            // Use proxy to fetch image data
-            // Note: The src in the hidden grid is already proxied by Grid.vue
-            let fetchUrl = src
-
-            // Try to fetch with robust settings
+    // Process images in batches to avoid overwhelming mobile browsers
+    const BATCH_SIZE = 3
+    for (let i = 0; i < images.length; i += BATCH_SIZE) {
+        const batch = images.slice(i, i + BATCH_SIZE)
+        await Promise.all(batch.map(async (img) => {
             try {
-                await fetchAndConvertToBase64(fetchUrl, img)
-            } catch (e) {
-                // Fallback: If proxy fails, try original URL if we can extract it
-                console.warn('Proxy fetch failed, trying fallback:', e)
-                if (src.includes('wsrv.nl')) {
-                    try {
-                        const urlParam = new URL(src).searchParams.get('url')
-                        if (urlParam) {
-                            await fetchAndConvertToBase64(urlParam, img)
+                const src = img.getAttribute('src')
+                if (!src || src.startsWith('data:')) return
+
+                originalSrcs.set(img, src)
+
+                // Use proxy to fetch image data
+                let fetchUrl = src
+
+                // Try to fetch with robust settings
+                try {
+                    await fetchAndConvertToBase64(fetchUrl, img)
+                } catch (e) {
+                    console.warn('Proxy fetch failed, trying fallback:', e)
+                    if (src.includes('wsrv.nl')) {
+                        try {
+                            const urlParam = new URL(src).searchParams.get('url')
+                            if (urlParam) {
+                                await fetchAndConvertToBase64(urlParam, img)
+                            }
+                        } catch (fallbackError) {
+                            console.warn('Fallback fetch also failed:', fallbackError)
                         }
-                    } catch (fallbackError) {
-                        console.warn('Fallback fetch also failed:', fallbackError)
                     }
                 }
+            } catch (e) {
+                console.warn('Image pre-processing failed:', e)
             }
-        } catch (e) {
-            console.warn('Image pre-processing failed:', e)
-        }
-    }))
+        }))
+        // Small delay between batches to let UI breathe
+        await new Promise(resolve => setTimeout(resolve, 50))
+    }
 
     // Wait for DOM to update with new Base64 srcs
     await nextTick()
@@ -81,7 +86,7 @@ export async function exportGridAsImage(elementId: string, fileName: string) {
 
 async function fetchAndConvertToBase64(url: string, img: HTMLImageElement) {
     const response = await fetch(url, {
-        cache: 'force-cache',
+        cache: 'default',
         mode: 'cors',
         credentials: 'omit',
         referrerPolicy: 'no-referrer'
