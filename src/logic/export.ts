@@ -71,21 +71,40 @@ export async function exportGridAsImage(elementId: string, fileName: string) {
     await nextTick()
     await new Promise(resolve => setTimeout(resolve, 500))
 
+    // Detect Mobile/iOS
+    const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)
+    const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !(window as any).MSStream
+
     try {
         // 3. Generate PNG
+        // Lower pixelRatio on mobile to prevent memory crashes
+        const ratio = isMobile ? 2 : 3
+
         const dataUrl = await toPng(element, {
             backgroundColor: '#ffffff',
-            pixelRatio: 3,
+            pixelRatio: ratio,
             cacheBust: true,
             skipOnError: true,
-            fontEmbedCSS: '', // Skip font embedding to prevent CORS issues with fonts
+            fontEmbedCSS: '',
         } as any)
 
-        // 4. Download
-        const link = document.createElement('a')
-        link.download = `${fileName}-${Date.now()}.png`
-        link.href = dataUrl
-        link.click()
+        // 4. Download or Open
+        if (isIOS) {
+            // iOS Safari doesn't support download attribute well, open in new tab
+            const win = window.open()
+            if (win) {
+                win.document.write('<img src="' + dataUrl + '" style="width:100%"/>')
+                win.document.title = "长按保存图片"
+            } else {
+                // Fallback if popup blocked
+                window.location.href = dataUrl
+            }
+        } else {
+            const link = document.createElement('a')
+            link.download = `${fileName}-${Date.now()}.png`
+            link.href = dataUrl
+            link.click()
+        }
 
     } finally {
         // 5. Restore original srcs
@@ -111,9 +130,15 @@ async function fetchAndConvertToBase64(url: string, img: HTMLImageElement) {
         const reader = new FileReader()
         reader.onloadend = () => {
             if (reader.result) {
+                // Wait for image to actually decode and render
+                img.onload = () => resolve()
+                img.onerror = () => {
+                    // Even if render fails, we resolve to continue (it might just be a glitch)
+                    console.warn('Image render failed after Base64 conversion')
+                    resolve()
+                }
                 img.src = reader.result as string
                 img.removeAttribute('crossorigin')
-                resolve()
             } else {
                 reject(new Error('Blob conversion failed'))
             }
