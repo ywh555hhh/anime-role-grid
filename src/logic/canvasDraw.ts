@@ -37,6 +37,12 @@ export class CanvasGenerator {
 
     private getImageUrl(url: string): string {
         if (!url) return ''
+
+        // Bypass proxy for local blob/data URLs
+        if (url.startsWith('blob:') || url.startsWith('data:')) {
+            return url
+        }
+
         // Use wsrv.nl proxy for CORS support
         // Add cache bust to prevent caching of corrupted images
         // Add n=-1 to disable optimization which might cause issues for some images
