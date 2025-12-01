@@ -123,6 +123,7 @@ export class CanvasGenerator {
         this.ctx.strokeStyle = COLORS.border
 
         // Draw cells
+        // Pass 1: Draw Content (Backgrounds, Images, Text)
         for (let i = 0; i < list.length; i++) {
             const col = i % cols
             const row = Math.floor(i / cols)
@@ -132,7 +133,29 @@ export class CanvasGenerator {
             const img = images[i] || null
 
             if (item) {
-                this.drawCell(x, y, item, img)
+                this.drawCellContent(x, y, item, img)
+            }
+        }
+
+        // Pass 2: Draw Borders (Lines)
+        // Draw borders after all content to ensure no overlap/clipping
+        for (let i = 0; i < list.length; i++) {
+            const col = i % cols
+            const row = Math.floor(i / cols)
+            const x = startX + col * CELL_WIDTH
+            const y = startY + row * CELL_HEIGHT
+
+            const isLastCol = col === cols - 1
+            const isLastRow = row === rows - 1
+
+            // We draw borders for every cell position, even if empty (if we wanted empty grid)
+            // But here list only has items. If list is sparse, we might miss borders.
+            // Assuming list is full or we only care about filled slots.
+            // Actually, for a grid, we usually want the full grid structure.
+            // But current logic relies on `list`. If `list` has gaps, `drawCell` wasn't called.
+            // Let's stick to `list` for now as that's what we have.
+            if (list[i]) {
+                this.drawCellBorders(x, y, isLastCol, isLastRow)
             }
         }
 
@@ -165,7 +188,7 @@ export class CanvasGenerator {
         this.ctx.fillText(`— ${templateName} —`, centerX, height / 2 + 40)
     }
 
-    private drawCell(x: number, y: number, item: GridItem, img: HTMLImageElement | null) {
+    private drawCellContent(x: number, y: number, item: GridItem, img: HTMLImageElement | null) {
         // 1. Draw Image
         const imageAreaHeight = CELL_HEIGHT - LABEL_HEIGHT
 
@@ -194,30 +217,36 @@ export class CanvasGenerator {
 
         // 3. Draw Label Text
         this.ctx.fillStyle = COLORS.text
-        this.ctx.font = `bold ${24}px ${FONT_FAMILY}`
+        // Increase font size to 32px for better readability
+        this.ctx.font = `bold ${32}px ${FONT_FAMILY}`
         this.ctx.textAlign = 'center'
         this.ctx.textBaseline = 'middle'
-        // Truncate logic could be added here if needed, but canvas clips automatically if we don't handle it.
-        // Let's just draw it centered.
         this.ctx.fillText(item.label, x + CELL_WIDTH / 2, labelY + LABEL_HEIGHT / 2)
+    }
 
-        // 4. Draw Borders
-        // Right and Bottom borders for every cell
+    private drawCellBorders(x: number, y: number, isLastCol: boolean, isLastRow: boolean) {
+        const imageAreaHeight = CELL_HEIGHT - LABEL_HEIGHT
+        const labelY = y + imageAreaHeight
+
         this.ctx.beginPath()
         this.ctx.lineWidth = BORDER_WIDTH
         this.ctx.strokeStyle = COLORS.border
 
-        // Label top border
+        // Label top border (Always draw)
         this.ctx.moveTo(x, labelY)
         this.ctx.lineTo(x + CELL_WIDTH, labelY)
 
-        // Cell Right border
-        this.ctx.moveTo(x + CELL_WIDTH, y)
-        this.ctx.lineTo(x + CELL_WIDTH, y + CELL_HEIGHT)
+        // Cell Right border (Only if not last column)
+        if (!isLastCol) {
+            this.ctx.moveTo(x + CELL_WIDTH, y)
+            this.ctx.lineTo(x + CELL_WIDTH, y + CELL_HEIGHT)
+        }
 
-        // Cell Bottom border
-        this.ctx.moveTo(x, y + CELL_HEIGHT)
-        this.ctx.lineTo(x + CELL_WIDTH, y + CELL_HEIGHT)
+        // Cell Bottom border (Only if not last row)
+        if (!isLastRow) {
+            this.ctx.moveTo(x, y + CELL_HEIGHT)
+            this.ctx.lineTo(x + CELL_WIDTH, y + CELL_HEIGHT)
+        }
 
         this.ctx.stroke()
     }
