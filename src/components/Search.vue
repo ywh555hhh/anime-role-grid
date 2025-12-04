@@ -4,7 +4,7 @@ import { useMagicKeys, watchDebounced } from '@vueuse/core'
 import { useBgmSearch } from '~/logic/search'
 import type { BgmCharacterSearchResultItem } from '~/types'
 
-const emit = defineEmits(['add', 'close'])
+const emit = defineEmits(['add', 'close', 'clear'])
 
 const input = ref<HTMLInputElement>()
 const keyword = ref('')
@@ -162,7 +162,7 @@ onMounted(() => {
     
     <div class="flex-1 overflow-y-auto min-h-0">
       <!-- Tabs -->
-      <div class="flex border-b-2 border-gray-200 mb-4">
+      <div class="flex border-b-2 border-gray-200 mb-4 items-center">
         <button 
           class="flex-1 py-2 text-sm font-bold transition-colors relative"
           :class="activeTab === 'search' ? 'text-[#e4007f]' : 'text-black hover:text-[#e4007f]'"
@@ -178,6 +178,15 @@ onMounted(() => {
         >
           自定义上传
           <div v-if="activeTab === 'custom'" class="absolute bottom-0 left-0 right-0 h-0.5 bg-[#e4007f]" />
+        </button>
+        
+        <!-- Clear Button -->
+        <button 
+          class="flex-1 py-2 text-sm font-bold text-gray-500 hover:text-red-500 transition-colors flex items-center justify-center gap-1"
+          @click="emit('clear')"
+        >
+          <div i-carbon-trash-can />
+          <span>清空此格</span>
         </button>
       </div>
 

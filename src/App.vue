@@ -69,6 +69,27 @@ function handleAdd(character: GridItemCharacter) {
   // Close search
   showSearch.value = false
   currentSlotIndex.value = null
+  currentSlotIndex.value = null
+}
+
+function handleClear() {
+  const index = currentSlotIndex.value
+  if (index === null) return
+  
+  // Create a shallow copy
+  const newList = [...list.value]
+  if (!newList[index]) return
+
+  // Clear the character
+  const item = newList[index]
+  if (item.character) {
+    const { character, ...rest } = item
+    newList[index] = rest
+  }
+  
+  list.value = newList
+  showSearch.value = false
+  currentSlotIndex.value = null
 }
 
 const saving = ref(false)
@@ -212,8 +233,9 @@ async function handleSave() {
     >
       <Search
         v-if="showSearch"
-        class="fixed left-1/2 top-20 z-50 -translate-x-1/2 w-[90%] max-w-5xl h-[80vh] bg-white dark:bg-gray-900 rounded-2xl shadow-2xl overflow-hidden border border-gray-200 dark:border-gray-800"
+        class="fixed left-1/2 top-1/2 z-50 -translate-x-1/2 -translate-y-1/2 w-[90%] max-w-5xl h-[80vh] bg-white dark:bg-gray-900 rounded-2xl shadow-2xl overflow-hidden border border-gray-200 dark:border-gray-800"
         @add="handleAdd"
+        @clear="handleClear"
         @close="showSearch = false"
       />
     </Transition>
