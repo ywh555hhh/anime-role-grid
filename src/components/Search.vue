@@ -1,8 +1,10 @@
 <script setup lang="ts">
-import { ref, shallowRef, onMounted, watch } from 'vue'
+import { ref, shallowRef, onMounted, onBeforeUnmount, watch, nextTick } from 'vue'
 import { useMagicKeys, watchDebounced } from '@vueuse/core'
 import { useBgmSearch } from '~/logic/search'
 import type { BgmCharacterSearchResultItem } from '~/types'
+import Cropper from 'cropperjs'
+import 'cropperjs/dist/cropper.css'
 
 const emit = defineEmits(['add', 'close'])
 
@@ -20,6 +22,13 @@ const activeTab = ref<'search' | 'custom'>('search')
 const customImageFile = ref<File | null>(null)
 const customImagePreview = ref<string | null>(null)
 const fileInput = ref<HTMLInputElement | null>(null)
+const cropperImageRef = ref<HTMLImageElement | null>(null)
+const cropperInstance = shallowRef<Cropper | null>(null)
+const cropSource = ref<string | null>(null)
+const cropError = ref('')
+
+const GRID_ASPECT_RATIO = 120 / 187 // match grid cell aspect ratio (width/height)
+const CROP_EXPORT_WIDTH = 800 // balanced size for crisp exports without heavy payload
 
 const { escape } = useMagicKeys()
 if (escape) {
@@ -91,41 +100,112 @@ function triggerFileInput() {
   fileInput.value?.click()
 }
 
+function prepareCustomImage(file: File) {
+  cropError.value = ''
+  if (!file.type.startsWith('image/')) {
+    cropError.value = '仅支持图片文件'
+    return
+  }
+  customImageFile.value = file
+  const reader = new FileReader()
+  reader.onload = (e) => {
+    const result = e.target?.result as string
+    customImagePreview.value = result
+    cropSource.value = result
+  }
+  reader.onerror = () => {
+    cropError.value = '图片读取失败，请重试或选择其他文件'
+  }
+  reader.readAsDataURL(file)
+}
+
 function handleFileChange(event: Event) {
   const target = event.target as HTMLInputElement
   const file = target.files?.[0]
   if (file) {
-    customImageFile.value = file
-    const reader = new FileReader()
-    reader.onload = (e) => {
-      customImagePreview.value = e.target?.result as string
-    }
-    reader.readAsDataURL(file)
+    prepareCustomImage(file)
+    target.value = ''
   }
 }
 
 function handleDrop(event: DragEvent) {
   const file = event.dataTransfer?.files?.[0]
   if (file && file.type.startsWith('image/')) {
-    customImageFile.value = file
-    const reader = new FileReader()
-    reader.onload = (e) => {
-      customImagePreview.value = e.target?.result as string
-    }
-    reader.readAsDataURL(file)
+    prepareCustomImage(file)
+  }
+}
+
+function destroyCropper() {
+  cropperInstance.value?.destroy()
+  cropperInstance.value = null
+}
+
+async function initCropper() {
+  if (!cropSource.value) return
+  await nextTick()
+  if (!cropperImageRef.value) return
+  destroyCropper()
+  cropperInstance.value = new Cropper(cropperImageRef.value, {
+    aspectRatio: GRID_ASPECT_RATIO,
+    viewMode: 1,
+    dragMode: 'move',
+    autoCropArea: 1,
+    background: false,
+    responsive: true,
+    movable: true,
+    zoomOnWheel: true,
+  })
+}
+
+function applyCrop() {
+  const instance = cropperInstance.value
+  if (!instance) return null
+  try {
+    const canvas = instance.getCroppedCanvas({
+      width: CROP_EXPORT_WIDTH,
+      height: Math.round(CROP_EXPORT_WIDTH / GRID_ASPECT_RATIO),
+      imageSmoothingEnabled: true,
+      imageSmoothingQuality: 'high',
+    })
+    const dataUrl = canvas.toDataURL('image/png')
+    customImagePreview.value = dataUrl
+    return dataUrl
+  } catch (error) {
+    console.error('Crop failed:', error)
+    cropError.value = '裁切失败，请重新选择图片'
+    return null
   }
 }
 
 function handleCustomAdd() {
-  if (customImagePreview.value) {
+  let finalImage = customImagePreview.value
+  if (cropperInstance.value) {
+    const cropped = applyCrop()
+    if (cropped) finalImage = cropped
+  }
+
+  if (finalImage) {
     emit('add', {
       id: `custom-${Date.now()}`,
       name: 'Custom Image', // Default name since input was removed
-      image: customImagePreview.value,
+      image: finalImage,
     })
     emit('close')
   }
 }
+
+watch(cropSource, async (val) => {
+  if (val) {
+    cropError.value = ''
+    await initCropper()
+  } else {
+    destroyCropper()
+  }
+})
+
+onBeforeUnmount(() => {
+  destroyCropper()
+})
 
 onMounted(() => {
   input.value?.focus()
@@ -231,11 +311,11 @@ onMounted(() => {
         <div class="flex flex-col gap-2">
           <label class="text-sm font-bold text-black">上传图片</label>
           <div 
-            class="border-2 border-dashed border-black rounded-lg p-8 flex flex-col items-center justify-center cursor-pointer hover:border-[#e4007f] transition-colors relative"
-            @click="triggerFileInput"
-            @dragover.prevent
-            @drop.prevent="handleDrop"
-          >
+          class="border-2 border-dashed border-black rounded-lg p-8 flex flex-col items-center justify-center cursor-pointer hover:border-[#e4007f] transition-colors relative"
+          @click="triggerFileInput"
+          @dragover.prevent
+          @drop.prevent="handleDrop"
+        >
             <input 
               ref="fileInput"
               type="file" 
@@ -249,6 +329,24 @@ onMounted(() => {
             <div v-else i-carbon-image class="text-4xl text-black mb-2" />
             <p class="text-sm text-black font-medium">{{ customImagePreview ? '点击更换图片' : '点击或拖拽上传图片' }}</p>
           </div>
+        </div>
+
+        <div 
+          v-if="cropSource" 
+          class="border border-gray-200 rounded-lg bg-gray-50 p-4 flex flex-col gap-3"
+        >
+          <div class="flex flex-col md:flex-row gap-4">
+            <div class="flex-1 min-h-[260px] rounded-md border border-gray-200 overflow-hidden bg-white">
+              <img 
+                ref="cropperImageRef"
+                :src="cropSource" 
+                class="w-full h-full object-contain block"
+                style="max-height: 420px;"
+                alt="待裁切图片"
+              >
+            </div>
+          </div>
+          <p v-if="cropError" class="text-sm text-red-500 font-semibold">{{ cropError }}</p>
         </div>
 
         <button 
