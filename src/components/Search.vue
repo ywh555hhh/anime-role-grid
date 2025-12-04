@@ -113,6 +113,9 @@ function prepareCustomImage(file: File) {
     customImagePreview.value = result
     cropSource.value = result
   }
+  reader.onerror = () => {
+    cropError.value = '图片读取失败，请重试或选择其他文件'
+  }
   reader.readAsDataURL(file)
 }
 
