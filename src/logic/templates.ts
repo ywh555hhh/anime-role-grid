@@ -186,5 +186,14 @@ export const TEMPLATES: Template[] = [
             // Row 2: 女角色 (Female)
             '最过誉 (女)', '最被低估 (女)', 'Get不到 (女)', '惨遭尬黑 (女)'
         ]
+    },
+    {
+        id: 'similarity_2x2',
+        name: '简直就是 (2x2)',
+        cols: 2,
+        items: [
+            '本体', '本体',
+            '代餐', '代餐'
+        ]
     }
 ]
