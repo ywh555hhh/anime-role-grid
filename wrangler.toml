@@ -1,0 +1,8 @@
+name = "anime-role-grid"
+compatibility_date = "2024-11-20"
+pages_build_output_dir = "dist"
+
+[[d1_databases]]
+binding = "DB"
+database_name = "anime-grid-db"
+database_id = "6f0fb911-3611-4626-8ee2-7c2471375897"

@@ -63,6 +63,25 @@ git push -u origin master
 
 3.  点击 **"Save and Deploy"**。
 
+## 步骤三.5：绑定 D1 数据库 (至关重要)
+
+部署成功后，**你的网站现在还不能保存数据**，因为 Page 还没权限访问 D1 数据库。需手动绑定：
+
+1.  进入 **Workers & Pages** -> 选择你的 **`anime-grid`** 项目。
+2.  点击顶部的 **Settings** (设置) 标签页。
+3.  在左侧菜单点击 **Functions** (函数)。
+4.  向下滚动找到 **D1 Database Bindings** (D1 数据库绑定)。
+5.  点击 **Add binding** (添加绑定)：
+    *   **Variable name (变量名)**: 必须填 `DB` (注意大写，与代码一致)。
+    *   **D1 Database**: 选择 `anime-grid-db`。
+6.  点击 **Save**。
+    > **注意**：默认情况下这会应用到 **Production** (生产环境)。如果你希望在 **Preview** (预览环境，比如分支部署) 也能保存数据，你需要在同一个页面找到 "Preview" 标签页（或者在添加时选择环境），重复上述绑定步骤。
+7.  **重新部署 (Redeploy)**：
+    *   去 **Deployments** 标签页。
+    *   去 **Deployments** 标签页。
+    *   点击最新的那次部署右边的三个点 `...` -> **Retry deployment**。
+    *   *注意：变量绑定只有在重新部署后才会生效！*
+
 ## 步骤四：等待部署完成
 
 Cloudflare 会自动开始下载代码、安装依赖、构建项目。

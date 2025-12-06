@@ -195,6 +195,9 @@ const showChangelog = ref(true) // Default open for visibility
 
           <!-- Footer Action -->
           <div class="pt-2">
+            <p class="text-[10px] text-gray-400 text-center mb-2 px-2">
+               我们将匿名收集生成的成分表（仅角色数据，不含个人信息），<br>用于制作全网趣味统计榜单，感谢支持~ ❤️
+            </p>
             <button 
               class="w-full py-3 bg-black dark:bg-white text-white dark:text-black rounded-xl font-bold hover:opacity-90 transition-opacity"
               @click="emit('close')"
