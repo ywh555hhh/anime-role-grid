@@ -1,9 +1,13 @@
 <script setup lang="ts">
+import { ref } from 'vue'
+
 defineProps<{
   show: boolean
 }>()
 
 const emit = defineEmits(['close'])
+
+const showChangelog = ref(true) // Default open for visibility
 </script>
 
 <template>
@@ -40,7 +44,7 @@ const emit = defineEmits(['close'])
           <div class="w-full flex items-center justify-center shrink-0 pt-2">
              <img 
                src="/cana4.webp" 
-               class="h-32 object-contain"
+               class="h-20 object-contain"
                alt="Welcome"
              />
           </div>
@@ -58,7 +62,41 @@ const emit = defineEmits(['close'])
           <!-- Content Sections -->
           <div class="space-y-5 text-sm text-gray-700 dark:text-gray-300 font-medium">
 
-            <!-- Community (Moved Up) -->
+            <!-- Changelog (Collapsible) -->
+            <div class="border border-gray-200 dark:border-gray-700 rounded-xl overflow-hidden">
+                <button 
+                  @click="showChangelog = !showChangelog"
+                  class="w-full flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-800 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+                >
+                  <div class="flex items-center gap-2 font-bold text-gray-900 dark:text-white">
+                    <div class="i-carbon-bullhorn text-[#e4007f]" />
+                    <span>更新日志 (2025.12.06)</span>
+                  </div>
+                  <div 
+                    class="i-carbon-chevron-down text-gray-400 transition-transform duration-200"
+                    :class="{ '-rotate-180': showChangelog }"
+                  />
+                </button>
+                
+                <div 
+                    v-show="showChangelog"
+                    class="p-4 bg-white dark:bg-gray-900/50 text-xs space-y-3 border-t border-gray-100 dark:border-gray-800"
+                >
+                    <div class="flex gap-2">
+                        <span class="font-bold text-[#e4007f] shrink-0">[NEW]</span>
+                        <span><b>视频导出功能 (Beta)</b> 上线！支持生成酷炫的动态视频。</span>
+                    </div>
+                    <div class="flex gap-2">
+                        <span class="font-bold text-[#e4007f] shrink-0">[NEW]</span>
+                        <span>支持<b>自定义上传图片命名</b>，修复长名字显示问题。</span>
+                    </div>
+                    <div class="flex gap-2">
+                        <span class="font-bold text-[#e4007f] shrink-0">[OPT]</span>
+                        <span>优化水印样式与间距，整体视觉更协调。</span>
+                    </div>
+                </div>
+            </div>
+
             <!-- Community Groups -->
             <div class="bg-pink-50/50 dark:bg-pink-900/10 border border-pink-100 dark:border-pink-800/30 p-4 rounded-2xl">
               <div class="flex gap-2 items-center mb-2 text-[#e4007f] font-bold">
@@ -67,53 +105,75 @@ const emit = defineEmits(['close'])
               </div>
               
               <p class="text-xs text-gray-600 dark:text-gray-400 mb-4 leading-relaxed">
-                这是一些<b>刚刚创立</b>的 QQ 组织，主打 <b>分享格子</b> 与 <b>寻找同好</b>。<br>
-                群内氛围和谐，现在正是 <b>入股</b> 的好时期！
+                这是<b>刚刚创立</b>的 QQ 组织，主打 <b>分享格子</b> 与 <b>寻找同好</b>。<br>
+                群内氛围和谐，点击下方按钮<b>一键加入</b>！
               </p>
 
               <div class="grid grid-cols-2 gap-3">
+                
+                <!-- Main Group: Comprehensive -->
+                <a href="https://qun.qq.com/universal-share/share?ac=1&authKey=axd5YDW0i5ZiyX8jTultFRVHCHv9FAsCnqHq40itBLuQEoUOdCo06bAh05W%2Bv1c7&busi_data=eyJncm91cENvZGUiOiIxMDU1NTkxMDY0IiwidG9rZW4iOiJMazMxZ1pPZHdQejMyS1BaSFZ2UkJIdHp5b29NbTI4VU9NaGhSSW96T0NpcS9ha0oyZzJEVmpPRXZ1Nit2eTVNIiwidWluIjoiMTkxNjY0NzYxNiJ9&data=Tsay2nkLgPoS1UGFPbFnpdAsQeLPgFErKFco7mYPmWPldhqQme_u6smVnM0ifq8X5nO5TiLUbxgl57S9deOLIw&svctype=4&tempid=h5_group_info" target="_blank" class="group-btn group col-span-2 bg-gradient-to-r from-pink-50 to-white dark:from-gray-800 dark:to-gray-900">
+                    <div class="flex flex-col items-center justify-center w-full pt-1">
+                      <div class="text-lg font-black tracking-wide leading-none mb-2">综合交流主群</div>
+                      <div class="text-xs text-gray-500 font-medium text-center px-4 leading-relaxed line-clamp-2">
+                        官方综合大群，发布最新公告，反馈 Bug，与开发者直接交流，也是最热闹的闲聊中心。
+                      </div>
+                    </div>
+                    <div class="w-full py-2 bg-[#e4007f] text-white text-center rounded-lg text-sm font-bold shadow-sm group-hover:shadow-pink-500/30 transition-shadow mt-3">
+                        点击加入主群
+                    </div>
+                </a>
+
                 <!-- Q Group: ACN -->
                 <a href="https://qun.qq.com/universal-share/share?ac=1&authKey=1LsjjxDEHjGWTDq3%2FRSfv4Qcb3ESkVgBC3mQmdOPhuFBeEfIbQnuHFGI%2BEA4QLIE&busi_data=eyJncm91cENvZGUiOiIxMDE4MjEzNjUzIiwidG9rZW4iOiJ1aUhXOHFjdlQwSGJlZjNCN0NWS0laRzI3MEY1MHhvczZiRW9EOU1xSGRxaTRJS21aSkRXWFhKTmMrWS9mM2JCIiwidWluIjoiMTkxNjY0NzYxNiJ9&data=ODTRpLsOGRek2N-cVzqTSr2rKDj1y3nmdtdgRnP_iZE7WKUGq9fr2LJHiSf9LLX4YNX78Rpq_mpvT8ROyfoC8g&svctype=4&tempid=h5_group_info" target="_blank" class="group-btn group">
-                  <div class="flex flex-col h-full justify-between relative z-10">
-                    <div class="flex items-center justify-between w-full">
-                      <div class="text-lg font-black tracking-wide leading-none">ACN 交流</div>
-                      <div class="i-carbon-arrow-up-right text-xl opacity-80 group-hover:translate-x-1 group-hover:-translate-y-1 transition-transform" />
+                    <div class="flex flex-col items-center w-full">
+                      <div class="text-base font-black tracking-wide leading-none mb-2">ACN 交流</div>
+                      <div class="text-[10px] text-gray-400 font-medium text-center px-1 leading-normal h-8 flex items-center">
+                        专注动画、漫画、轻小说的分享交流，一起追番吧！
+                      </div>
                     </div>
-                    <div class="text-xs font-bold opacity-90 mt-1">青春·恋爱·校园</div>
-                  </div>
+                    <div class="w-full py-1.5 bg-[#e4007f] text-white text-center rounded-lg text-xs font-bold shadow-sm group-hover:shadow-pink-500/30 transition-shadow mt-auto">
+                        点击加入
+                    </div>
                 </a>
 
                 <!-- W Group: Mobile/Anime Games -->
                 <a href="https://qun.qq.com/universal-share/share?ac=1&authKey=N%2Bfruq0iPx8IhUvbksaoNR2vPtCr7tTmrRRPfmGvuYlExWoy2LZsGfaL183PzNXO&busi_data=eyJncm91cENvZGUiOiI4NTkzNjEwOTkiLCJ0b2tlbiI6Ii9DQy9KZ0l4bzNObWFrOXJwbEV0Q3cxRmVNNmtOOGpDZFNLOCt1bHNxb05WL29zQVo1UlE4czVTWDM4dU8vZUsiLCJ1aW4iOiIxOTE2NjQ3NjE2In0%3D&data=caBB9HR43RsqoEKBASBC1plB48DZi3RsJLnQ7dgEYPj8fmVGnVqGWLn7YbYe_oZcAHod8KqRzsdl5hXVUQ9OaQ&svctype=4&tempid=h5_group_info" target="_blank" class="group-btn group">
-                  <div class="flex flex-col h-full justify-between relative z-10">
-                    <div class="flex items-center justify-between w-full">
-                      <div class="text-lg font-black tracking-wide leading-none">二游</div>
-                      <div class="i-carbon-arrow-up-right text-xl opacity-80 group-hover:translate-x-1 group-hover:-translate-y-1 transition-transform" />
+                    <div class="flex flex-col items-center w-full">
+                      <div class="text-base font-black tracking-wide leading-none mb-2">二游</div>
+                      <div class="text-[10px] text-gray-400 font-medium text-center px-1 leading-normal h-8 flex items-center">
+                        手游玩家聚集地，讨论抽卡运气、剧情攻略与最新资讯。
+                      </div>
                     </div>
-                    <div class="text-xs font-bold opacity-90 mt-1">手游·抽卡·剧情</div>
-                  </div>
+                    <div class="w-full py-1.5 bg-[#e4007f] text-white text-center rounded-lg text-xs font-bold shadow-sm group-hover:shadow-pink-500/30 transition-shadow mt-auto">
+                        点击加入
+                    </div>
                 </a>
 
                 <!-- E Group: Galgame -->
                 <a href="https://qun.qq.com/universal-share/share?ac=1&authKey=KgGU8v2up7Umiwm97tlf6w9sQtNEHYrre4N%2BMKTxBsGS8b0mjwfgCm32QT3wafRj&busi_data=eyJncm91cENvZGUiOiIxNzYxODYwMTkiLCJ0b2tlbiI6InFTd2dSWmNyWXgvaHJvaHl3akd2bCtpdFRyOUd1QVdsM2t6MXNuczdpRjkyUHdyYzY4bngwbnVWV1MwYkI3WjYiLCJ1aW4iOiIzNjYzNTU4MDg3In0%3D&data=q2YUZm5dBCs7tzjCofgNzBxV77kTJNI5nHbeQ8b7zp8M3AeiUa2dqAyois_Pg4RFdwC-SJF4XpuYpAy9twSURg&svctype=4&tempid=h5_group_info" target="_blank" class="group-btn group">
-                  <div class="flex flex-col h-full justify-between relative z-10">
-                    <div class="flex items-center justify-between w-full">
-                      <div class="text-lg font-black tracking-wide leading-none">Galgame</div>
-                      <div class="i-carbon-arrow-up-right text-xl opacity-80 group-hover:translate-x-1 group-hover:-translate-y-1 transition-transform" />
+                    <div class="flex flex-col items-center w-full">
+                      <div class="text-base font-black tracking-wide leading-none mb-2">Galgame</div>
+                      <div class="text-[10px] text-gray-400 font-medium text-center px-1 leading-normal h-8 flex items-center">
+                        美少女游戏专门讨论区，推神作、聊剧情、分享汉化资源。
+                      </div>
                     </div>
-                    <div class="text-xs font-bold opacity-90 mt-1">美少女游戏</div>
-                  </div>
+                    <div class="w-full py-1.5 bg-[#e4007f] text-white text-center rounded-lg text-xs font-bold shadow-sm group-hover:shadow-pink-500/30 transition-shadow mt-auto">
+                        点击加入
+                    </div>
                 </a>
 
                 <!-- R Group: Water -->
                 <a href="https://qm.qq.com/q/kHNDRQUhj4" target="_blank" class="group-btn group">
-                  <div class="flex flex-col h-full justify-between relative z-10">
-                    <div class="flex items-center justify-between w-full">
-                      <div class="text-lg font-black tracking-wide leading-none">神人大水群</div>
-                      <div class="i-carbon-arrow-up-right text-xl opacity-80 group-hover:translate-x-1 group-hover:-translate-y-1 transition-transform" />
+                    <div class="flex flex-col items-center w-full">
+                      <div class="text-base font-black tracking-wide leading-none mb-2">神人大水群</div>
+                      <div class="text-[10px] text-gray-400 font-medium text-center px-1 leading-normal h-8 flex items-center">
+                        闲聊吹水、分享日常、发癫卖萌，什么都可以聊的综合群。
+                      </div>
                     </div>
-                    <div class="text-xs font-bold opacity-90 mt-1">闲聊·吹水·日常</div>
-                  </div>
+                    <div class="w-full py-1.5 bg-[#e4007f] text-white text-center rounded-lg text-xs font-bold shadow-sm group-hover:shadow-pink-500/30 transition-shadow mt-auto">
+                        点击加入
+                    </div>
                 </a>
               </div>
             </div>
@@ -131,37 +191,6 @@ const emit = defineEmits(['close'])
               </div>
             </a>
             
-            <!-- 1. Templates -->
-            <div class="flex gap-3 items-start">
-              <div class="w-6 h-6 rounded-full bg-[#e4007f] text-white flex-shrink-0 flex items-center justify-center font-bold text-xs mt-0.5">1</div>
-              <div>
-                <h3 class="font-bold text-black dark:text-white mb-1">自由切换模板</h3>
-                <p>点击下方的 <span class="text-[#e4007f] font-bold">“当前模板”</span> 按钮，可以切换不同的格子布局（如 5x3, CP问卷等）。</p>
-              </div>
-            </div>
-
-            <!-- 2. FAQ -->
-            <div class="flex gap-3 items-start">
-              <div class="w-6 h-6 rounded-full bg-[#e4007f] text-white flex-shrink-0 flex items-center justify-center font-bold text-xs mt-0.5">2</div>
-              <div>
-                <h3 class="font-bold text-black dark:text-white mb-1">查看常见问题</h3>
-                <p>遇到问题？点击 <span class="text-[#e4007f] font-bold">“食用指南 & 常见问题”</span> 可以查看详细教程。</p>
-              </div>
-            </div>
-
-            <!-- 3. Browser Warning -->
-            <div class="bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-700/50 p-3 rounded-lg">
-              <div class="flex gap-2 items-center mb-1 text-yellow-700 dark:text-yellow-500 font-bold">
-                <div class="i-carbon-warning-filled text-lg" />
-                <h3>浏览器建议</h3>
-              </div>
-              <p class="text-xs text-yellow-800 dark:text-yellow-200/80 leading-relaxed">
-                为了获得最佳体验（特别是图片保存功能），<br>
-                <span class="font-bold">强烈建议不要使用 QQ、微信等软件的内置浏览器。</span><br>
-                请使用 Chrome, Safari, Edge 等原生浏览器打开。
-              </p>
-            </div>
-
           </div>
 
           <!-- Footer Action -->
@@ -200,17 +229,19 @@ const emit = defineEmits(['close'])
 }
 
 .group-btn {
-  @apply relative overflow-hidden rounded-xl p-4
-  bg-gradient-to-br from-[#e4007f] to-[#bd0068] text-white
-  shadow-md shadow-pink-500/20
-  transition-all duration-200 ease-out;
+  @apply relative overflow-hidden rounded-xl p-3
+  bg-white dark:bg-gray-800 
+  border-2 border-transparent hover:border-[#e4007f]
+  text-gray-900 dark:text-white
+  shadow-sm hover:shadow-md
+  transition-all duration-200 ease-out flex flex-col justify-between min-h-[7rem] h-auto;
 }
 
 .group-btn:hover {
-  @apply transform scale-[1.02] shadow-lg shadow-pink-500/40 brightness-105;
+  @apply transform scale-[1.01];
 }
 
 .group-btn:active {
-  @apply transform scale-95 brightness-95;
+  @apply transform scale-[0.98];
 }
 </style>

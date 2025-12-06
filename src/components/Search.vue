@@ -20,6 +20,7 @@ const hasMore = ref(true)
 const activeTab = ref<'search' | 'custom'>('search')
 
 // Custom upload form states
+const customName = ref('')
 const customImageFile = ref<File | null>(null)
 const customImagePreview = ref<string | null>(null)
 const fileInput = ref<HTMLInputElement | null>(null)
@@ -188,10 +189,15 @@ function handleCustomAdd() {
   if (finalImage) {
     emit('add', {
       id: `custom-${Date.now()}`,
-      name: 'Custom Image', // Default name since input was removed
+      name: customName.value.trim() || '自定义图片', // Use custom name or default
       image: finalImage,
     })
     emit('close')
+    // Reset
+    customName.value = ''
+    customImageFile.value = null
+    customImagePreview.value = null
+    cropSource.value = null
   }
 }
 
@@ -318,6 +324,16 @@ onMounted(() => {
       <!-- Custom Upload Tab Content -->
       <div v-else class="p-4 flex flex-col gap-4">
         
+        <div class="flex flex-col gap-2">
+            <label class="text-sm font-bold text-black">角色名字 (可选)</label>
+            <input 
+                v-model="customName"
+                class="w-full px-4 py-3 rounded-lg border-2 border-black bg-white text-black outline-none focus:border-[#e4007f]"
+                placeholder="给图片起个名字..."
+                type="text"
+            >
+        </div>
+
         <div class="flex flex-col gap-2">
           <label class="text-sm font-bold text-black">上传图片</label>
           <div 

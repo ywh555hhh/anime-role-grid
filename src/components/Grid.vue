@@ -7,6 +7,7 @@ const props = defineProps<{
   cols?: number
   title?: string
   customTitle?: string
+  defaultTitle?: string
   forExport?: boolean
 }>()
 
@@ -40,21 +41,32 @@ function getImageUrl(url: string) {
     :class="{ 'bg-white py-8': forExport }"
   >
     <!-- Custom User Title (Editable) -->
-    <div class="relative group mb-2">
-      <input
-        :value="customTitle"
-        class="text-3xl font-bold text-center bg-transparent border-b-2 border-transparent hover:border-black focus:border-[#e4007f] focus:outline-none transition-colors px-2 py-1 text-black w-full"
-        :class="{ 'pointer-events-none border-none': forExport }"
-        style="font-family: 'Noto Serif SC', serif;"
-        placeholder="我的动漫人物喜好果然有问题"
-        type="text"
-        @input="handleTitleInput"
-      >
-      <div 
-        v-if="!forExport"
-        i-carbon-edit 
-        class="absolute -right-6 top-1/2 -translate-y-1/2 text-black opacity-0 group-hover:opacity-100 transition-opacity" 
-      />
+    <div class="relative group mb-2 w-full flex justify-center px-4">
+      <div class="relative inline-grid justify-items-center max-w-[90vw] md:max-w-full">
+        <!-- Ghost element to set width -->
+        <span 
+          class="col-start-1 row-start-1 text-xl md:text-3xl font-bold px-2 py-1 invisible whitespace-pre text-center truncate max-w-full"
+          style="font-family: 'Noto Serif SC', serif;"
+        >
+          {{ customTitle || defaultTitle || '我的动漫人物喜好果然有问题' }}
+        </span>
+
+        <!-- Actual Input -->
+        <input
+          :value="customTitle"
+          class="col-start-1 row-start-1 w-full h-full text-xl md:text-3xl font-bold text-center bg-transparent border-b-2 rounded-t-lg focus:outline-none transition-all px-2 py-1 text-black cursor-text placeholder-gray-300"
+          :class="[
+            !customTitle ? 'border-gray-100 dark:border-gray-800' : 'border-transparent',
+            'hover:border-gray-300 hover:border-dashed',
+            'focus:border-[#e4007f] focus:border-solid focus:bg-gray-50/30 dark:focus:bg-gray-800/30',
+            { 'pointer-events-none border-none': forExport }
+          ]"
+          style="font-family: 'Noto Serif SC', serif;"
+          :placeholder="defaultTitle || '我的动漫人物喜好果然有问题'"
+          type="text"
+          @input="handleTitleInput"
+        >
+      </div>
     </div>
 
     <!-- Template Title -->

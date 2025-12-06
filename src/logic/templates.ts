@@ -3,6 +3,7 @@ export interface Template {
     name: string
     cols: number
     items: string[]
+    defaultTitle?: string
 }
 
 export const TEMPLATES: Template[] = [
@@ -10,6 +11,7 @@ export const TEMPLATES: Template[] = [
         id: 'classic',
         name: '经典 (5x3)',
         cols: 5,
+        defaultTitle: '我的动漫人物喜好果然有问题',
         items: [
             '本命', '初恋', '最佳人设', '最佳性格', '最强战力',
             '最强智商', '最想结婚', '最想做朋友', '最想做家人', '最想谈恋爱',
@@ -43,6 +45,7 @@ export const TEMPLATES: Template[] = [
         id: 'galgame',
         name: 'Galgame (4x3)',
         cols: 4,
+        defaultTitle: '我的 Galgame 喜好果然有问题',
         items: [
             // Row 1: Top Tier / Special
             '永远的白月光', '无法超越的神', '最佳出轨',
@@ -58,6 +61,7 @@ export const TEMPLATES: Template[] = [
         id: 'extended',
         name: '扩展 (5x6)',
         cols: 5,
+        defaultTitle: '我的二次元喜好果然有问题',
         items: [
             // Row 1: 核心关系
             '本命', '初恋', '最佳人设', '最佳性格', '最强战力',
@@ -77,6 +81,7 @@ export const TEMPLATES: Template[] = [
         id: 'couple',
         name: 'CP 问卷 (4x4)',
         cols: 4,
+        defaultTitle: '我的 CP 喜好果然有问题',
         items: [
             // Row 1
             '最甜 (男)', '最甜 (女)', '最虐 (男)', '最虐 (女)',
@@ -92,6 +97,7 @@ export const TEMPLATES: Template[] = [
         id: 'nsfw',
         name: '绅士问卷 (3x3)',
         cols: 3,
+        defaultTitle: '我的 XP 果然有问题',
         items: [
             // Row 1
             '本子王', '最佳身材', '最佳脸蛋',
@@ -105,6 +111,7 @@ export const TEMPLATES: Template[] = [
         id: 'nsfw_classic',
         name: '绅士问卷 (5x3)',
         cols: 5,
+        defaultTitle: '我的 XP 果然有问题',
         items: [
             '本子王', '最佳身材', '纯欲天花板', '最想被调教', '最想调教',
             '最骚', '最像卖的', '最魅魔的', '最肉食系的', '最佳痴女',
@@ -115,6 +122,7 @@ export const TEMPLATES: Template[] = [
         id: 'oshi',
         name: '真爱 (Oshi)',
         cols: 4,
+        defaultTitle: '我的 Oshi 果然有问题',
         items: [
             '入坑初心', '颜值取向', '声控福利', '智商担当',
             '美强惨', '小天使', '小恶魔', '搞笑担当',
@@ -126,6 +134,7 @@ export const TEMPLATES: Template[] = [
         id: 'moe',
         name: '萌属性 (5x3)',
         cols: 5,
+        defaultTitle: '我的萌属性喜好果然有问题',
         items: [
             // Row 1: Energy & Attitude
             '傲娇', '病娇', '元气', '三无', '慵懒',
@@ -139,6 +148,7 @@ export const TEMPLATES: Template[] = [
         id: 'hair_color',
         name: '发色图鉴 (4x3)',
         cols: 4,
+        defaultTitle: '我的发色喜好果然有问题',
         items: [
             // Row 1: Spectrum Hot
             '红毛', '黄毛', '绿毛', '蓝毛',
@@ -152,6 +162,7 @@ export const TEMPLATES: Template[] = [
         id: 'family',
         name: '关系 (4x4)',
         cols: 4,
+        defaultTitle: '我的二次元家庭果然有问题',
         items: [
             // Row 1: Parents
             '最佳老妈', '最屑老妈', '最佳老爸', '最屑老爸',
@@ -167,6 +178,7 @@ export const TEMPLATES: Template[] = [
         id: 'tropes',
         name: '喜闻乐见 (5x3)',
         cols: 5,
+        defaultTitle: '我的喜闻乐见果然有问题',
         items: [
             // Row 1: The Classics
             '败犬', '青梅竹马', '天降系', '欢喜冤家', '命中注定',
@@ -180,6 +192,7 @@ export const TEMPLATES: Template[] = [
         id: 'opinions',
         name: '主观锐评 (4x2)',
         cols: 4,
+        defaultTitle: '我的主观锐评果然有问题',
         items: [
             // Row 1: 男角色 (Male)
             '最过誉 (男)', '最被低估 (男)', 'Get不到 (男)', '惨遭尬黑 (男)',
@@ -191,6 +204,7 @@ export const TEMPLATES: Template[] = [
         id: 'similarity_2x2',
         name: '简直就是 (2x2)',
         cols: 2,
+        defaultTitle: '我们简直一模一样',
         items: [
             '本体', '本体',
             '代餐', '代餐'

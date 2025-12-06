@@ -20,12 +20,12 @@ const emit = defineEmits(['close'])
       class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm px-4" 
       @click="emit('close')"
     >
-      <!-- Outer Container: Handles Border and Rounded Corners -->
+      <!-- Outer Container -->
       <div 
         class="bg-white dark:bg-gray-900 w-full max-w-md max-h-[80vh] rounded-2xl shadow-2xl border-4 border-black dark:border-gray-700 relative flex flex-col overflow-hidden" 
         @click.stop
       >
-        <!-- Close Button (Absolute to Outer) -->
+        <!-- Close Button -->
         <button 
           class="absolute top-4 right-4 w-8 h-8 flex items-center justify-center bg-black text-white rounded-full hover:bg-[#e4007f] transition-colors z-20"
           @click="emit('close')"
@@ -33,12 +33,11 @@ const emit = defineEmits(['close'])
           <div class="i-carbon-close text-xl" />
         </button>
 
-        <!-- Scrollable Content Container -->
+        <!-- Scrollable Content -->
         <div class="overflow-y-auto flex-1 p-6 flex flex-col gap-6 scrollbar-hide">
           
           <!-- Sticker Area -->
           <div class="w-full flex items-center justify-center shrink-0 pt-4">
-             <!-- Sticker with Wobble Animation -->
              <img 
                src="/cana2.webp" 
                class="h-32 object-contain animate-wobble-slow"
@@ -86,6 +85,32 @@ const emit = defineEmits(['close'])
               <div>
                 <h3 class="font-bold text-black dark:text-white mb-1">保存分享</h3>
                 <p>点击“保存高清图片”，会自动生成带水印的高清大图。请大方地展示你的品味吧！</p>
+              </div>
+            </div>
+
+            <div class="flex gap-3 items-start">
+              <div class="w-6 h-6 rounded-full bg-black text-white flex-shrink-0 flex items-center justify-center font-bold text-xs mt-0.5">5</div>
+              <div>
+                <h3 class="font-bold text-black dark:text-white mb-1">视频导出疑难解答 (Beta)</h3>
+                <div class="space-y-2">
+                    <p>视频导出功能目前处于测试阶段，为了获得最佳体验，我们<strong>强烈推荐</strong>使用以下环境：</p>
+                    <ul class="list-disc list-inside pl-1 text-xs space-y-1 text-gray-800 dark:text-gray-300">
+                        <li><b class="text-[#e4007f]">Windows 电脑 + Chrome 浏览器</b> (推荐)</li>
+                        <li><b class="text-[#e4007f]">iOS + Chrome 浏览器</b> (完美支持)</li>
+                    </ul>
+
+                    <div class="bg-gray-50 dark:bg-gray-800 p-2 rounded border border-gray-100 dark:border-gray-700">
+                        <p class="font-bold text-xs text-gray-900 dark:text-gray-100 mb-1">iOS / Safari 特别说明：</p>
+                        <ul class="list-disc list-inside text-xs text-gray-600 dark:text-gray-400">
+                            <li>导出后请点击分享 -> <b class="text-[#e4007f]">"存储到文件"</b>。</li>
+                            <li>微信请发给 <b class="text-[#e4007f]">"文件传输助手"</b> 保存。</li>
+                        </ul>
+                    </div>
+
+                    <p class="text-xs text-gray-400 pt-1">
+                        如果遇到导出卡住或兼容性问题，欢迎 <strong>加群反馈</strong> 或提交 Issue，我们会尽快修复！
+                    </p>
+                </div>
               </div>
             </div>
 

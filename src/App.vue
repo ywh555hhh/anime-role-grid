@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, computed } from 'vue'
+import { ref, computed, watch } from 'vue'
 import { onClickOutside } from '@vueuse/core'
 import Header from '~/components/Header.vue'
 import Grid from '~/components/Grid.vue'
@@ -11,18 +11,23 @@ import { list, name, currentTemplateId } from '~/logic/storage'
 import { TEMPLATES } from '~/logic/templates'
 import type { GridItemCharacter } from '~/types'
 import { exportGridAsImage } from '~/logic/export'
+import { useVideoExport } from '~/logic/video-export'
+import VideoExportModal from '~/components/VideoExportModal.vue'
+import VideoSuccessModal from '~/components/VideoSuccessModal.vue'
 
 const showSearch = ref(false)
 const showShareModal = ref(false)
 const showGuideModal = ref(false)
 const showFirstTimeGuide = ref(false)
 
-// Check for first time visit
+// Check for first time visit (Daily)
 if (typeof window !== 'undefined') {
-  const hasShown = localStorage.getItem('hasShownFirstTimeGuide')
-  if (!hasShown) {
+  const today = new Date().toDateString()
+  const lastShownDate = localStorage.getItem('lastGuideDate')
+
+  if (lastShownDate !== today) {
     showFirstTimeGuide.value = true
-    localStorage.setItem('hasShownFirstTimeGuide', 'true')
+    localStorage.setItem('lastGuideDate', today)
   }
 }
 const currentSlotIndex = ref<number | null>(null)
@@ -43,6 +48,11 @@ function selectTemplate(id: string) {
 const currentTemplate = computed(() => 
   TEMPLATES.find(t => t.id === currentTemplateId.value) || TEMPLATES[0]!
 )
+
+// Auto-reset custom title when template changes to show new default
+watch(currentTemplate, () => {
+  name.value = ''
+})
 
 function handleSelectSlot(index: number) {
   currentSlotIndex.value = index
@@ -155,6 +165,21 @@ async function handleSave() {
     saving.value = false
   }
 }
+
+// Video Export Logic
+const { 
+  isModalOpen: isVideoModalOpen, 
+  isSuccessModalOpen,
+  isExporting: isVideoExporting, 
+  progress: videoProgress, 
+  statusText: videoStatusText,
+  lastExportFormat,
+  generateVideo 
+} = useVideoExport()
+
+function handleVideoExport(settings: any) {
+  generateVideo(list.value, currentTemplate.value.items, settings)
+}
 </script>
 
 <template>
@@ -168,6 +193,7 @@ async function handleSave() {
         :list="list" 
         :cols="currentTemplate.cols"
         :title="currentTemplate.name"
+        :default-title="currentTemplate.defaultTitle"
         v-model:customTitle="name"
         @select-slot="handleSelectSlot"
       />
@@ -183,14 +209,37 @@ async function handleSave() {
           <span>{{ saving ? '生成中...' : '保存高清图片' }}</span>
         </button>
 
-        <!-- Guide Button -->
+        <!-- Video Export Button -->
         <button 
-          @click="showGuideModal = true"
-          class="text-xs text-gray-500 hover:text-[#e4007f] flex items-center gap-1 transition-colors border-b border-transparent hover:border-[#e4007f]"
+          class="px-10 py-3 bg-white text-[#e4007f] border-2 border-[#e4007f] rounded-full text-lg font-bold hover:bg-pink-50 transition-all flex items-center gap-3 shadow-md hover:shadow-lg transform hover:-translate-y-1"
+          @click="isVideoModalOpen = true"
         >
-          <div class="i-carbon-help" />
-          <span>食用指南 & 常见问题</span>
+          <div i-carbon-video-filled class="text-xl" />
+          <span>导出视频 (Beta)</span>
         </button>
+
+        <!-- Guide & Help Buttons -->
+        <div class="flex flex-col gap-2 mt-1">
+            <button 
+              @click="showGuideModal = true"
+              class="text-xs font-bold text-gray-600 hover:text-[#e4007f] flex items-center gap-1.5 transition-colors group"
+            >
+              <div class="p-1 rounded bg-gray-100 group-hover:bg-pink-50 transition-colors">
+                  <div class="i-carbon-help text-sm" />
+              </div>
+              <span>食用指南 & 常见问题</span>
+            </button>
+
+            <button 
+              @click="showFirstTimeGuide = true"
+              class="text-xs font-bold text-gray-600 hover:text-[#e4007f] flex items-center gap-1.5 transition-colors group"
+            >
+              <div class="p-1 rounded bg-gray-100 group-hover:bg-pink-50 transition-colors">
+                  <div class="i-carbon-bullhorn text-sm" />
+              </div>
+              <span>查看更新 & 加入组织</span>
+            </button>
+        </div>
 
         <!-- Template Switcher (Dropdown) -->
         <div class="flex items-center gap-2">
@@ -244,6 +293,20 @@ async function handleSave() {
     <!-- Modals -->
     <FirstTimeGuide :show="showFirstTimeGuide" @close="showFirstTimeGuide = false" />
     <GuideModal :show="showGuideModal" @close="showGuideModal = false" />
+    <VideoExportModal 
+      v-model="isVideoModalOpen" 
+      :loading="isVideoExporting"
+      :progress="videoProgress"
+      :status-text="videoStatusText"
+      :last-export-format="lastExportFormat"
+      @start-export="handleVideoExport"
+    />
+
+    <VideoSuccessModal
+      :show="isSuccessModalOpen"
+      :format="lastExportFormat"
+      @close="isSuccessModalOpen = false"
+    />
 
     <Transition
       enter-active-class="transition duration-200 ease-out"
