@@ -11,6 +11,8 @@ import { list, name, currentTemplateId } from '~/logic/storage'
 import { TEMPLATES } from '~/logic/templates'
 import type { GridItemCharacter } from '~/types'
 import { exportGridAsImage } from '~/logic/export'
+import { useVideoExport } from '~/logic/video-export'
+import VideoExportModal from '~/components/VideoExportModal.vue'
 
 const showSearch = ref(false)
 const showShareModal = ref(false)
@@ -155,6 +157,20 @@ async function handleSave() {
     saving.value = false
   }
 }
+
+// Video Export Logic
+const { 
+  isModalOpen: isVideoModalOpen, 
+  isExporting: isVideoExporting, 
+  progress: videoProgress, 
+  statusText: videoStatusText,
+  lastExportFormat,
+  generateVideo 
+} = useVideoExport()
+
+function handleVideoExport(settings: any) {
+  generateVideo(list.value, currentTemplate.value.items, settings)
+}
 </script>
 
 <template>
@@ -181,6 +197,15 @@ async function handleSave() {
           <div v-if="saving" class="i-carbon-circle-dash animate-spin text-xl" />
           <div v-else class="i-carbon-image text-xl" />
           <span>{{ saving ? '生成中...' : '保存高清图片' }}</span>
+        </button>
+
+        <!-- Video Export Button -->
+        <button 
+          class="px-10 py-3 bg-white text-[#e4007f] border-2 border-[#e4007f] rounded-full text-lg font-bold hover:bg-pink-50 transition-all flex items-center gap-3 shadow-md hover:shadow-lg transform hover:-translate-y-1"
+          @click="isVideoModalOpen = true"
+        >
+          <div i-carbon-video-filled class="text-xl" />
+          <span>导出视频 (Beta)</span>
         </button>
 
         <!-- Guide Button -->
@@ -244,6 +269,14 @@ async function handleSave() {
     <!-- Modals -->
     <FirstTimeGuide :show="showFirstTimeGuide" @close="showFirstTimeGuide = false" />
     <GuideModal :show="showGuideModal" @close="showGuideModal = false" />
+    <VideoExportModal 
+      v-model="isVideoModalOpen" 
+      :loading="isVideoExporting"
+      :progress="videoProgress"
+      :status-text="videoStatusText"
+      :last-export-format="lastExportFormat"
+      @start-export="handleVideoExport"
+    />
 
     <Transition
       enter-active-class="transition duration-200 ease-out"
