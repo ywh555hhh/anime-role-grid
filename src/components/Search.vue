@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ref, shallowRef, onMounted, onBeforeUnmount, watch, nextTick } from 'vue'
-import { useMagicKeys, watchDebounced } from '@vueuse/core'
+import { useMagicKeys, useDebounceFn } from '@vueuse/core'
 import { useBgmSearch } from '~/logic/search'
 import type { BgmCharacterSearchResultItem } from '~/types'
 import Cropper from 'cropperjs'
@@ -39,33 +39,40 @@ if (escape) {
   })
 }
 
-// Auto-search when keyword changes (debounced)
-watchDebounced(
-  keyword,
-  () => {
-    if (keyword.value) {
-      handleSearch()
-    }
-  },
-  { debounce: 800, maxWait: 2000 },
-)
+const debouncedSearch = useDebounceFn(handleSearch, 800, { maxWait: 2000 })
+
+watch(keyword, (v) => {
+  errorMessage.value = ''
+  if (v) {
+    loading.value = true
+    debouncedSearch()
+  } else {
+    loading.value = false
+    searchResult.value = []
+  }
+})
 
 async function handleSearch() {
-  if (!keyword.value) return
-  loading.value = true
+  const currentKeyword = keyword.value
+  if (!currentKeyword) return
+
   errorMessage.value = ''
   searchResult.value = []
   offset.value = 0
   hasMore.value = true
   
   try {
-    const results = await useBgmSearch(keyword.value, 0)
+    const results = await useBgmSearch(currentKeyword, 0)
+    if (keyword.value !== currentKeyword) return
     searchResult.value = results
     if (results.length < 20) hasMore.value = false
   } catch (e: any) {
+    if (keyword.value !== currentKeyword) return
     errorMessage.value = e.message
   } finally {
-    loading.value = false
+    if (keyword.value === currentKeyword) {
+      loading.value = false
+    }
   }
 }
 
@@ -311,11 +318,15 @@ onMounted(() => {
           </button>
         </div>
 
+        <div v-else-if="loading" class="flex flex-col items-center justify-center h-64 text-black">
+          <div i-carbon-circle-dash class="text-4xl mb-2 animate-spin text-[#e4007f]" />
+          <p>搜索中...</p>
+        </div>
         <div v-else-if="errorMessage" class="flex flex-col items-center justify-center h-64 text-red-500 px-4 text-center">
           <div i-carbon-warning-filled class="text-4xl mb-2" />
           <p>{{ errorMessage }}</p>
         </div>
-        <div v-else-if="keyword && !loading" class="flex flex-col items-center justify-center h-64 text-black">
+        <div v-else-if="keyword && !searchResult.length" class="flex flex-col items-center justify-center h-64 text-black">
           <div i-carbon-search class="text-4xl mb-2" />
           <p>未找到相关角色</p>
         </div>
