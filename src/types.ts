@@ -16,6 +16,26 @@ export interface BgmCharacterSearchResultItem {
     };
 }
 
+export interface BgmSubjectSearchResultItem {
+    id: number;
+    name: string;
+    name_cn: string;
+    date?: string; // e.g. "2023-09-29"
+    platform?: string; // e.g. "TV", "漫画", "小说", "游戏"
+    type?: number; // 2=Anime, 1=Book, 4=Game
+    rank?: number;
+    score?: number;
+    images: {
+        small: string;
+        grid: string;
+        large: string;
+        medium: string;
+        common: string;
+    };
+}
+
+export type BgmSearchResultItem = BgmCharacterSearchResultItem | BgmSubjectSearchResultItem;
+
 // 角色详情数据类型
 export interface GridItemCharacter {
     id: number | string;

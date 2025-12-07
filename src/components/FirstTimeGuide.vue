@@ -7,7 +7,27 @@ defineProps<{
 
 const emit = defineEmits(['close'])
 
-const showChangelog = ref(true) // Default open for visibility
+const changelogs = ref([
+  {
+    date: '2025.12.07',
+    isOpen: true,
+    items: [
+      { tag: 'NEW', type: 'new', content: '<b>全新搜索升级</b>：动漫、漫画、游戏、小说... ACG全领域一网打尽！' },
+      { tag: 'NEW', type: 'new', content: '<b>2025年度模版</b>：新增年度动画/游戏专属盘点，记录你的2025。' },
+      { tag: 'NEW', type: 'new', content: '<b>懒人极简模式</b>：新增 1x1 真神 / 2x2 四大天王等懒人模版。' },
+      { tag: 'UP', type: 'up', content: '<b>模版大扩充</b>：新增 败犬/妹妹/RPG 等数十款趣味合集。' }
+    ]
+  },
+  {
+    date: '2025.12.06',
+    isOpen: false,
+    items: [
+      { tag: 'NEW', type: 'new', content: '<b>视频导出功能 (Beta)</b> 上线！支持生成酷炫的动态视频。' },
+      { tag: 'NEW', type: 'new', content: '支持<b>自定义上传图片命名</b>，修复长名字显示问题。' },
+      { tag: 'OPT', type: 'opt', content: '优化水印样式与间距，整体视觉更协调。' }
+    ]
+  }
+]) // Default open for visibility
 </script>
 
 <template>
@@ -62,39 +82,45 @@ const showChangelog = ref(true) // Default open for visibility
           <!-- Content Sections -->
           <div class="space-y-5 text-sm text-gray-700 dark:text-gray-300 font-medium">
 
-            <!-- Changelog (Collapsible) -->
-            <div class="border border-gray-200 dark:border-gray-700 rounded-xl overflow-hidden">
-                <button 
-                  @click="showChangelog = !showChangelog"
-                  class="w-full flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-800 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
-                >
-                  <div class="flex items-center gap-2 font-bold text-gray-900 dark:text-white">
-                    <div class="i-carbon-bullhorn text-[#e4007f]" />
-                    <span>更新日志 (2025.12.06)</span>
-                  </div>
+            <!-- Changelog (Collapsible List) -->
+            <div class="space-y-3">
+              <div 
+                v-for="(log, idx) in changelogs" 
+                :key="log.date"
+                class="border border-gray-200 dark:border-gray-700 rounded-xl overflow-hidden"
+              >
+                  <button 
+                    @click="log.isOpen = !log.isOpen"
+                    class="w-full flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-800 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+                  >
+                    <div class="flex items-center gap-2 font-bold text-gray-900 dark:text-white">
+                      <!-- Highlight latest icon -->
+                      <div :class="idx === 0 ? 'text-[#e4007f]' : 'text-gray-400'" class="i-carbon-bullhorn" />
+                      <span>更新日志 ({{ log.date }})</span>
+                    </div>
+                    <div 
+                      class="i-carbon-chevron-down text-gray-400 transition-transform duration-200"
+                      :class="{ '-rotate-180': log.isOpen }"
+                    />
+                  </button>
+                  
                   <div 
-                    class="i-carbon-chevron-down text-gray-400 transition-transform duration-200"
-                    :class="{ '-rotate-180': showChangelog }"
-                  />
-                </button>
-                
-                <div 
-                    v-show="showChangelog"
-                    class="p-4 bg-white dark:bg-gray-900/50 text-xs space-y-3 border-t border-gray-100 dark:border-gray-800"
-                >
-                    <div class="flex gap-2">
-                        <span class="font-bold text-[#e4007f] shrink-0">[NEW]</span>
-                        <span><b>视频导出功能 (Beta)</b> 上线！支持生成酷炫的动态视频。</span>
-                    </div>
-                    <div class="flex gap-2">
-                        <span class="font-bold text-[#e4007f] shrink-0">[NEW]</span>
-                        <span>支持<b>自定义上传图片命名</b>，修复长名字显示问题。</span>
-                    </div>
-                    <div class="flex gap-2">
-                        <span class="font-bold text-[#e4007f] shrink-0">[OPT]</span>
-                        <span>优化水印样式与间距，整体视觉更协调。</span>
-                    </div>
-                </div>
+                      v-show="log.isOpen"
+                      class="p-4 bg-white dark:bg-gray-900/50 text-xs space-y-3 border-t border-gray-100 dark:border-gray-800"
+                  >
+                      <div v-for="(item, i) in log.items" :key="i" class="flex gap-2 items-start">
+                          <span 
+                            class="font-bold shrink-0 w-11 text-center"
+                            :class="{
+                              'text-[#e4007f]': item.type === 'new',
+                              'text-pink-600': item.type === 'up',
+                              'text-pink-400': item.type === 'opt'
+                            }"
+                          >[{{ item.tag }}]</span>
+                          <span v-html="item.content"></span>
+                      </div>
+                  </div>
+              </div>
             </div>
 
             <!-- Community Groups -->

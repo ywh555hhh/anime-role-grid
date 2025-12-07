@@ -1,12 +1,12 @@
 <script setup lang="ts">
-import { ref, computed, watch } from 'vue'
-import { onClickOutside } from '@vueuse/core'
+import { ref, computed, watch, nextTick } from 'vue'
 import Header from '~/components/Header.vue'
 import Grid from '~/components/Grid.vue'
 import Search from '~/components/Search.vue'
 import Footer from '~/components/Footer.vue'
 import GuideModal from '~/components/GuideModal.vue'
 import FirstTimeGuide from '~/components/FirstTimeGuide.vue'
+import TrendingGuideModal from '~/components/TrendingGuideModal.vue'
 import { list, name, currentTemplateId } from '~/logic/storage'
 import { TEMPLATES } from '~/logic/templates'
 import type { GridItemCharacter } from '~/types'
@@ -14,11 +14,14 @@ import { exportGridAsImage } from '~/logic/export'
 import { useVideoExport } from '~/logic/video-export'
 import VideoExportModal from '~/components/VideoExportModal.vue'
 import VideoSuccessModal from '~/components/VideoSuccessModal.vue'
+import TemplateGalleryModal from '~/components/TemplateGalleryModal.vue'
 
 const showSearch = ref(false)
 const showShareModal = ref(false)
 const showGuideModal = ref(false)
 const showFirstTimeGuide = ref(false)
+const showTrendingGuide = ref(false)
+const shouldShowTrendingAfterGuide = ref(false)
 
 // Check for first time visit (Daily)
 if (typeof window !== 'undefined') {
@@ -27,22 +30,48 @@ if (typeof window !== 'undefined') {
 
   if (lastShownDate !== today) {
     showFirstTimeGuide.value = true
+    shouldShowTrendingAfterGuide.value = true
     localStorage.setItem('lastGuideDate', today)
   }
 }
+
+// Watch for FirstTimeGuide close to show TrendingGuide (only if auto-triggered)
+watch(showFirstTimeGuide, (newVal, oldVal) => {
+  if (oldVal === true && newVal === false) {
+    if (shouldShowTrendingAfterGuide.value) {
+      // Small delay to make it feel natural
+      setTimeout(() => {
+        showTrendingGuide.value = true
+        shouldShowTrendingAfterGuide.value = false // Reset
+      }, 300)
+    }
+  }
+})
+
 const currentSlotIndex = ref<number | null>(null)
 
-// Dropdown Logic
-const isDropdownOpen = ref(false)
-const dropdownRef = ref<HTMLElement | null>(null)
+const showTemplateModal = ref(false)
 
-onClickOutside(dropdownRef, () => {
-  isDropdownOpen.value = false
-})
+function handleManualGuideOpen() {
+  shouldShowTrendingAfterGuide.value = false
+  showFirstTimeGuide.value = true
+}
 
 function selectTemplate(id: string) {
   currentTemplateId.value = id
-  isDropdownOpen.value = false
+  showTemplateModal.value = false
+}
+
+async function handleTrendingSelect(payload: { id: string, title: string }) {
+  currentTemplateId.value = payload.id
+  await nextTick()
+  name.value = payload.title
+  showTrendingGuide.value = false
+}
+
+function handleOpenGallery() {
+  showTrendingGuide.value = false
+  showTemplateModal.value = true
 }
 
 const currentTemplate = computed(() => 
@@ -245,7 +274,7 @@ function handleVideoExport(settings: any) {
             </button>
 
             <button 
-              @click="showFirstTimeGuide = true"
+              @click="handleManualGuideOpen"
               class="text-xs font-bold text-gray-600 hover:text-[#e4007f] flex items-center gap-1.5 transition-colors group"
             >
               <div class="p-1 rounded bg-gray-100 group-hover:bg-pink-50 transition-colors">
@@ -255,49 +284,17 @@ function handleVideoExport(settings: any) {
             </button>
         </div>
 
-        <!-- Template Switcher (Dropdown) -->
+        <!-- Template Switcher (Button) -->
         <div class="flex items-center gap-2">
           <img src="/logo.png" class="w-5 h-5 object-contain" />
-          <label for="template-select" class="text-sm text-black font-bold">当前模板:</label>
-          <div class="relative" ref="dropdownRef">
-            <!-- Trigger Button -->
-            <button
-              @click="isDropdownOpen = !isDropdownOpen"
-              class="flex items-center justify-center gap-2 bg-white border-2 border-black px-4 py-1 rounded-md text-sm font-bold min-w-[160px] transition-colors hover:border-[#e4007f] focus:outline-none"
-              :class="{ 'border-[#e4007f] text-[#e4007f]': isDropdownOpen }"
-            >
-              <span>{{ currentTemplate.name }}</span>
-              <div 
-                class="i-carbon-chevron-down text-xs transition-transform duration-200"
-                :class="{ 'rotate-180': isDropdownOpen }" 
-              />
-            </button>
-
-            <!-- Dropdown Menu -->
-            <Transition
-              enter-active-class="transition duration-100 ease-out"
-              enter-from-class="transform scale-95 opacity-0"
-              enter-to-class="transform scale-100 opacity-100"
-              leave-active-class="transition duration-75 ease-in"
-              leave-from-class="transform scale-100 opacity-100"
-              leave-to-class="transform scale-95 opacity-0"
-            >
-              <div 
-                v-if="isDropdownOpen"
-                class="absolute top-full left-0 w-full mt-1 bg-white border-2 border-black rounded-md shadow-xl overflow-hidden z-20 flex flex-col"
-              >
-                <button
-                  v-for="template in TEMPLATES" 
-                  :key="template.id"
-                  @click="selectTemplate(template.id)"
-                  class="px-2 py-2 text-sm font-bold text-center cursor-pointer hover:bg-pink-50 hover:text-[#e4007f] transition-colors border-b border-gray-100 last:border-none"
-                  :class="{ 'bg-pink-50 text-[#e4007f]': currentTemplateId === template.id }"
-                >
-                  {{ template.name }}
-                </button>
-              </div>
-            </Transition>
-          </div>
+          <label class="text-sm text-black font-bold">当前模板:</label>
+          <button
+            @click="showTemplateModal = true"
+            class="flex items-center justify-center gap-2 bg-white border-2 border-black px-4 py-1 rounded-md text-sm font-bold min-w-[160px] transition-colors hover:border-[#e4007f] hover:text-[#e4007f] focus:outline-none"
+          >
+            <span>{{ currentTemplate.name }}</span>
+            <div i-carbon-chevron-right class="text-xs" />
+          </button>
         </div>
       </div>
     </div>
@@ -306,7 +303,19 @@ function handleVideoExport(settings: any) {
 
     <!-- Modals -->
     <FirstTimeGuide :show="showFirstTimeGuide" @close="showFirstTimeGuide = false" />
+    <TrendingGuideModal 
+      :show="showTrendingGuide" 
+      @close="showTrendingGuide = false"
+      @select="handleTrendingSelect"
+      @open-gallery="handleOpenGallery"
+    />
     <GuideModal :show="showGuideModal" @close="showGuideModal = false" />
+    <TemplateGalleryModal 
+      :show="showTemplateModal" 
+      :current-id="currentTemplateId"
+      @close="showTemplateModal = false"
+      @select="selectTemplate"
+    />
     <VideoExportModal 
       v-model="isVideoModalOpen" 
       :loading="isVideoExporting"

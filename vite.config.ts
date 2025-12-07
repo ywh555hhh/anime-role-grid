@@ -15,6 +15,6 @@ export default defineConfig({
     },
   },
   optimizeDeps: {
-    include: ['html-to-image'],
+    include: [],
   },
 })

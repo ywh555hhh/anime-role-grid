@@ -1,4 +1,4 @@
-import type { BgmCharacterSearchResultItem } from '~/types'
+import type { BgmCharacterSearchResultItem, BgmSubjectSearchResultItem } from '~/types'
 
 // 从环境变量中获取敏感信息
 const accessToken = import.meta.env.VITE_BANGUMI_ACCESS_TOKEN
@@ -12,7 +12,12 @@ export class SearchError extends Error {
 }
 
 // 搜索函数
-export async function useBgmSearch(keyword: string, offset = 0) {
+export async function useBgmSearch(
+    keyword: string,
+    offset = 0,
+    searchType: 'character' | 'anime' | 'manga' | 'novel' | 'game' = 'character',
+    year?: string
+) {
     if (!keyword)
         return []
 
@@ -22,25 +27,41 @@ export async function useBgmSearch(keyword: string, offset = 0) {
     }
 
     try {
-        // Use local proxy in production to avoid CORS/GFW issues
-        // Use direct API in dev (unless using wrangler)
-        const apiUrl = import.meta.env.PROD
-            ? '/api/search'
-            : 'https://api.bgm.tv/v0/search/characters'
+        const isCharacter = searchType === 'character'
 
-        const res = await fetch(apiUrl, {
+        // Determine API Path
+        const apiPath = isCharacter
+            ? 'https://api.bgm.tv/v0/search/characters'
+            : 'https://api.bgm.tv/v0/search/subjects' // All ACG items use subjects API
+
+        // To be safe for Local Dev:
+        const finalUrl = import.meta.env.PROD
+            ? '/api/search' // WARNING: This might hardcode to characters if backend isn't changed.
+            : apiPath
+
+        // Determine Filter
+        // Type IDs: 1=Book, 2=Anime, 3=Music, 4=Game, 6=Real
+        let filterType: number[] = [1] // Default
+
+        switch (searchType) {
+            case 'character': filterType = [1]; break; // Character API uses type 1 for chars
+            case 'anime': filterType = [2]; break;
+            case 'manga': filterType = [1]; break; // Book
+            case 'novel': filterType = [1]; break; // Book
+            case 'game': filterType = [4]; break;
+        }
+
+        const filter = { type: filterType }
+
+        const res = await fetch(finalUrl, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
                 'Authorization': `Bearer ${accessToken}`,
-                // Browser will set its own User-Agent. 
-                // Our proxy will override it with a valid one.
             },
             body: JSON.stringify({
                 keyword,
-                filter: {
-                    type: [1], // Character
-                },
+                filter,
                 offset,
                 limit: 20,
             }),
@@ -53,9 +74,36 @@ export async function useBgmSearch(keyword: string, offset = 0) {
             throw new SearchError(`API 请求失败: ${res.status} ${res.statusText}`)
         }
 
-        // API v0/search/characters 返回的是一个包含 data 字段的对象
         const result = await res.json()
-        return (result.data || []) as BgmCharacterSearchResultItem[]
+        let items = (result.data || []) as (BgmCharacterSearchResultItem | BgmSubjectSearchResultItem)[]
+
+        // Client-side Filtering Logic
+        if (!isCharacter) {
+            items = items.filter(item => {
+                const subject = item as BgmSubjectSearchResultItem
+
+                // 1. Year Filter (Anime / Game)
+                if (year) {
+                    if (!subject.date || !subject.date.startsWith(year)) {
+                        return false
+                    }
+                }
+
+                // 2. Platform Filter (Manga vs Novel)
+                // Both are Type 1 (Book). We must use 'platform' field to distinguish.
+                if (searchType === 'manga') {
+                    return subject.platform === '漫画'
+                }
+
+                if (searchType === 'novel') {
+                    return subject.platform === '小说'
+                }
+
+                return true
+            })
+        }
+
+        return items
     } catch (error: any) {
         if (error instanceof SearchError) {
             throw error

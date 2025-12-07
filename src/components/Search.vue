@@ -2,7 +2,7 @@
 import { ref, shallowRef, onMounted, onBeforeUnmount, watch, nextTick } from 'vue'
 import { useMagicKeys, watchDebounced } from '@vueuse/core'
 import { useBgmSearch } from '~/logic/search'
-import type { BgmCharacterSearchResultItem } from '~/types'
+import type { BgmCharacterSearchResultItem, BgmSubjectSearchResultItem } from '~/types'
 import Cropper from 'cropperjs'
 import 'cropperjs/dist/cropper.css'
 
@@ -11,13 +11,15 @@ const emit = defineEmits(['add', 'close', 'clear'])
 
 const input = ref<HTMLInputElement>()
 const keyword = ref('')
-const searchResult = shallowRef<BgmCharacterSearchResultItem[]>([])
+const searchResult = shallowRef<(BgmCharacterSearchResultItem | BgmSubjectSearchResultItem)[]>([])
 const loading = ref(false)
 const errorMessage = ref('')
 const offset = ref(0)
 const hasMore = ref(true)
 
 const activeTab = ref<'search' | 'custom'>('search')
+const searchType = ref<'character' | 'anime' | 'manga' | 'novel' | 'game'>('character')
+const searchYear = ref('')
 
 // Custom upload form states
 const customName = ref('')
@@ -41,7 +43,7 @@ if (escape) {
 
 // Auto-search when keyword changes (debounced)
 watchDebounced(
-  keyword,
+  [keyword, searchYear, searchType],
   () => {
     if (keyword.value) {
       handleSearch()
@@ -50,16 +52,38 @@ watchDebounced(
   { debounce: 800, maxWait: 2000 },
 )
 
+// When switching type, clear results or re-search
+watch(searchType, () => {
+  offset.value = 0
+  if (keyword.value) handleSearch()
+  else searchResult.value = []
+})
+
 async function handleSearch() {
   if (!keyword.value) return
   loading.value = true
   errorMessage.value = ''
-  searchResult.value = []
+  // Keep previous results while loading? No, clear them for fresh search usually better or show loading overlay
+  if (offset.value === 0) searchResult.value = [] 
+  
+  // Reset pagination if this is a new search (triggered by watchers primarily)
+  // But wait, watcher calls this.
+  // We need to know if it is a "load more" or "new search".
+  // The watchers imply new search. 
+  // Let's assume watchers always mean reset offset.
+  // Actually, we should reset offset inside watcher or here?
+  // Let's do it right: 
+  // Watchers call handleSearch. We should reset offset there?
+  // Or handleSearch resets offset? 
+  // If I call handleSearch explicitly from Enter key, it should reset.
+  // LoadMore calls separate function.
+  // So handleSearch = New Search.
+  
   offset.value = 0
   hasMore.value = true
   
   try {
-    const results = await useBgmSearch(keyword.value, 0)
+    const results = await useBgmSearch(keyword.value, 0, searchType.value, searchYear.value)
     searchResult.value = results
     if (results.length < 20) hasMore.value = false
   } catch (e: any) {
@@ -75,7 +99,7 @@ async function loadMore() {
   offset.value += 20
   
   try {
-    const results = await useBgmSearch(keyword.value, offset.value)
+    const results = await useBgmSearch(keyword.value, offset.value, searchType.value, searchYear.value)
     if (results.length > 0) {
       searchResult.value = [...searchResult.value, ...results]
       if (results.length < 20) hasMore.value = false
@@ -89,7 +113,7 @@ async function loadMore() {
   }
 }
 
-function handleAdd(item: BgmCharacterSearchResultItem) {
+function handleAdd(item: BgmCharacterSearchResultItem | BgmSubjectSearchResultItem) {
   emit('add', {
     id: item.id,
     name: item.name,
@@ -255,7 +279,7 @@ onMounted(() => {
           :class="activeTab === 'search' ? 'text-[#e4007f]' : 'text-black hover:text-[#e4007f]'"
           @click="activeTab = 'search'"
         >
-          搜索角色
+          在线搜索
           <div v-if="activeTab === 'search'" class="absolute bottom-0 left-0 right-0 h-0.5 bg-[#e4007f]" />
         </button>
         <button 
@@ -279,6 +303,40 @@ onMounted(() => {
 
       <!-- Search Tab Content -->
       <div v-if="activeTab === 'search'">
+        
+        <!-- Filters -->
+        <div class="flex flex-col gap-2 mb-4 px-1">
+          <div class="flex flex-wrap items-center justify-center gap-2">
+             <button
+               v-for="type in ['character', 'anime', 'manga', 'novel', 'game']"
+               :key="type"
+               class="px-3 py-1.5 text-xs font-bold rounded-full transition-all border border-transparent"
+               :class="searchType === type ? 'bg-[#e4007f] text-white shadow-md transform scale-105' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'"
+               @click="searchType = type as any"
+             >
+               {{ 
+                 type === 'character' ? '角色' :
+                 type === 'anime' ? '动画' :
+                 type === 'manga' ? '漫画' :
+                 type === 'novel' ? '小说' :
+                 type === 'game' ? '游戏' : type
+               }}
+             </button>
+          </div>
+
+          <!-- Secondary Filters (Year) -->
+          <div v-if="['anime', 'game'].includes(searchType)" class="flex items-center justify-center gap-2">
+             <div class="flex items-center gap-2 bg-gray-50 rounded-lg px-3 py-1.5 border border-gray-200 hover:border-[#e4007f] transition-colors focus-within:border-[#e4007f] focus-within:bg-white w-32">
+                 <div i-carbon-calendar class="text-gray-400 text-sm" />
+                 <input 
+                   v-model="searchYear"
+                   type="text"
+                   placeholder="年份 (如2024)"
+                   class="bg-transparent border-none outline-none text-xs w-full text-black placeholder-gray-400 font-medium"
+                 >
+             </div>
+          </div>
+        </div>
         <div v-if="searchResult.length" class="columns-2 md:columns-3 lg:columns-4 gap-4 pb-4 space-y-4">
           <div
             v-for="item in searchResult"
@@ -291,10 +349,17 @@ onMounted(() => {
                 :src="item.images?.large || item.images?.medium || item.images?.grid" 
                 class="w-full h-auto object-cover group-hover:scale-105 transition-transform duration-300"
                 loading="lazy"
+                referrerpolicy="no-referrer"
               >
             </div>
-            <p class="w-full text-center text-sm font-bold text-black px-1" :title="item.name">
+            <p class="w-full text-center text-sm font-bold text-black px-1 truncate" :title="item.name">
               {{ item.name }}
+            </p>
+            <p v-if="'date' in item && item.date" class="w-full text-center text-xs text-gray-500 font-medium -mt-1 flex items-center justify-center gap-1">
+               <span v-if="'platform' in item && item.platform" class="px-1 rounded bg-gray-100 text-[10px] text-gray-500 border border-gray-200">
+                 {{ item.platform }}
+               </span>
+               {{ item.date.split('-')[0] }}
             </p>
           </div>
         </div>

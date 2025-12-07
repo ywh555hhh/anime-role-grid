@@ -1,0 +1,1899 @@
+{
+  "data": [
+    {
+      "date": "2023-09-29",
+      "platform": "TV",
+      "images": {
+        "small": "https://lain.bgm.tv/r/200/pic/cover/l/13/c5/400602_ZI8Y9.jpg",
+        "grid": "https://lain.bgm.tv/r/100/pic/cover/l/13/c5/400602_ZI8Y9.jpg",
+        "large": "https://lain.bgm.tv/pic/cover/l/13/c5/400602_ZI8Y9.jpg",
+        "medium": "https://lain.bgm.tv/r/800/pic/cover/l/13/c5/400602_ZI8Y9.jpg",
+        "common": "https://lain.bgm.tv/r/400/pic/cover/l/13/c5/400602_ZI8Y9.jpg"
+      },
+      "image": "https://lain.bgm.tv/pic/cover/l/13/c5/400602_ZI8Y9.jpg",
+      "summary": "魔法使芙莉莲和勇者辛美尔等人一起，历经十年的冒险之后击败了魔王，为世界带来了和平。\r\n身为能活上一千多年的精灵族，她于是和辛美尔等人约定再次相见后，踏上了独自一人的旅途。\r\n自那以后，50年过去，芙莉莲又前往拜访辛美尔，相比于和50年前一点没变的她来说，辛美尔已经年迈体衰，进入了风烛残年。\r\n之后，她目睹了辛美尔迎来他的死亡，痛感自己以往没能“知晓人心\"，陷入后悔的芙莉莲，为了“知晓人心\"，踏上了旅途。\r\n这趟旅途会邂逅各种各样的人，也有各种各样的事情在等待着她。",
+      "name": "葬送のフリーレン",
+      "name_cn": "葬送的芙莉莲",
+      "tags": [
+        {
+          "name": "治愈",
+          "count": 6869,
+          "total_cont": 268475
+        },
+        {
+          "name": "MADHouse",
+          "count": 5514,
+          "total_cont": 100562
+        },
+        {
+          "name": "奇幻",
+          "count": 5420,
+          "total_cont": 372997
+        },
+        {
+          "name": "公路片",
+          "count": 5369,
+          "total_cont": 17859
+        },
+        {
+          "name": "漫画改",
+          "count": 5082,
+          "total_cont": 720796
+        },
+        {
+          "name": "2023年10月",
+          "count": 4493,
+          "total_cont": 35108
+        },
+        {
+          "name": "旅行",
+          "count": 3838,
+          "total_cont": 7630
+        },
+        {
+          "name": "寿命论",
+          "count": 3312,
+          "total_cont": 3421
+        },
+        {
+          "name": "斋藤圭一郎",
+          "count": 2819,
+          "total_cont": 3425
+        },
+        {
+          "name": "TV",
+          "count": 2651,
+          "total_cont": 1221880
+        },
+        {
+          "name": "异世界",
+          "count": 2195,
+          "total_cont": 215337
+        },
+        {
+          "name": "2023",
+          "count": 1592,
+          "total_cont": 73513
+        },
+        {
+          "name": "漫改",
+          "count": 1458,
+          "total_cont": 318026
+        },
+        {
+          "name": "催泪",
+          "count": 1227,
+          "total_cont": 53840
+        },
+        {
+          "name": "日本",
+          "count": 595,
+          "total_cont": 189829
+        },
+        {
+          "name": "斎藤圭一郎",
+          "count": 306,
+          "total_cont": 1775
+        },
+        {
+          "name": "战斗",
+          "count": 290,
+          "total_cont": 377822
+        },
+        {
+          "name": "日常",
+          "count": 164,
+          "total_cont": 333930
+        },
+        {
+          "name": "冒险",
+          "count": 144,
+          "total_cont": 43052
+        },
+        {
+          "name": "神作",
+          "count": 143,
+          "total_cont": 44004
+        },
+        {
+          "name": "公路",
+          "count": 110,
+          "total_cont": 1248
+        },
+        {
+          "name": "魔法",
+          "count": 109,
+          "total_cont": 17062
+        },
+        {
+          "name": "葬送的芙莉莲",
+          "count": 63,
+          "total_cont": 467
+        },
+        {
+          "name": "恋爱",
+          "count": 50,
+          "total_cont": 463096
+        },
+        {
+          "name": "2023年",
+          "count": 45,
+          "total_cont": 3287
+        },
+        {
+          "name": "搞笑",
+          "count": 43,
+          "total_cont": 556546
+        },
+        {
+          "name": "半年番",
+          "count": 39,
+          "total_cont": 4038
+        },
+        {
+          "name": "2024",
+          "count": 28,
+          "total_cont": 63185
+        },
+        {
+          "name": "鈴木智尋",
+          "count": 24,
+          "total_cont": 122
+        },
+        {
+          "name": "种崎敦美",
+          "count": 21,
+          "total_cont": 835
+        }
+      ],
+      "infobox": [
+        {
+          "key": "中文名",
+          "value": "葬送的芙莉莲"
+        },
+        {
+          "key": "别名",
+          "value": [
+            {
+              "v": "Frieren: Beyond Journey's End"
+            },
+            {
+              "v": "Sousou no Frieren"
+            },
+            {
+              "v": "葬送的芙莉蓮"
+            }
+          ]
+        },
+        {
+          "key": "话数",
+          "value": "28"
+        },
+        {
+          "key": "放送开始",
+          "value": "2023年9月29日"
+        },
+        {
+          "key": "放送星期",
+          "value": "星期五"
+        },
+        {
+          "key": "官方网站",
+          "value": "https://frieren-anime.jp/"
+        },
+        {
+          "key": "播放电视台",
+          "value": "日本テレビ系"
+        },
+        {
+          "key": "其他电视台",
+          "value": "BS日テレ / AT-X"
+        },
+        {
+          "key": "播放结束",
+          "value": "2024年3月22日"
+        },
+        {
+          "key": "导演",
+          "value": "斎藤圭一郎"
+        },
+        {
+          "key": "音乐",
+          "value": "Evan Call"
+        },
+        {
+          "key": "Copyright",
+          "value": "© 山田鐘人・アベツカサ／小学館／「葬送のフリーレン」製作委員会"
+        },
+        {
+          "key": "原作",
+          "value": "山田鐘人・アベツカサ（小学館「週刊少年サンデー」連載中）"
+        },
+        {
+          "key": "人物设定",
+          "value": "長澤礼子"
+        },
+        {
+          "key": "系列构成",
+          "value": "鈴木智尋"
+        },
+        {
+          "key": "动画制作",
+          "value": "MADHOUSE"
+        },
+        {
+          "key": "美术设计",
+          "value": "杉山晋史"
+        },
+        {
+          "key": "概念艺术",
+          "value": "吉岡誠子"
+        },
+        {
+          "key": "设定",
+          "value": "原科大樹(魔物设计)"
+        },
+        {
+          "key": "主题歌编曲",
+          "value": "Ayase（OP1） / Evan Call（ED1,SPED）/ n-buna（OP2）"
+        },
+        {
+          "key": "主题歌作曲",
+          "value": "Ayase（OP1） / milet、野村陽一郎、中村泰輔（ED1） / Evan Call（SPED）/ n-buna（OP2）"
+        },
+        {
+          "key": "主题歌作词",
+          "value": "Ayase（OP1） / milet（ED1,SPED）/ n-buna（OP2）"
+        },
+        {
+          "key": "主题歌演出",
+          "value": "YOASOBI（OP1） / milet（ED1,SPED）/ ヨルシカ（OP2）"
+        },
+        {
+          "key": "製作",
+          "value": "「葬送のフリーレン」製作委員会【東宝（藤田雅規、齋藤雅哉、山田祥子、佐野航）、小学館（島村英司）、日本テレビ（稲毛弘之、中谷敏夫、吉田和生、今井蘭泉）、MADHOUSE、小学館集英社プロダクション、Aniplex、電通】"
+        },
+        {
+          "key": "企画",
+          "value": "大田圭二、沢辺伸政；共同企划：佐藤貴博、田代早苗、佐藤龍伸、三宅将典、東山敦"
+        },
+        {
+          "key": "执行制片人",
+          "value": "山中一孝、備前島幹人"
+        },
+        {
+          "key": "总制片人",
+          "value": "高橋敦司、武井克弘"
+        },
+        {
+          "key": "制片人",
+          "value": "田口翔一朗、四竈泰介、岩佐直樹、田口亜有理、伊藤悠公、青木遥、菊池瑠梨子"
+        },
+        {
+          "key": "副制片人",
+          "value": "竹田晃洋、野呂瀬友里、平原唯灯"
+        },
+        {
+          "key": "原作协力",
+          "value": "大嶋一範、小倉功雅、芳仲宏暢"
+        },
+        {
+          "key": "音乐制作",
+          "value": "東宝ミュージック、ミラクル・バス"
+        },
+        {
+          "key": "音乐制作人",
+          "value": "有馬由衣"
+        },
+        {
+          "key": "OP・ED 分镜",
+          "value": "斎藤圭一郎(OP1&2)、hohobun(ED1)、吉成鋼(SPED)、村松怜那(ED2)"
+        },
+        {
+          "key": "OP・ED 演出",
+          "value": "斎藤圭一郎(OP1&2)、hohobun(ED1)、吉成鋼(SPED)、村松怜那(ED2)"
+        },
+        {
+          "key": "原画",
+          "value": "こはく(中村豊)"
+        },
+        {
+          "key": "动画制片人",
+          "value": "福士裕一郎＆中目貴史"
+        },
+        {
+          "key": "脚本",
+          "value": "鈴木智尋"
+        },
+        {
+          "key": "分镜",
+          "value": "斎藤圭一郎(1,11,21,26,28)、北川朋哉(2,8,18,25)、原科大樹(3,24,26)、川尻善昭(4,13,17)、清水健一(5)、岩澤亨(6,26)、内田直人(7)、小嶋慶祐(7)、藤本航己(9)、刈谷暢秀(10,27)、川崎芳樹(12,20)、飯野慎也(14)、瀬口泉(15)、森公太(16,21)、室井ふみえ(19)、名取孝浩(22)、久保雄介(23)"
+        },
+        {
+          "key": "演出",
+          "value": "辻彩夏(1)、北川朋哉(2,8,25)、原科大樹(3)、松井健人(4,11)、森公太(5,16,21)、岩澤亨(6)、小嶋慶祐(7)、藤本航己(9)、刈谷暢秀(10)、礒川和正(10,15,23)、藤井邦雄(11)、川崎芳樹(12,20)、名取孝浩(13,22)、飯野慎也(14)、浅香守生(15)、瀬口泉(15)、木村拓(17)、湯徳遥(17)、安藤健(18)、室井ふみえ(19)、柿木田隼人(24)、森大貴(26)、イムガヒ [ 林嘉姬 ] (27)、斎藤圭一郎(28)"
+        },
+        {
+          "key": "总作画监督",
+          "value": "長澤礼子(2-27)、高瀬丸 [ 高瀬亜貴子 ] (22,28)、藤中友里(22)"
+        },
+        {
+          "key": "作画监督",
+          "value": "長澤礼子(1,5,8,12)、簑島綾香(2)、原科大樹(3,5,12,24,28)、辻彩夏(4,10,23)、山崎絵美(5,8)、瀬口泉(5,15,26)、廣江啓輔(6,16,26)、高瀬丸 [ 高瀬亜貴子 ] (6,12,28)、埼玉憲人(7)、猪野涼子(7)、佐藤綾花(8)、小橋弘侑(8)、長坂慶太(9-10,12,15,20,25)、濱田邦彦(10,20)、新井博慧(14,16,22,26)、吉川真一(11,21,25,28)、林怡君(13,18,22)、石井しずく(13,18,22)、率華 [ 伊礼えり ] (14)、澤田英彦(16)、田中大喜(16)、野澤かれん(17)、加藤万由子(17)、工藤慎也(18,22)、首藤武夫(19)、嶋田聡史 [ 島田賢史 ] (19)、北島勇樹(19)、鈴木綾乃 [ 鈴木彩乃 ] (22)、山口保則(22)、LEE EUN-YOUNG [ 이은영 ] (22)、KIM DONG [ 김동준 ] (22)、八重樫優翼(25-26)、刈谷暢秀(27)、吉田奏子(27)、藤中友里(27)"
+        }
+      ],
+      "rating": {
+        "rank": 37,
+        "total": 31586,
+        "count": {
+          "1": 122,
+          "2": 31,
+          "3": 51,
+          "4": 91,
+          "5": 288,
+          "6": 955,
+          "7": 3095,
+          "8": 8826,
+          "9": 11306,
+          "10": 6821
+        },
+        "score": 8.6
+      },
+      "collection": {
+        "on_hold": 1600,
+        "dropped": 629,
+        "wish": 6007,
+        "collect": 43942,
+        "doing": 11194
+      },
+      "id": 400602,
+      "eps": 28,
+      "meta_tags": [
+        "TV",
+        "日本",
+        "奇幻",
+        "漫画改"
+      ],
+      "volumes": 0,
+      "series": false,
+      "locked": false,
+      "nsfw": false,
+      "type": 2
+    },
+    {
+      "date": "2023-10-11",
+      "platform": "WEB",
+      "images": {
+        "small": "https://lain.bgm.tv/r/200/pic/cover/l/f5/6d/459283_EEgdW.jpg",
+        "grid": "https://lain.bgm.tv/r/100/pic/cover/l/f5/6d/459283_EEgdW.jpg",
+        "large": "https://lain.bgm.tv/pic/cover/l/f5/6d/459283_EEgdW.jpg",
+        "medium": "https://lain.bgm.tv/r/800/pic/cover/l/f5/6d/459283_EEgdW.jpg",
+        "common": "https://lain.bgm.tv/r/400/pic/cover/l/f5/6d/459283_EEgdW.jpg"
+      },
+      "image": "https://lain.bgm.tv/pic/cover/l/f5/6d/459283_EEgdW.jpg",
+      "summary": "『葬送のフリーレン』の新たな企画『葬送のフリーレン ～●●の魔法～』が始まりました！\r\nオリジナルシナリオによるミニアニメとなっており、イラストレーター・めばち氏がデザインした公式デフォルメキャラのフリーレンたちが旅のさなかで様々な“魔法”を試していく姿が描かれます。『葬送のフリーレン』の数々登場する魔法。その中でも本作ならではの魅力ともなっている、日常生活で使える魔法、役に立つかわからないようなくだらない魔法、そういったものをテーマにした物語が展開します。\r\n\r\nそしてこの度、第1回「考えていることを言ってしまう魔法」がYouTube TOHO animationチャンネル、『葬送のフリーレン』アニメ公式X、同公式TikTokで配信がスタートしました！フリーレン、ヒンメル、ハイター、アイゼンの勇者パーティー4人が登場します。\r\n\r\nミニアニメ『葬送のフリーレン ～●●の魔法～』は、以後不定期配信となります。アニメ本編と共に、ぜひお楽しみください！",
+      "name": "葬送のフリーレン ～●●の魔法～",
+      "name_cn": "葬送的芙莉莲 ～●●的魔法～",
+      "tags": [
+        {
+          "name": "短片",
+          "count": 307,
+          "total_cont": 89824
+        },
+        {
+          "name": "泡面番",
+          "count": 306,
+          "total_cont": 141092
+        },
+        {
+          "name": "WEB",
+          "count": 240,
+          "total_cont": 60460
+        },
+        {
+          "name": "2023年10月",
+          "count": 210,
+          "total_cont": 35107
+        },
+        {
+          "name": "TOHOanimationSTUDIO",
+          "count": 158,
+          "total_cont": 2793
+        },
+        {
+          "name": "葬送的芙莉莲",
+          "count": 150,
+          "total_cont": 467
+        },
+        {
+          "name": "2023",
+          "count": 147,
+          "total_cont": 73512
+        },
+        {
+          "name": "漫画改",
+          "count": 117,
+          "total_cont": 720785
+        },
+        {
+          "name": "治愈",
+          "count": 114,
+          "total_cont": 268439
+        },
+        {
+          "name": "搞笑",
+          "count": 106,
+          "total_cont": 556519
+        },
+        {
+          "name": "奇幻",
+          "count": 97,
+          "total_cont": 372987
+        },
+        {
+          "name": "漫改",
+          "count": 68,
+          "total_cont": 318014
+        },
+        {
+          "name": "SP",
+          "count": 31,
+          "total_cont": 5209
+        },
+        {
+          "name": "公路片",
+          "count": 30,
+          "total_cont": 17858
+        },
+        {
+          "name": "番外",
+          "count": 13,
+          "total_cont": 3851
+        },
+        {
+          "name": "日本",
+          "count": 9,
+          "total_cont": 189826
+        },
+        {
+          "name": "小剧场",
+          "count": 8,
+          "total_cont": 1589
+        },
+        {
+          "name": "日常",
+          "count": 8,
+          "total_cont": 333890
+        },
+        {
+          "name": "2023年",
+          "count": 7,
+          "total_cont": 3287
+        },
+        {
+          "name": "异世界",
+          "count": 5,
+          "total_cont": 215333
+        },
+        {
+          "name": "泡面",
+          "count": 5,
+          "total_cont": 9841
+        },
+        {
+          "name": "OVA",
+          "count": 5,
+          "total_cont": 333018
+        },
+        {
+          "name": "日本动画",
+          "count": 4,
+          "total_cont": 33442
+        },
+        {
+          "name": "宮西哲也",
+          "count": 4,
+          "total_cont": 21
+        },
+        {
+          "name": "动画",
+          "count": 3,
+          "total_cont": 31406
+        },
+        {
+          "name": "萌",
+          "count": 3,
+          "total_cont": 66425
+        },
+        {
+          "name": "TOHO_animation_STUDIO",
+          "count": 3,
+          "total_cont": 45
+        },
+        {
+          "name": "小林千晃",
+          "count": 2,
+          "total_cont": 200
+        },
+        {
+          "name": "岡本信彦",
+          "count": 2,
+          "total_cont": 840
+        },
+        {
+          "name": "めばち",
+          "count": 2,
+          "total_cont": 22
+        }
+      ],
+      "infobox": [
+        {
+          "key": "中文名",
+          "value": "葬送的芙莉莲 ～●●的魔法～"
+        },
+        {
+          "key": "话数",
+          "value": "11"
+        },
+        {
+          "key": "放送开始",
+          "value": "2023年10月11日"
+        },
+        {
+          "key": "官方网站",
+          "value": "https://frieren-anime.jp/special/dchara/"
+        },
+        {
+          "key": "播放结束",
+          "value": "2024年3月24日"
+        },
+        {
+          "key": "Copyright",
+          "value": "©山田鐘人・アベツカサ／小学館／「葬送のフリーレン」製作委員会"
+        },
+        {
+          "key": "在线播放平台",
+          "value": "YouTube、X、TikTok"
+        },
+        {
+          "key": "原作",
+          "value": "山田鐘人・アベツカサ(小学館「週刊少年サンデー」連載中)"
+        },
+        {
+          "key": "人物设定",
+          "value": "めばち"
+        },
+        {
+          "key": "动画制作",
+          "value": "TOHO animation STUDIO"
+        },
+        {
+          "key": "企画",
+          "value": "TOHO animation；企画协力：MADHOUSE"
+        },
+        {
+          "key": "製作",
+          "value": "「葬送のフリーレン」製作委員会"
+        },
+        {
+          "key": "动画制片人",
+          "value": "村元修身"
+        }
+      ],
+      "rating": {
+        "rank": 3167,
+        "total": 1066,
+        "count": {
+          "1": 2,
+          "2": 2,
+          "3": 4,
+          "4": 2,
+          "5": 66,
+          "6": 274,
+          "7": 509,
+          "8": 151,
+          "9": 22,
+          "10": 34
+        },
+        "score": 6.9
+      },
+      "collection": {
+        "on_hold": 54,
+        "dropped": 45,
+        "wish": 448,
+        "collect": 2046,
+        "doing": 255
+      },
+      "id": 459283,
+      "eps": 11,
+      "meta_tags": [
+        "WEB",
+        "奇幻",
+        "漫画改"
+      ],
+      "volumes": 0,
+      "series": false,
+      "locked": false,
+      "nsfw": false,
+      "type": 2
+    },
+    {
+      "date": "2026-01-16",
+      "platform": "TV",
+      "images": {
+        "small": "https://lain.bgm.tv/r/200/pic/cover/l/0b/24/515759_IzWoY.jpg",
+        "grid": "https://lain.bgm.tv/r/100/pic/cover/l/0b/24/515759_IzWoY.jpg",
+        "large": "https://lain.bgm.tv/pic/cover/l/0b/24/515759_IzWoY.jpg",
+        "medium": "https://lain.bgm.tv/r/800/pic/cover/l/0b/24/515759_IzWoY.jpg",
+        "common": "https://lain.bgm.tv/r/400/pic/cover/l/0b/24/515759_IzWoY.jpg"
+      },
+      "image": "https://lain.bgm.tv/pic/cover/l/0b/24/515759_IzWoY.jpg",
+      "summary": "",
+      "name": "葬送のフリーレン 第2期",
+      "name_cn": "葬送的芙莉莲 第二季",
+      "tags": [
+        {
+          "name": "MADHouse",
+          "count": 351,
+          "total_cont": 100562
+        },
+        {
+          "name": "漫画改",
+          "count": 288,
+          "total_cont": 720796
+        },
+        {
+          "name": "TV",
+          "count": 269,
+          "total_cont": 1221880
+        },
+        {
+          "name": "奇幻",
+          "count": 254,
+          "total_cont": 372997
+        },
+        {
+          "name": "2026年1月",
+          "count": 202,
+          "total_cont": 1799
+        },
+        {
+          "name": "治愈",
+          "count": 195,
+          "total_cont": 268475
+        },
+        {
+          "name": "葬送的芙莉莲",
+          "count": 167,
+          "total_cont": 467
+        },
+        {
+          "name": "公路片",
+          "count": 144,
+          "total_cont": 17859
+        },
+        {
+          "name": "漫改",
+          "count": 115,
+          "total_cont": 318026
+        },
+        {
+          "name": "2026",
+          "count": 95,
+          "total_cont": 3008
+        },
+        {
+          "name": "异世界",
+          "count": 81,
+          "total_cont": 215337
+        },
+        {
+          "name": "日本",
+          "count": 73,
+          "total_cont": 189829
+        },
+        {
+          "name": "续集",
+          "count": 69,
+          "total_cont": 4422
+        },
+        {
+          "name": "战斗",
+          "count": 57,
+          "total_cont": 377822
+        },
+        {
+          "name": "未定档",
+          "count": 48,
+          "total_cont": 3465
+        },
+        {
+          "name": "续作",
+          "count": 23,
+          "total_cont": 38767
+        },
+        {
+          "name": "日常",
+          "count": 18,
+          "total_cont": 333930
+        },
+        {
+          "name": "北川朋哉",
+          "count": 10,
+          "total_cont": 13
+        },
+        {
+          "name": "旅行",
+          "count": 9,
+          "total_cont": 7630
+        },
+        {
+          "name": "2026年",
+          "count": 6,
+          "total_cont": 200
+        },
+        {
+          "name": "斋藤圭一郎",
+          "count": 5,
+          "total_cont": 3425
+        },
+        {
+          "name": "冒险",
+          "count": 5,
+          "total_cont": 43052
+        },
+        {
+          "name": "2024年10月",
+          "count": 5,
+          "total_cont": 24336
+        },
+        {
+          "name": "魔法",
+          "count": 5,
+          "total_cont": 17062
+        },
+        {
+          "name": "寿命论",
+          "count": 4,
+          "total_cont": 3421
+        },
+        {
+          "name": "2026冬",
+          "count": 4,
+          "total_cont": 81
+        },
+        {
+          "name": "EvanCall",
+          "count": 3,
+          "total_cont": 91
+        },
+        {
+          "name": "催泪",
+          "count": 3,
+          "total_cont": 53840
+        },
+        {
+          "name": "TVA",
+          "count": 3,
+          "total_cont": 14777
+        },
+        {
+          "name": "20年代动画冲击bgm第一页的号角",
+          "count": 2,
+          "total_cont": 2
+        }
+      ],
+      "infobox": [
+        {
+          "key": "中文名",
+          "value": "葬送的芙莉莲 第二季"
+        },
+        {
+          "key": "话数",
+          "value": "*"
+        },
+        {
+          "key": "放送开始",
+          "value": "2026年1月16日"
+        },
+        {
+          "key": "放送星期",
+          "value": "星期五"
+        },
+        {
+          "key": "官方网站",
+          "value": "https://frieren-anime.jp/"
+        },
+        {
+          "key": "播放电视台",
+          "value": "日本テレビ系全国30局“FRIDAY ANIME NIGHT\""
+        },
+        {
+          "key": "导演",
+          "value": "北川朋哉"
+        },
+        {
+          "key": "Copyright",
+          "value": "©山田鐘人・アベツカサ／小学館／「葬送のフリーレン」製作委員会"
+        },
+        {
+          "key": "原作",
+          "value": "山田鐘人・アベツカサ（小学館「週刊少年サンデー」連載中）"
+        },
+        {
+          "key": "协力",
+          "value": "[监督协力]斎藤圭一郎"
+        },
+        {
+          "key": "人物设定",
+          "value": "高瀬丸(高瀬亜貴子)、小嶋慶祐、藤中友里"
+        },
+        {
+          "key": "概念艺术",
+          "value": "吉岡誠子"
+        },
+        {
+          "key": "设定",
+          "value": "[デザインワークス]小橋弘侑、原野瑠奈、瀬口泉、原科大樹"
+        }
+      ],
+      "rating": {
+        "rank": 568,
+        "total": 81,
+        "count": {
+          "1": 4,
+          "2": 0,
+          "3": 0,
+          "4": 0,
+          "5": 1,
+          "6": 2,
+          "7": 12,
+          "8": 26,
+          "9": 20,
+          "10": 16
+        },
+        "score": 8.1
+      },
+      "collection": {
+        "on_hold": 70,
+        "dropped": 9,
+        "wish": 4831,
+        "collect": 188,
+        "doing": 332
+      },
+      "id": 515759,
+      "eps": 0,
+      "meta_tags": [
+        "TV",
+        "日本",
+        "奇幻",
+        "漫画改"
+      ],
+      "volumes": 0,
+      "series": false,
+      "locked": false,
+      "nsfw": false,
+      "type": 2
+    },
+    {
+      "date": "2025-04-02",
+      "platform": "WEB",
+      "images": {
+        "small": "https://lain.bgm.tv/r/200/pic/cover/l/a9/55/549563_wko8L.jpg",
+        "grid": "https://lain.bgm.tv/r/100/pic/cover/l/a9/55/549563_wko8L.jpg",
+        "large": "https://lain.bgm.tv/pic/cover/l/a9/55/549563_wko8L.jpg",
+        "medium": "https://lain.bgm.tv/r/800/pic/cover/l/a9/55/549563_wko8L.jpg",
+        "common": "https://lain.bgm.tv/r/400/pic/cover/l/a9/55/549563_wko8L.jpg"
+      },
+      "image": "https://lain.bgm.tv/pic/cover/l/a9/55/549563_wko8L.jpg",
+      "summary": "TVアニメ『葬送のフリーレン』2026年1月の第2期放送に向けて\r\nミニアニメ「～●●の魔法～」も再びスタート！",
+      "name": "葬送のフリーレン ～●●の魔法～2期",
+      "name_cn": "葬送的芙莉莲 ～●●的魔法～2期",
+      "tags": [
+        {
+          "name": "泡面番",
+          "count": 81,
+          "total_cont": 141089
+        },
+        {
+          "name": "搞笑",
+          "count": 60,
+          "total_cont": 556504
+        },
+        {
+          "name": "短片",
+          "count": 57,
+          "total_cont": 89822
+        },
+        {
+          "name": "漫画改",
+          "count": 56,
+          "total_cont": 720671
+        },
+        {
+          "name": "WEB",
+          "count": 50,
+          "total_cont": 60455
+        },
+        {
+          "name": "2025",
+          "count": 48,
+          "total_cont": 52733
+        },
+        {
+          "name": "2025年4月",
+          "count": 42,
+          "total_cont": 30311
+        },
+        {
+          "name": "葬送的芙莉莲",
+          "count": 39,
+          "total_cont": 467
+        },
+        {
+          "name": "TOHOanimationSTUDIO",
+          "count": 31,
+          "total_cont": 2791
+        },
+        {
+          "name": "日本",
+          "count": 31,
+          "total_cont": 189802
+        },
+        {
+          "name": "奇幻",
+          "count": 15,
+          "total_cont": 372969
+        },
+        {
+          "name": "公路片",
+          "count": 14,
+          "total_cont": 17856
+        },
+        {
+          "name": "漫改",
+          "count": 11,
+          "total_cont": 317999
+        },
+        {
+          "name": "種﨑敦美",
+          "count": 8,
+          "total_cont": 732
+        },
+        {
+          "name": "治愈",
+          "count": 4,
+          "total_cont": 268433
+        },
+        {
+          "name": "小剧场",
+          "count": 3,
+          "total_cont": 1589
+        },
+        {
+          "name": "SP",
+          "count": 3,
+          "total_cont": 5209
+        },
+        {
+          "name": "异世界",
+          "count": 3,
+          "total_cont": 215317
+        },
+        {
+          "name": "OVA",
+          "count": 3,
+          "total_cont": 333005
+        },
+        {
+          "name": "泡面",
+          "count": 3,
+          "total_cont": 9841
+        },
+        {
+          "name": "日常",
+          "count": 2,
+          "total_cont": 333869
+        },
+        {
+          "name": "番外",
+          "count": 2,
+          "total_cont": 3851
+        },
+        {
+          "name": "宮西哲也",
+          "count": 2,
+          "total_cont": 21
+        },
+        {
+          "name": "新番",
+          "count": 1,
+          "total_cont": 1808
+        },
+        {
+          "name": "西幻",
+          "count": 1,
+          "total_cont": 226
+        },
+        {
+          "name": "原创",
+          "count": 1,
+          "total_cont": 547081
+        },
+        {
+          "name": "岡本信彦",
+          "count": 1,
+          "total_cont": 840
+        },
+        {
+          "name": "动画",
+          "count": 1,
+          "total_cont": 31405
+        },
+        {
+          "name": "默认",
+          "count": 1,
+          "total_cont": 3
+        },
+        {
+          "name": "TV",
+          "count": 1,
+          "total_cont": 1221845
+        }
+      ],
+      "infobox": [
+        {
+          "key": "中文名",
+          "value": "葬送的芙莉莲 ～●●的魔法～2期"
+        },
+        {
+          "key": "话数",
+          "value": "*"
+        },
+        {
+          "key": "放送开始",
+          "value": "2025年4月2日"
+        },
+        {
+          "key": "放送星期",
+          "value": "星期三"
+        },
+        {
+          "key": "官方网站",
+          "value": "https://frieren-anime.jp/special/dchara/"
+        },
+        {
+          "key": "在线播放平台",
+          "value": "YouTube"
+        },
+        {
+          "key": "Copyright",
+          "value": "©山田鐘人・アベツカサ／小学館／「葬送のフリーレン」製作委員会"
+        },
+        {
+          "key": "原作",
+          "value": "山田鐘人・アベツカサ(小学館「週刊少年サンデー」連載中)"
+        },
+        {
+          "key": "企画",
+          "value": "TOHO animation"
+        },
+        {
+          "key": "人物设定",
+          "value": "めばち"
+        },
+        {
+          "key": "动画制作",
+          "value": "TOHO animation STUDIO"
+        }
+      ],
+      "rating": {
+        "rank": 2869,
+        "total": 158,
+        "count": {
+          "1": 0,
+          "2": 1,
+          "3": 1,
+          "4": 1,
+          "5": 9,
+          "6": 34,
+          "7": 81,
+          "8": 21,
+          "9": 5,
+          "10": 5
+        },
+        "score": 6.9
+      },
+      "collection": {
+        "on_hold": 65,
+        "dropped": 13,
+        "wish": 294,
+        "collect": 300,
+        "doing": 333
+      },
+      "id": 549563,
+      "eps": 0,
+      "meta_tags": [
+        "短片",
+        "日本",
+        "漫画改",
+        "WEB"
+      ],
+      "volumes": 0,
+      "series": false,
+      "locked": false,
+      "nsfw": false,
+      "type": 2
+    },
+    {
+      "date": "2022-01-09",
+      "platform": "TV",
+      "images": {
+        "small": "https://lain.bgm.tv/r/200/pic/cover/l/b0/84/315060_Q9cdD.jpg",
+        "grid": "https://lain.bgm.tv/r/100/pic/cover/l/b0/84/315060_Q9cdD.jpg",
+        "large": "https://lain.bgm.tv/pic/cover/l/b0/84/315060_Q9cdD.jpg",
+        "medium": "https://lain.bgm.tv/r/800/pic/cover/l/b0/84/315060_Q9cdD.jpg",
+        "common": "https://lain.bgm.tv/r/400/pic/cover/l/b0/84/315060_Q9cdD.jpg"
+      },
+      "image": "https://lain.bgm.tv/pic/cover/l/b0/84/315060_Q9cdD.jpg",
+      "summary": "中世イングランド。\r\nヨーク家とランカスター家が王位争奪を繰り返す薔薇戦争時代。\r\n\r\nヨーク家の三男として生まれたリチャードは、母からは「悪魔の子」と疎まれる一方、\r\n同じ名を持つ父からは真っ直ぐな愛情を受けて育っていた。\r\nリチャードの願いは、この世の光である父・ヨーク公爵が王位に就くこと。\r\nだがリチャードの純粋な願いは、イングランドに戦乱の嵐を招くことになる。\r\nさらにリチャードは、男女２つの性を持って生まれたという秘密があった。\r\n誰にも明かせぬ秘密を胸に秘めたまま、リチャードもまた戦いの渦中に巻き込まれていく。\r\nそこで待つのは、彼を愛する人たちとのかけがえのない時間と決定的な別離。\r\n\r\n痛ましくも美しい邂逅と別離が、「悪」への道へとリチャードを誘っていく――。",
+      "name": "薔薇王の葬列",
+      "name_cn": "蔷薇王的葬列",
+      "tags": [
+        {
+          "name": "J.C.STAFF",
+          "count": 79,
+          "total_cont": 127019
+        },
+        {
+          "name": "2022年1月",
+          "count": 61,
+          "total_cont": 16546
+        },
+        {
+          "name": "TV",
+          "count": 56,
+          "total_cont": 1218535
+        },
+        {
+          "name": "2022",
+          "count": 40,
+          "total_cont": 73031
+        },
+        {
+          "name": "漫画改",
+          "count": 40,
+          "total_cont": 717176
+        },
+        {
+          "name": "漫改",
+          "count": 33,
+          "total_cont": 317067
+        },
+        {
+          "name": "历史",
+          "count": 28,
+          "total_cont": 14744
+        },
+        {
+          "name": "铃木健太郎",
+          "count": 10,
+          "total_cont": 70
+        },
+        {
+          "name": "奇幻",
+          "count": 7,
+          "total_cont": 370597
+        },
+        {
+          "name": "斎賀みつき",
+          "count": 7,
+          "total_cont": 66
+        },
+        {
+          "name": "2022年",
+          "count": 6,
+          "total_cont": 3190
+        },
+        {
+          "name": "鈴木健太郎",
+          "count": 5,
+          "total_cont": 149
+        },
+        {
+          "name": "日本",
+          "count": 5,
+          "total_cont": 186538
+        },
+        {
+          "name": "内田裕基",
+          "count": 4,
+          "total_cont": 44
+        },
+        {
+          "name": "2021",
+          "count": 3,
+          "total_cont": 71305
+        },
+        {
+          "name": "战争",
+          "count": 3,
+          "total_cont": 18238
+        },
+        {
+          "name": "2022冬",
+          "count": 2,
+          "total_cont": 141
+        },
+        {
+          "name": "漫画改编",
+          "count": 2,
+          "total_cont": 3610
+        },
+        {
+          "name": "动画",
+          "count": 2,
+          "total_cont": 31163
+        },
+        {
+          "name": "扶她",
+          "count": 2,
+          "total_cont": 3615
+        },
+        {
+          "name": "日本动画",
+          "count": 2,
+          "total_cont": 33413
+        },
+        {
+          "name": "folklore",
+          "count": 1,
+          "total_cont": 16
+        },
+        {
+          "name": "2？",
+          "count": 1,
+          "total_cont": 313
+        },
+        {
+          "name": "冬春半年番",
+          "count": 1,
+          "total_cont": 17
+        },
+        {
+          "name": "题材",
+          "count": 1,
+          "total_cont": 52
+        },
+        {
+          "name": "2分",
+          "count": 1,
+          "total_cont": 223
+        },
+        {
+          "name": "唯美",
+          "count": 1,
+          "total_cont": 130
+        },
+        {
+          "name": "2021年10月",
+          "count": 1,
+          "total_cont": 21595
+        },
+        {
+          "name": "3？",
+          "count": 1,
+          "total_cont": 975
+        },
+        {
+          "name": "绿川光",
+          "count": 1,
+          "total_cont": 1344
+        }
+      ],
+      "infobox": [
+        {
+          "key": "中文名",
+          "value": "蔷薇王的葬列"
+        },
+        {
+          "key": "别名",
+          "value": [
+            {
+              "v": "蔷薇王的葬队"
+            },
+            {
+              "v": "玫瑰之王的葬礼"
+            },
+            {
+              "v": "Requiem of the Rose King"
+            },
+            {
+              "v": "Baraou no Souretsu"
+            }
+          ]
+        },
+        {
+          "key": "话数",
+          "value": "24"
+        },
+        {
+          "key": "放送开始",
+          "value": "2022年1月9日"
+        },
+        {
+          "key": "放送星期",
+          "value": "星期日"
+        },
+        {
+          "key": "官方网站",
+          "value": "https://baraou-anime.com"
+        },
+        {
+          "key": "播放电视台",
+          "value": "TOKYO MX"
+        },
+        {
+          "key": "其他电视台",
+          "value": "BS11 / サンテレビ / KBS京都"
+        },
+        {
+          "key": "播放结束",
+          "value": "2022年6月26日"
+        },
+        {
+          "key": "导演",
+          "value": "鈴木健太郎"
+        },
+        {
+          "key": "Copyright",
+          "value": "©菅野文（秋田書店）／薔薇王の葬列製作委員会"
+        },
+        {
+          "key": "原作",
+          "value": "菅野文 『薔薇王の葬列』 （秋田書店 「月刊プリンセス」 連載）"
+        },
+        {
+          "key": "原案",
+          "value": "ウィリアム・シェイクスピア（威廉·莎士比亚）"
+        },
+        {
+          "key": "人物设定",
+          "value": "橋詰力"
+        },
+        {
+          "key": "企画",
+          "value": "濵田健二、山崎史紀、牧野眞介、鈴木孝明、宮田知行"
+        },
+        {
+          "key": "制片人",
+          "value": "鳥居玲、西川和良、山本侑里、木村学、松倉友二"
+        },
+        {
+          "key": "动画制片人",
+          "value": "藤代敦士"
+        },
+        {
+          "key": "製作",
+          "value": "バンダイナムコアーツ、博報堂DYミュージック&ピクチャーズ、秋田書店、バンダイナムコミュージックライブ、J.C.STAFF"
+        },
+        {
+          "key": "剪辑",
+          "value": "山岸歩奈実(山岸歩奈美)（REAL-T）"
+        },
+        {
+          "key": "道具设计",
+          "value": "朱原デイナ"
+        }
+      ],
+      "rating": {
+        "rank": 8155,
+        "total": 166,
+        "count": {
+          "1": 3,
+          "2": 6,
+          "3": 5,
+          "4": 25,
+          "5": 46,
+          "6": 45,
+          "7": 22,
+          "8": 7,
+          "9": 2,
+          "10": 5
+        },
+        "score": 5.5
+      },
+      "collection": {
+        "on_hold": 59,
+        "dropped": 140,
+        "wish": 194,
+        "collect": 212,
+        "doing": 57
+      },
+      "id": 315060,
+      "eps": 24,
+      "meta_tags": [
+        "TV",
+        "日本",
+        "漫画改"
+      ],
+      "volumes": 0,
+      "series": false,
+      "locked": false,
+      "nsfw": false,
+      "type": 2
+    },
+    {
+      "date": "2022-11-09",
+      "platform": "其他",
+      "images": {
+        "small": "https://lain.bgm.tv/r/200/pic/cover/l/ea/18/418011_DlLh3.jpg",
+        "grid": "https://lain.bgm.tv/r/100/pic/cover/l/ea/18/418011_DlLh3.jpg",
+        "large": "https://lain.bgm.tv/pic/cover/l/ea/18/418011_DlLh3.jpg",
+        "medium": "https://lain.bgm.tv/r/800/pic/cover/l/ea/18/418011_DlLh3.jpg",
+        "common": "https://lain.bgm.tv/r/400/pic/cover/l/ea/18/418011_DlLh3.jpg"
+      },
+      "image": "https://lain.bgm.tv/pic/cover/l/ea/18/418011_DlLh3.jpg",
+      "summary": "In a small town, a funeral is held after the death of a gardener. Three brothers find themselves lost in their imaginations on the day of the burial.\r\n小镇上，一位园丁的死亡告别式正在举行。三兄弟发现他们迷失在了葬礼上各自的想象中。\r\n\r\n*******************\r\n导演 : Wang YU，Ziyu WANG，Junhao XIANG，Linfeng ZHOU，Rodrigo REVAS，Mamadou BARRY\r\n音乐 : Jérémy BEN AMMAR\r\n制片 : GOBELINS, l'école de l'image - 2022",
+      "name": "FUNERAL AT NINE",
+      "name_cn": "九点钟的葬礼",
+      "tags": [
+        {
+          "name": "短片",
+          "count": 3,
+          "total_cont": 82637
+        },
+        {
+          "name": "動畫片",
+          "count": 1,
+          "total_cont": 223
+        },
+        {
+          "name": "gkbulj",
+          "count": 1,
+          "total_cont": 2
+        },
+        {
+          "name": "动画片",
+          "count": 1,
+          "total_cont": 1124
+        },
+        {
+          "name": "空",
+          "count": 1,
+          "total_cont": 1450
+        },
+        {
+          "name": "法国",
+          "count": 1,
+          "total_cont": 2705
+        },
+        {
+          "name": "中国",
+          "count": 1,
+          "total_cont": 18157
+        }
+      ],
+      "infobox": [
+        {
+          "key": "中文名",
+          "value": "九点钟的葬礼"
+        },
+        {
+          "key": "上映年度",
+          "value": "2022年11月9日"
+        },
+        {
+          "key": "片长",
+          "value": "05:58"
+        },
+        {
+          "key": "导演",
+          "value": "Wang YU，Ziyu WANG，Junhao XIANG，Linfeng ZHOU，Rodrigo REVAS，Mamadou BARRY"
+        },
+        {
+          "key": "音乐",
+          "value": "Jérémy BEN AMMAR"
+        },
+        {
+          "key": "制片",
+          "value": "GOBELINS, l'école de l'image - 2022"
+        },
+        {
+          "key": "观看地址",
+          "value": "https://www.bilibili.com/video/BV1UG4y1Z7jr"
+        }
+      ],
+      "rating": {
+        "rank": 0,
+        "total": 3,
+        "count": {
+          "1": 0,
+          "2": 0,
+          "3": 0,
+          "4": 0,
+          "5": 0,
+          "6": 0,
+          "7": 0,
+          "8": 3,
+          "9": 0,
+          "10": 0
+        },
+        "score": 8
+      },
+      "collection": {
+        "on_hold": 3,
+        "dropped": 2,
+        "wish": 4,
+        "collect": 4,
+        "doing": 0
+      },
+      "id": 418011,
+      "eps": 0,
+      "meta_tags": [
+        "短片",
+        "法国"
+      ],
+      "volumes": 0,
+      "series": false,
+      "locked": false,
+      "nsfw": false,
+      "type": 2
+    },
+    {
+      "date": "2008-04-24",
+      "platform": "其他",
+      "images": {
+        "small": "https://lain.bgm.tv/r/200/pic/cover/l/60/35/160678_je8wb.jpg",
+        "grid": "https://lain.bgm.tv/r/100/pic/cover/l/60/35/160678_je8wb.jpg",
+        "large": "https://lain.bgm.tv/pic/cover/l/60/35/160678_je8wb.jpg",
+        "medium": "https://lain.bgm.tv/r/800/pic/cover/l/60/35/160678_je8wb.jpg",
+        "common": "https://lain.bgm.tv/r/400/pic/cover/l/60/35/160678_je8wb.jpg"
+      },
+      "image": "https://lain.bgm.tv/pic/cover/l/60/35/160678_je8wb.jpg",
+      "summary": "居住在英国某个乡村的山克父子是当地的葬仪师，他们负责恭送死者的最后一程。某个阴沉昏暗的早晨，父子俩驱车前往邻近的村落，去接送一位刚刚逝去的老太太。也许这该死的天气预示了山克父子糟糕的一天，当他们抬起棺材时，儿子不慎碰倒了旁边的花瓶，这个小动作却导致葬仪车彻底报废。万般无奈之下，父子俩只得抬着棺材跋山涉水向墓地前进，而这一路他们将经历难以想象的艰难险阻…… \r\n　　本片荣获2008年渥太华国际动画电影节观众奖、2008年棕榈泉过激短片电影节最佳动画片奖、2008年罗德岛国际电影节最佳动画片奖，并获2009年度奥斯卡最佳动画短片提名。 ",
+      "name": "This Way Up",
+      "name_cn": "厄运葬礼",
+      "tags": [
+        {
+          "name": "短片",
+          "count": 8,
+          "total_cont": 86148
+        },
+        {
+          "name": "2008",
+          "count": 3,
+          "total_cont": 31942
+        },
+        {
+          "name": "欧美",
+          "count": 2,
+          "total_cont": 75574
+        },
+        {
+          "name": "英国",
+          "count": 2,
+          "total_cont": 529
+        },
+        {
+          "name": "2000s",
+          "count": 1,
+          "total_cont": 2446
+        }
+      ],
+      "infobox": [
+        {
+          "key": "中文名",
+          "value": "厄运葬礼"
+        },
+        {
+          "key": "别名",
+          "value": [
+            {
+              "v": "两个抬棺材的人"
+            }
+          ]
+        },
+        {
+          "key": "上映年度",
+          "value": "2008-04-24"
+        },
+        {
+          "key": "片长",
+          "value": "9分钟"
+        },
+        {
+          "key": "官方网站",
+          "value": "www.thiswayupmovie.com/"
+        },
+        {
+          "key": "导演",
+          "value": "Adam Foulkes / Alan Smith"
+        },
+        {
+          "key": "类型",
+          "value": "动画 / 短片"
+        },
+        {
+          "key": "制片国家/地区",
+          "value": "英国"
+        }
+      ],
+      "rating": {
+        "rank": 0,
+        "total": 12,
+        "count": {
+          "1": 0,
+          "2": 1,
+          "3": 0,
+          "4": 1,
+          "5": 0,
+          "6": 2,
+          "7": 6,
+          "8": 2,
+          "9": 0,
+          "10": 0
+        },
+        "score": 6.3
+      },
+      "collection": {
+        "on_hold": 2,
+        "dropped": 3,
+        "wish": 8,
+        "collect": 20,
+        "doing": 0
+      },
+      "id": 160678,
+      "eps": 0,
+      "meta_tags": [],
+      "volumes": 0,
+      "series": false,
+      "locked": false,
+      "nsfw": false,
+      "type": 2
+    },
+    {
+      "date": "2017-01-01",
+      "platform": "其他",
+      "images": {
+        "small": "https://lain.bgm.tv/r/200/pic/cover/l/db/bd/534661_76Z2G.jpg",
+        "grid": "https://lain.bgm.tv/r/100/pic/cover/l/db/bd/534661_76Z2G.jpg",
+        "large": "https://lain.bgm.tv/pic/cover/l/db/bd/534661_76Z2G.jpg",
+        "medium": "https://lain.bgm.tv/r/800/pic/cover/l/db/bd/534661_76Z2G.jpg",
+        "common": "https://lain.bgm.tv/r/400/pic/cover/l/db/bd/534661_76Z2G.jpg"
+      },
+      "image": "https://lain.bgm.tv/pic/cover/l/db/bd/534661_76Z2G.jpg",
+      "summary": "英格兰一处平凡小镇，凌晨时分，万籁俱寂。某个普通民宅内，男人躺在床上呼呼大睡。通过上帝视角的透视，观众看到了男人身体内部的状态。心脏和肺昼夜午休，坚守自己的岗位。大脑合上双眼，沉浸在梦乡之中。肠胃劳累了一天，此时也进入休息状态。就在此时，闹钟响起，男人瞬间惊醒。与此同时，他的大脑也强制开机，并将苏醒的信号迅速传达到身体内的各个器官。紧接着男人起床，开始一天的生活。但是他的生活似乎并不健康，抽烟、饮酒、暴饮暴食，如此糟践自己的身体而全然不在乎。终于，有一天他的心脏支撑不住休克了。男人被紧急送往医院，经过紧张的抢救总算捡回一条命。\r\n　　只不过，刚刚睁开眼睛，他就好了伤疤忘了疼……",
+      "name": "Organ Story",
+      "name_cn": "请不要再虐待你的器官了",
+      "tags": [
+        {
+          "name": "短片",
+          "count": 2,
+          "total_cont": 84817
+        },
+        {
+          "name": "健康",
+          "count": 1,
+          "total_cont": 38
+        },
+        {
+          "name": "原创",
+          "count": 1,
+          "total_cont": 516142
+        },
+        {
+          "name": "英国",
+          "count": 1,
+          "total_cont": 526
+        }
+      ],
+      "infobox": [
+        {
+          "key": "中文名",
+          "value": "请不要再虐待你的器官了"
+        },
+        {
+          "key": "别名",
+          "value": [
+            {
+              "v": "器官葬礼"
+            }
+          ]
+        },
+        {
+          "key": "上映年度",
+          "value": "2017"
+        },
+        {
+          "key": "片长",
+          "value": "4分钟"
+        },
+        {
+          "key": "制片国家",
+          "value": "英国"
+        },
+        {
+          "key": "导演",
+          "value": "Splapp-Me-Do"
+        },
+        {
+          "key": "话数",
+          "value": "1"
+        }
+      ],
+      "rating": {
+        "rank": 0,
+        "total": 2,
+        "count": {
+          "1": 0,
+          "2": 0,
+          "3": 0,
+          "4": 0,
+          "5": 1,
+          "6": 1,
+          "7": 0,
+          "8": 0,
+          "9": 0,
+          "10": 0
+        },
+        "score": 5.5
+      },
+      "collection": {
+        "on_hold": 0,
+        "dropped": 0,
+        "wish": 0,
+        "collect": 3,
+        "doing": 0
+      },
+      "id": 534661,
+      "eps": 1,
+      "meta_tags": [
+        "短片",
+        "原创"
+      ],
+      "volumes": 0,
+      "series": false,
+      "locked": false,
+      "nsfw": false,
+      "type": 2
+    },
+    {
+      "date": "2016-12-27",
+      "platform": "其他",
+      "images": {
+        "small": "https://lain.bgm.tv/r/200/pic/cover/l/16/02/211055_ulouz.jpg",
+        "grid": "https://lain.bgm.tv/r/100/pic/cover/l/16/02/211055_ulouz.jpg",
+        "large": "https://lain.bgm.tv/pic/cover/l/16/02/211055_ulouz.jpg",
+        "medium": "https://lain.bgm.tv/r/800/pic/cover/l/16/02/211055_ulouz.jpg",
+        "common": "https://lain.bgm.tv/r/400/pic/cover/l/16/02/211055_ulouz.jpg"
+      },
+      "image": "https://lain.bgm.tv/pic/cover/l/16/02/211055_ulouz.jpg",
+      "summary": "しっかり者の姉・ハル、どこか抜けている妹・アキ。中学生の双子の姉妹。\r\n\r\nとある夏の日。ハルは不慮の事故で亡くなってしまう。\r\n悲しみに暮れるアキ。ひょんなことからハルの遺品であるテルテル坊主の晴る坊が動き出す。逃げてゆく晴る坊にハルを感じたアキはそれを追いかける。\r\n中学生の持つ純粋さと初々しさ、最後まで諦めない泥臭さと熱さ。そして、悲しみの雨の後には、喜びの虹が架かる！",
+      "name": "ハルの虹の葬式",
+      "name_cn": "",
+      "tags": [
+        {
+          "name": "短片",
+          "count": 7,
+          "total_cont": 88407
+        },
+        {
+          "name": "百合",
+          "count": 3,
+          "total_cont": 338618
+        },
+        {
+          "name": "2016",
+          "count": 2,
+          "total_cont": 64324
+        },
+        {
+          "name": "原创",
+          "count": 2,
+          "total_cont": 537082
+        },
+        {
+          "name": "IndieAnime",
+          "count": 1,
+          "total_cont": 106
+        },
+        {
+          "name": "剧场版",
+          "count": 1,
+          "total_cont": 638625
+        },
+        {
+          "name": "其它",
+          "count": 1,
+          "total_cont": 1008
+        }
+      ],
+      "infobox": [
+        {
+          "key": "上映年度",
+          "value": "2016-12-27"
+        },
+        {
+          "key": "片长",
+          "value": "7min 45s"
+        },
+        {
+          "key": "制作",
+          "value": "スタジオ星"
+        },
+        {
+          "key": "原作",
+          "value": "星智崇"
+        },
+        {
+          "key": "话数",
+          "value": "1"
+        },
+        {
+          "key": "导演",
+          "value": "星智崇"
+        },
+        {
+          "key": "企划",
+          "value": "星智崇"
+        }
+      ],
+      "rating": {
+        "rank": 0,
+        "total": 9,
+        "count": {
+          "1": 0,
+          "2": 1,
+          "3": 1,
+          "4": 0,
+          "5": 5,
+          "6": 2,
+          "7": 0,
+          "8": 0,
+          "9": 0,
+          "10": 0
+        },
+        "score": 4.7
+      },
+      "collection": {
+        "on_hold": 0,
+        "dropped": 6,
+        "wish": 12,
+        "collect": 18,
+        "doing": 1
+      },
+      "id": 211055,
+      "eps": 1,
+      "meta_tags": [],
+      "volumes": 0,
+      "series": false,
+      "locked": false,
+      "nsfw": false,
+      "type": 2
+    }
+  ],
+  "total": 9,
+  "limit": 10,
+  "offset": 0
+}
