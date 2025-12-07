@@ -64,6 +64,7 @@ export async function useBgmSearch(
                 filter,
                 offset,
                 limit: 20,
+                searchMode: isCharacter ? 'character' : 'subject', // Tell proxy which API to use
             }),
         })
 

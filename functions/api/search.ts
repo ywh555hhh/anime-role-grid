@@ -1,15 +1,22 @@
-export const onRequestPost = async (context) => {
+export const onRequestPost = async (context: any) => {
     const { request } = context;
 
     try {
         // Read the body from the client
         const body = await request.json();
+        const { searchMode, ...bangumiPayload } = body; // Extract searchMode, leave the rest for Bangumi
+
+        // Determine correct endpoint
+        // Default to characters if not specified or invalid (safety fallback)
+        const targetUrl = searchMode === 'subject'
+            ? 'https://api.bgm.tv/v0/search/subjects'
+            : 'https://api.bgm.tv/v0/search/characters';
 
         // Get the client's auth header
         const authHeader = request.headers.get('Authorization');
 
         // Forward to Bangumi
-        const response = await fetch('https://api.bgm.tv/v0/search/characters', {
+        const response = await fetch(targetUrl, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -17,7 +24,7 @@ export const onRequestPost = async (context) => {
                 // Use a fixed User-Agent for the proxy to ensure compliance
                 'User-Agent': 'AnimeGrid/1.0 (https://github.com/ywh555hhh/anime-role-grid)',
             },
-            body: JSON.stringify(body),
+            body: JSON.stringify(bangumiPayload),
         });
 
         const data = await response.json();
@@ -29,7 +36,7 @@ export const onRequestPost = async (context) => {
                 'Access-Control-Allow-Origin': '*', // Allow CORS
             },
         });
-    } catch (err) {
+    } catch (err: any) {
         return new Response(JSON.stringify({ error: err.message }), {
             status: 500,
             headers: { 'Content-Type': 'application/json' },
