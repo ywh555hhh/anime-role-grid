@@ -1,0 +1,98 @@
+﻿2025-12-07 | Improve title selection logic in canvas generator
+2025-12-07 | Update template labels and add lessons learned doc
+2025-12-07 | Add searchMode to Bangumi search API proxy (#9)
+2025-12-07 | Add advanced search and template modals
+2025-12-06 | feat: upgrade to V3 analytics (privacy hash + metadata)
+2025-12-06 | Merge branch 'dev' into master
+2025-12-06 | Add custom title and image support to save API
+2025-12-06 | Add D1 database integration and save API
+2025-12-06 | V2：视频分享（Beta） (#7)
+2025-12-06 | Improve title input responsiveness and truncation
+2025-12-06 | Refactor props definition in VideoSuccessModal.vue
+2025-12-06 | Update group link and ACN description in guide
+2025-12-06 | Enhance video export UX and add custom image naming
+2025-12-06 | Improve video export engine selection and timing
+2025-12-06 | Refactor to centralize theme constants and improve scaling
+2025-12-06 | Add video export feature with modal and logic
+2025-12-05 | Add '简直就是 (2x2)' template to TEMPLATES
+2025-12-04 | Improve navigator feature detection for sharing
+2025-12-04 | Add native image sharing support to App.vue
+2025-12-04 | Add cropper to custom upload (#5)
+2025-12-04 | Add clear slot functionality to character grid
+2025-12-04 | Show generated grid image after export
+2025-12-04 | Add Galgame template to TEMPLATES array
+2025-12-04 | Redesign QQ group buttons and update tasks
+2025-12-03 | Add first-time guide modal and related assets
+2025-12-03 | Replace gender symbols with text in template items
+2025-12-03 | Add NSFW Classic template and update README
+2025-12-03 | Add QQ Group modal to footer
+2025-12-03 | Add new templates and update NSFW template layout
+2025-12-02 | Add four new viral-ready templates to templates.ts
+2025-12-01 | Enhance social media meta tags and sharing support
+2025-12-01 | Add guide modal with usage instructions and images
+2025-12-01 | Bypass proxy for blob and data URLs in getImageUrl
+2025-12-01 | Refactor canvas drawing to separate content and borders
+2025-12-01 | Improve image loading robustness in CanvasGenerator
+2025-12-01 | Refactor export to use custom Canvas rendering
+2025-11-30 | Remove manual image Base64 pre-processing in export
+2025-11-30 | Improve image export for mobile and iOS devices
+2025-11-30 | Add timeout to image fetch in export logic
+2025-11-30 | Improve export image reliability and cache handling
+2025-11-30 | Force export grid re-render before image export
+2025-11-30 | Batch image processing in exportGridAsImage
+2025-11-30 | Fix export grid positioning and z-index
+2025-11-30 | Adjust watermark position in export view
+2025-11-30 | Update default grid title in storage
+2025-11-30 | Update grid title input placeholder text
+2025-11-30 | Add @iconify-json/carbon and update icon usage
+2025-11-30 | Add custom bounce-low animation and update usage
+2025-11-30 | Add bounce animation to success image
+2025-11-30 | Remove bounce animation from success modal
+2025-11-30 | Refactor cana image handling and add CanaImage component
+2025-11-30 | Move cana.png to assets and update import in App.vue
+2025-11-30 | Update image source to include cache-busting query
+2025-11-30 | Replace cana.webp with cana.png in App.vue
+2025-11-30 | Handle image load error in save success modal
+2025-11-30 | Add share success modal and update button styles
+2025-11-30 | Refactor template dropdown and update footer style
+2025-11-30 | Refactor grid title editing and update storage key
+2025-11-30 | Add template title display to Grid component
+2025-11-30 | Add SEO meta tags and sitemap/robots files
+2025-11-30 | Update UI with new font and branding styles
+2025-11-30 | Add logo, update branding, and proxy search API
+2025-11-30 | Update app title formatting in README and index.html
+2025-11-30 | Update app name to 我推的格子
+2025-11-30 | Update README, add example image, and enhance export
+2025-11-30 | Fix character update and template label in grid
+2025-11-30 | Revamp templates and enhance footer UI
+2025-11-30 | Refactor custom upload: remove name input, add debounced search
+2025-11-30 | Improve image export robustness and CORS handling
+2025-11-30 | Refactor export logic into reusable module
+2025-11-30 | Refactor export grid to use proxy images for CORS
+2025-11-30 | Improve export robustness and error handling
+2025-11-30 | feat: Initialize anime role grid application with character search, customizable templates, and high-resolution image export.
+2025-11-30 | feat: Initialize anime role grid application with persistent storage, customizable templates, and image export functionality.
+2025-11-30 | feat: Implement image export using dynamically loaded `html-to-image` and establish core application components.
+2025-11-30 | feat: initialize new Vue 3 project with Bangumi API search and grid functionality
+2023-02-16 | 衍生：声豚生涯个人喜好表 @摇曳甜梨
+2023-02-11 | 最佳音乐 +
+2023-02-11 | 新增超多格子的扩展版 #8 #11
+2023-02-10 |     htmlEl.setAttribute('data-no-scroll',true);
+2023-02-10 | 添加 长按保存图片选项窗口
+2023-02-09 | 更换图片到代理服务器
+2023-02-09 | footer 行高不对齐 bug
+2023-02-09 | 文案调整 没找到，就用搜索框里的文字了
+2023-02-09 | 添加自定义文字功能
+2023-02-09 | bugfix 滚动条   document.documentElement.setAttribute('data-no-scroll',false);
+2023-02-09 | cover
+2023-02-09 | simple.jpg
+2023-02-09 | mime fix
+2023-02-09 | const scale = 3;
+2023-02-09 | 调整回两倍大小
+2023-02-09 | 打开后自动focus input
+2023-02-09 | 一个生成 动画生涯个人喜好表 的在线网页工具
+2023-02-09 | API 切换到线上
+2023-02-09 | 文案调整 ReadMe
+2023-02-09 | 本地存储，弹层样式，按钮样式，文案
+2023-02-09 | 调整文案细节
+2023-02-09 | hw
