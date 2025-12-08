@@ -9,6 +9,7 @@ const props = defineProps<{
   customTitle?: string
   defaultTitle?: string
   forExport?: boolean
+  showCharacterName?: boolean
 }>()
 
 const emit = defineEmits(['select-slot', 'update:customTitle', 'update-label'])
@@ -125,14 +126,15 @@ function getImageUrl(url: string) {
         gridTemplateColumns: `repeat(${gridCols}, minmax(0, 1fr))`,
         width: '100%',
         maxWidth: `${gridCols * 120}px`,
-        boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)'
+        boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)',
+        transition: 'all 0.3s ease'
       }"
     >
       <div
         v-for="(item, index) in list"
         :key="index"
         class="relative border-r-2 border-b-2 border-black cursor-pointer group box-border flex flex-col"
-        style="aspect-ratio: 120/187;"
+        :style="{ aspectRatio: showCharacterName ? '120 / 212' : '120/187' }"
         @click="handleSelect(index)"
       >
         <!-- Character Image -->
@@ -150,6 +152,16 @@ function getImageUrl(url: string) {
         </div>
 
         <!-- Label Area (Bottom) -->
+        <!-- Name Area (Optional) -->
+        <div 
+          v-if="showCharacterName"
+          class="h-[20px] md:h-[25px] flex-shrink-0 flex items-center justify-center text-center bg-white border-t-2 border-black overflow-hidden px-1"
+        >
+          <span class="truncate w-full text-[10px] md:text-sm font-bold text-black leading-none">
+            {{ item.character?.name || '' }}
+          </span>
+        </div>
+
         <!-- Label Area (Bottom) -->
         <div 
           class="h-[20px] md:h-[25px] flex-shrink-0 flex items-center justify-center text-center bg-white border-t-2 border-black overflow-hidden px-1 relative"

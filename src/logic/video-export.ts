@@ -8,6 +8,7 @@ interface VideoSettings {
     speed: string
     includeEmpty: boolean
     format: 'mp4' | 'webm'
+    showName?: boolean
 }
 
 // Feature Detection
@@ -72,7 +73,9 @@ export function useVideoExport() {
             const maxCardH = height * 0.8
 
             const baseCardW = 1080 * 0.8
-            const baseCardH = baseCardW / THEME.layout.cellAspectRatio
+            // Adjust aspect ratio based on showName (120/187 vs 120/212)
+            const aspectRatio = settings.showName ? (120 / 212) : THEME.layout.cellAspectRatio
+            const baseCardH = baseCardW / aspectRatio
 
             const scaleW = maxCardW / baseCardW
             const scaleH = maxCardH / baseCardH
@@ -130,8 +133,13 @@ export function useVideoExport() {
                 const cardW = baseCardW * scale
                 const cardH = baseCardH * scale
 
-                const labelH = cardH * THEME.layout.labelHeightRatio
-                const imgH = cardH - labelH
+                // Calculate dimensions based on WIDTH to ensure usage of 25/120 ratio
+                // LabelH / W = 25 / 120 = 0.208333...
+                const labelHeightToWidthRatio = 25 / 120
+                const labelH = cardW * labelHeightToWidthRatio
+                const nameH = settings.showName ? labelH : 0
+
+                const imgH = cardH - labelH - nameH
 
                 // Design tokens scaled
                 const shadowOffsetY = 10 * scale
@@ -203,10 +211,62 @@ export function useVideoExport() {
                     ctx!.strokeStyle = THEME.colors.stroke
                     ctx!.strokeRect(imgAreaX, imgAreaY, cardW, imgH)
 
+
+
                     cursorY += imgH
+
+                    // 3.5 Name Area (Optional)
+                    if (settings.showName) {
+                        const nameCenterY = cursorY + nameH / 2
+
+                        ctx!.fillStyle = THEME.colors.cardBg // Using card bg (white)
+                        // Maybe draw divider?
+                        ctx!.beginPath()
+                        ctx!.moveTo(imgAreaX, cursorY)
+                        ctx!.lineTo(imgAreaX + cardW, cursorY)
+                        ctx!.lineWidth = strokeWidth / 2
+                        ctx!.strokeStyle = THEME.colors.stroke
+                        ctx!.stroke()
+
+                        ctx!.save()
+                        ctx!.beginPath()
+                        ctx!.rect(imgAreaX, cursorY, cardW, nameH)
+                        ctx!.clip()
+
+                        ctx!.fillStyle = THEME.colors.text
+                        let nIdxFontSize = labelFontSize * 0.9 // slightly smaller
+                        ctx!.font = `bold ${nIdxFontSize}px ${THEME.typography.fontFamily}`
+
+                        const charName = item.character?.name || ''
+                        // Scale check
+                        while (ctx!.measureText(charName).width > maxCardW * 0.9 && nIdxFontSize > 10) {
+                            nIdxFontSize -= 2 * scale
+                            ctx!.font = `bold ${nIdxFontSize}px ${THEME.typography.fontFamily}`
+                        }
+
+                        ctx!.textBaseline = 'middle'
+                        ctx!.fillText(charName, x + width / 2, nameCenterY)
+                        ctx!.restore()
+
+                        cursorY += nameH
+
+                        // Divider between Name and Label
+                        ctx!.beginPath()
+                        ctx!.moveTo(imgAreaX, cursorY)
+                        ctx!.lineTo(imgAreaX + cardW, cursorY)
+                        ctx!.lineWidth = strokeWidth / 2
+                        ctx!.strokeStyle = THEME.colors.stroke
+                        ctx!.stroke()
+                    }
 
                     // 4. Label Area
                     const labelCenterY = cursorY + labelH / 2
+
+                    ctx!.save()
+                    ctx!.beginPath() // Clip to Label Area (approx) - though label doesn't have strict rect, let's clip to safe width
+                    // We can clip to the card width at that Y level
+                    ctx!.rect(imgAreaX, cursorY, cardW, labelH)
+                    ctx!.clip()
 
                     ctx!.fillStyle = THEME.colors.text
                     let fontSize = labelFontSize
@@ -214,15 +274,25 @@ export function useVideoExport() {
 
                     // Auto-scale text to fit
                     const maxTextW = cardW * 0.9
-                    const nameText = item.character?.name || '未填写'
 
-                    while (ctx!.measureText(nameText).width > maxTextW && fontSize > 10) {
+                    let labelText = ''
+                    if (settings.showName) {
+                        // NEW Behavior: Bottom is User Label (e.g. Category/Comment), Name is in Middle
+                        labelText = item.label || ' '
+                    } else {
+                        // CLASSIC Behavior: Bottom is Character Name (to preserve old experience)
+                        // Since Top is Category, Bottom should be Name.
+                        labelText = item.character?.name || ' '
+                    }
+
+                    while (ctx!.measureText(labelText).width > maxTextW && fontSize > 10) {
                         fontSize -= 2 * scale // Reduce by 2 scaled pixels
                         ctx!.font = `bold ${fontSize}px ${THEME.typography.fontFamily}`
                     }
 
                     ctx!.textBaseline = 'middle'
-                    ctx!.fillText(nameText, x + width / 2, labelCenterY)
+                    ctx!.fillText(labelText, x + width / 2, labelCenterY)
+                    ctx!.restore()
 
                     // 5. Branding Watermark (Pink + Black)
                     // Visual Breathing Room

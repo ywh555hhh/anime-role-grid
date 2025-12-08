@@ -24,6 +24,7 @@ const showGuideModal = ref(false)
 const showFirstTimeGuide = ref(false)
 const showTrendingGuide = ref(false)
 const shouldShowTrendingAfterGuide = ref(false)
+const showCharacterName = ref(false)
 
 // Check for first time visit (Daily)
 if (typeof window !== 'undefined') {
@@ -197,7 +198,7 @@ async function handleSave() {
     // Give UI a moment to show loading state
     await new Promise(resolve => setTimeout(resolve, 100))
 
-    generatedImage.value = await exportGridAsImage(list.value, currentTemplateId.value, name.value, 'anime-grid')
+    generatedImage.value = await exportGridAsImage(list.value, currentTemplateId.value, name.value, 'anime-grid', showCharacterName.value)
     showShareModal.value = true
   } catch (error: any) {
     console.error('Export failed:', error)
@@ -223,7 +224,7 @@ const {
 } = useVideoExport()
 
 function handleVideoExport(settings: any) {
-  generateVideo(list.value, currentTemplate.value.items, settings)
+  generateVideo(list.value, currentTemplate.value.items, { ...settings, showName: showCharacterName.value })
 }
 
 function handleUpdateLabel(payload: { index: number, label: string }) {
@@ -279,7 +280,20 @@ function handleResetTags() {
                 v-model:customTitle="name"
                 @select-slot="handleSelectSlot"
                 @update-label="handleUpdateLabel"
+                :show-character-name="showCharacterName"
             />
+         </div>
+         
+         <!-- View Options -->
+         <div class="flex items-center gap-4 mt-2">
+            <button 
+              class="flex items-center gap-2 px-4 py-2 rounded-full border-2 transition-all font-bold text-sm"
+              :class="showCharacterName ? 'bg-[#e4007f] text-white border-[#e4007f]' : 'bg-white text-gray-600 border-gray-200 hover:border-[#e4007f]'"
+              @click="showCharacterName = !showCharacterName"
+            >
+              <div :class="showCharacterName ? 'i-carbon-checkbox-checked' : 'i-carbon-checkbox'" class="text-lg" />
+              <span>显示角色名字</span>
+            </button>
          </div>
       </div>
 

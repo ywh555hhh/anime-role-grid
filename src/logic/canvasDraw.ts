@@ -13,6 +13,7 @@ interface DrawOptions {
     list: GridItem[]
     templateId: string
     customTitle: string
+    showName?: boolean
 }
 
 export class CanvasGenerator {
@@ -77,7 +78,11 @@ export class CanvasGenerator {
         const rows = Math.ceil(list.length / cols)
 
         const gridWidth = cols * CELL_WIDTH
-        const gridHeight = rows * CELL_HEIGHT
+        // Adjust cell height if showing name
+        const nameHeight = options.showName ? LABEL_HEIGHT : 0
+        const actualCellHeight = CELL_HEIGHT + nameHeight
+
+        const gridHeight = rows * actualCellHeight
 
         const titleHeight = 160
         const padding = 60
@@ -109,12 +114,12 @@ export class CanvasGenerator {
             const col = i % cols
             const row = Math.floor(i / cols)
             const x = startX + col * CELL_WIDTH
-            const y = startY + row * CELL_HEIGHT
+            const y = startY + row * actualCellHeight
             const item = list[i]
             const img = images[i] || null
 
             if (item) {
-                this.drawCellContent(x, y, item, img)
+                this.drawCellContent(x, y, item, img, options.showName)
             }
         }
 
@@ -123,12 +128,12 @@ export class CanvasGenerator {
             const col = i % cols
             const row = Math.floor(i / cols)
             const x = startX + col * CELL_WIDTH
-            const y = startY + row * CELL_HEIGHT
+            const y = startY + row * actualCellHeight
             const isLastCol = col === cols - 1
             const isLastRow = row === rows - 1
 
             if (list[i]) {
-                this.drawCellBorders(x, y, isLastCol, isLastRow)
+                this.drawCellBorders(x, y, isLastCol, isLastRow, options.showName)
             }
         }
 
@@ -173,8 +178,9 @@ export class CanvasGenerator {
         this.ctx.fillText(`— ${templateName} —`, centerX, height / 2 + 40)
     }
 
-    private drawCellContent(x: number, y: number, item: GridItem, img: HTMLImageElement | null) {
+    private drawCellContent(x: number, y: number, item: GridItem, img: HTMLImageElement | null, showName?: boolean) {
         const imageAreaHeight = CELL_HEIGHT - LABEL_HEIGHT
+        // When showing name, we don't change imageAreaHeight, we just push the label down by LABEL_HEIGHT (reused for name)
 
         if (img) {
             this.ctx.save()
@@ -193,36 +199,95 @@ export class CanvasGenerator {
             this.ctx.fillRect(x, y, CELL_WIDTH, imageAreaHeight)
         }
 
-        const labelY = y + imageAreaHeight
+        // Draw Name Area (Optional)
+        if (showName) {
+            const nameY = y + imageAreaHeight
+            this.ctx.fillStyle = THEME.colors.bg
+            this.ctx.fillRect(x, nameY, CELL_WIDTH, LABEL_HEIGHT)
+
+            // Top border of name area (which is bottom of image)
+            // Will be drawn by borders function or implied?
+            // Actually, we expect the background to be white so it's fine.
+
+            this.ctx.save()
+            this.ctx.beginPath()
+            this.ctx.rect(x, nameY, CELL_WIDTH, LABEL_HEIGHT)
+            this.ctx.clip()
+
+            this.ctx.fillStyle = THEME.colors.text
+            // Name font size slightly smaller? Or same? 
+            // Logic: Label is 32px. Name should be similar.
+            let fontSize = 28
+            this.ctx.font = `bold ${fontSize}px ${THEME.typography.fontFamily}`
+            this.ctx.textAlign = 'center'
+            this.ctx.textBaseline = 'middle'
+
+            const nameText = item.character?.name || ''
+            const maxNameWidth = CELL_WIDTH * 0.9
+
+            while (this.ctx.measureText(nameText).width > maxNameWidth && fontSize > 10) {
+                fontSize -= 1
+                this.ctx.font = `bold ${fontSize}px ${THEME.typography.fontFamily}`
+            }
+
+            this.ctx.fillText(nameText, x + CELL_WIDTH / 2, nameY + LABEL_HEIGHT / 2)
+            this.ctx.restore()
+        }
+
+        const labelY = y + imageAreaHeight + (showName ? LABEL_HEIGHT : 0)
         this.ctx.fillStyle = THEME.colors.bg
         this.ctx.fillRect(x, labelY, CELL_WIDTH, LABEL_HEIGHT)
 
+        this.ctx.save()
+        this.ctx.beginPath()
+        this.ctx.rect(x, labelY, CELL_WIDTH, LABEL_HEIGHT)
+        this.ctx.clip()
+
         this.ctx.fillStyle = THEME.colors.text
-        this.ctx.font = `bold ${32}px ${THEME.typography.fontFamily}`
+        let labelFontSize = 32
+        this.ctx.font = `bold ${labelFontSize}px ${THEME.typography.fontFamily}`
         this.ctx.textAlign = 'center'
         this.ctx.textBaseline = 'middle'
+
+        const maxLabelWidth = CELL_WIDTH * 0.9
+        while (this.ctx.measureText(item.label).width > maxLabelWidth && labelFontSize > 10) {
+            labelFontSize -= 1
+            this.ctx.font = `bold ${labelFontSize}px ${THEME.typography.fontFamily}`
+        }
+
         this.ctx.fillText(item.label, x + CELL_WIDTH / 2, labelY + LABEL_HEIGHT / 2)
+        this.ctx.restore()
     }
 
-    private drawCellBorders(x: number, y: number, isLastCol: boolean, isLastRow: boolean) {
+    private drawCellBorders(x: number, y: number, isLastCol: boolean, isLastRow: boolean, showName?: boolean) {
         const imageAreaHeight = CELL_HEIGHT - LABEL_HEIGHT
-        const labelY = y + imageAreaHeight
+        const nameY = y + imageAreaHeight
+        const labelY = nameY + (showName ? LABEL_HEIGHT : 0)
 
         this.ctx.beginPath()
         this.ctx.lineWidth = BORDER_WIDTH
         this.ctx.strokeStyle = THEME.colors.border
 
-        this.ctx.moveTo(x, labelY)
-        this.ctx.lineTo(x + CELL_WIDTH, labelY)
+        // Line between Image and Name (or Label if no Name)
+        this.ctx.moveTo(x, nameY)
+        this.ctx.lineTo(x + CELL_WIDTH, nameY)
+
+        // Line between Name and Label (if Name exists)
+        if (showName) {
+            this.ctx.moveTo(x, labelY)
+            this.ctx.lineTo(x + CELL_WIDTH, labelY)
+        }
+
+        const totalHeight = CELL_HEIGHT + (showName ? LABEL_HEIGHT : 0)
 
         if (!isLastCol) {
             this.ctx.moveTo(x + CELL_WIDTH, y)
-            this.ctx.lineTo(x + CELL_WIDTH, y + CELL_HEIGHT)
+            this.ctx.lineTo(x + CELL_WIDTH, y + totalHeight)
         }
 
         if (!isLastRow) {
-            this.ctx.moveTo(x, y + CELL_HEIGHT)
-            this.ctx.lineTo(x + CELL_WIDTH, y + CELL_HEIGHT)
+            this.ctx.moveTo(x, y + totalHeight)
+            this.ctx.lineTo(x + CELL_WIDTH, y + totalHeight)
         }
 
         this.ctx.stroke()
