@@ -148,11 +148,24 @@ export class CanvasGenerator {
         const centerX = width / 2
 
         this.ctx.fillStyle = THEME.colors.text
-        this.ctx.font = `bold ${60}px ${THEME.typography.fontFamily}`
         this.ctx.textAlign = 'center'
         this.ctx.textBaseline = 'middle'
+
         // Prioritize Custom > Default > Generic Fallback
         const titleText = customTitle || defaultTitle || '我的二次元成分表'
+
+        // Dynamic Font Sizing (Shrink to fit)
+        // Max width is canvas width minus padding (30px on each side)
+        const maxWidth = width - 60
+        let fontSize = 60
+        this.ctx.font = `bold ${fontSize}px ${THEME.typography.fontFamily}`
+
+        // Measure and shrink if needed
+        while (this.ctx.measureText(titleText).width > maxWidth && fontSize > 20) {
+            fontSize -= 2
+            this.ctx.font = `bold ${fontSize}px ${THEME.typography.fontFamily}`
+        }
+
         this.ctx.fillText(titleText, centerX, height / 2 - 20)
 
         this.ctx.fillStyle = THEME.colors.accent

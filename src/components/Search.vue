@@ -18,7 +18,7 @@ const offset = ref(0)
 const hasMore = ref(true)
 
 const activeTab = ref<'search' | 'custom'>('search')
-const searchType = ref<'character' | 'anime' | 'manga' | 'novel' | 'game'>('character')
+const searchType = ref<'character' | 'anime' | 'manga' | 'novel' | 'game' | 'music' | 'real' | 'person'>('character')
 const searchYear = ref('')
 
 // Custom upload form states
@@ -308,7 +308,7 @@ onMounted(() => {
         <div class="flex flex-col gap-2 mb-4 px-1">
           <div class="flex flex-wrap items-center justify-center gap-2">
              <button
-               v-for="type in ['character', 'anime', 'manga', 'novel', 'game']"
+               v-for="type in ['character', 'person', 'anime', 'manga', 'novel', 'game', 'music', 'real']"
                :key="type"
                class="px-3 py-1.5 text-xs font-bold rounded-full transition-all border border-transparent"
                :class="searchType === type ? 'bg-[#e4007f] text-white shadow-md transform scale-105' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'"
@@ -316,10 +316,13 @@ onMounted(() => {
              >
                {{ 
                  type === 'character' ? '角色' :
+                 type === 'person' ? '声优/人物' :
                  type === 'anime' ? '动画' :
                  type === 'manga' ? '漫画' :
                  type === 'novel' ? '小说' :
-                 type === 'game' ? '游戏' : type
+                 type === 'game' ? '游戏' :
+                 type === 'music' ? '音乐' :
+                 type === 'real' ? '三次元' : type
                }}
              </button>
           </div>

@@ -8,9 +8,15 @@ export const onRequestPost = async (context: any) => {
 
         // Determine correct endpoint
         // Default to characters if not specified or invalid (safety fallback)
-        const targetUrl = searchMode === 'subject'
-            ? 'https://api.bgm.tv/v0/search/subjects'
-            : 'https://api.bgm.tv/v0/search/characters';
+        // Determine correct endpoint
+        // Default to characters if not specified or invalid (safety fallback)
+        let targetUrl = 'https://api.bgm.tv/v0/search/characters';
+
+        if (searchMode === 'subject') {
+            targetUrl = 'https://api.bgm.tv/v0/search/subjects';
+        } else if (searchMode === 'person') {
+            targetUrl = 'https://api.bgm.tv/v0/search/persons';
+        }
 
         // Get the client's auth header
         const authHeader = request.headers.get('Authorization');

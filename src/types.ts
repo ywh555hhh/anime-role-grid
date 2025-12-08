@@ -34,7 +34,20 @@ export interface BgmSubjectSearchResultItem {
     };
 }
 
-export type BgmSearchResultItem = BgmCharacterSearchResultItem | BgmSubjectSearchResultItem;
+export interface BgmPersonSearchResultItem {
+    id: number;
+    name: string;
+    type: number; // 1 = Individual, 2 = Corp, etc.
+    images: {
+        small: string;
+        grid: string;
+        large: string;
+        medium: string;
+    };
+    career?: string[];
+}
+
+export type BgmSearchResultItem = BgmCharacterSearchResultItem | BgmSubjectSearchResultItem | BgmPersonSearchResultItem;
 
 // 角色详情数据类型
 export interface GridItemCharacter {

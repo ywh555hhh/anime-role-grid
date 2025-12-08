@@ -15,7 +15,7 @@ export class SearchError extends Error {
 export async function useBgmSearch(
     keyword: string,
     offset = 0,
-    searchType: 'character' | 'anime' | 'manga' | 'novel' | 'game' = 'character',
+    searchType: 'character' | 'anime' | 'manga' | 'novel' | 'game' | 'music' | 'real' | 'person' = 'character',
     year?: string
 ) {
     if (!keyword)
@@ -27,16 +27,25 @@ export async function useBgmSearch(
     }
 
     try {
+        const isPerson = searchType === 'person'
         const isCharacter = searchType === 'character'
 
         // Determine API Path
-        const apiPath = isCharacter
-            ? 'https://api.bgm.tv/v0/search/characters'
-            : 'https://api.bgm.tv/v0/search/subjects' // All ACG items use subjects API
+        // We handle this via `searchMode` in the payload now.
+        // Helper to determine mode
+        let searchMode = 'subject'
+        if (isCharacter) searchMode = 'character'
+        if (isPerson) searchMode = 'person'
+
+        const apiPath = isPerson
+            ? 'https://api.bgm.tv/v0/search/persons'
+            : isCharacter
+                ? 'https://api.bgm.tv/v0/search/characters'
+                : 'https://api.bgm.tv/v0/search/subjects' // All other items use subjects API
 
         // To be safe for Local Dev:
         const finalUrl = import.meta.env.PROD
-            ? '/api/search' // WARNING: This might hardcode to characters if backend isn't changed.
+            ? '/api/search'
             : apiPath
 
         // Determine Filter
@@ -45,10 +54,13 @@ export async function useBgmSearch(
 
         switch (searchType) {
             case 'character': filterType = [1]; break; // Character API uses type 1 for chars
+            case 'person': filterType = [1]; break; // Person typically type 1
             case 'anime': filterType = [2]; break;
             case 'manga': filterType = [1]; break; // Book
             case 'novel': filterType = [1]; break; // Book
             case 'game': filterType = [4]; break;
+            case 'music': filterType = [3]; break;
+            case 'real': filterType = [6]; break;
         }
 
         const filter = { type: filterType }
@@ -64,7 +76,7 @@ export async function useBgmSearch(
                 filter,
                 offset,
                 limit: 20,
-                searchMode: isCharacter ? 'character' : 'subject', // Tell proxy which API to use
+                searchMode, // Tell proxy which API to use
             }),
         })
 
