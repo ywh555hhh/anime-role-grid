@@ -23,7 +23,7 @@ const groups = [
   },
   {
     title: '【我推的旮旯】',
-    tag: 'Galgame · 视觉小说',
+    tag: 'Gal · 视觉小说',
     desc: '剧情向游戏交流。推生肉、找补丁、聊线路、AVG爱好者请进。',
     icon: 'i-carbon-game-wireless',
     url: 'https://qun.qq.com/universal-share/share?ac=1&authKey=KgGU8v2up7Umiwm97tlf6w9sQtNEHYrre4N%2BMKTxBsGS8b0mjwfgCm32QT3wafRj&busi_data=eyJncm91cENvZGUiOiIxNzYxODYwMTkiLCJ0b2tlbiI6InFTd2dSWmNyWXgvaHJvaHl3akd2bCtpdFRyOUd1QVdsM2t6MXNuczdpRjkyUHdyYzY4bngwbnVWV1MwYkI3WjYiLCJ1aW4iOiIzNjYzNTU4MDg3In0%3D&data=q2YUZm5dBCs7tzjCofgNzBxV77kTJNI5nHbeQ8b7zp8M3AeiUa2dqAyois_Pg4RFdwC-SJF4XpuYpAy9twSURg&svctype=4&tempid=h5_group_info'
