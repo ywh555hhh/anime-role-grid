@@ -2,7 +2,7 @@
 import { ref, shallowRef, onMounted, onBeforeUnmount, watch, nextTick } from 'vue'
 import { useMagicKeys, watchDebounced } from '@vueuse/core'
 import { useBgmSearch } from '~/logic/search'
-import type { BgmCharacterSearchResultItem, BgmSubjectSearchResultItem } from '~/types'
+import type { BgmCharacterSearchResultItem, BgmSubjectSearchResultItem, BgmSearchResultItem } from '~/types'
 import Cropper from 'cropperjs'
 import 'cropperjs/dist/cropper.css'
 

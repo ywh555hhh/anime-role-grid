@@ -194,15 +194,16 @@ async function handleSave() {
           
           // Remove base64 image data to save bandwidth and DB space
           // Only keep HTTP URLs (Bangumi images)
-          if (character && character.image && character.image.startsWith('data:')) {
-             character.image = undefined
+          let finalImage = character?.image;
+          if (finalImage && finalImage.startsWith('data:')) {
+             finalImage = undefined;
           }
 
           return {
             label: item.label,
             character: character ? {
                 name: character.name,
-                image: character.image,
+                image: finalImage,
                 bangumiId: character.bangumiId,
                 category: character.category,
                 subjectType: character.subjectType
