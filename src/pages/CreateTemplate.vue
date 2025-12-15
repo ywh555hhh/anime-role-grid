@@ -1,4 +1,5 @@
-import { ref, reactive, watch, nextTick } from 'vue'
+<script setup lang="ts">
+import { ref, reactive, watch } from 'vue'
 import Header from '~/components/Header.vue'
 import Footer from '~/components/Footer.vue'
 import Grid from '~/components/Grid.vue'
