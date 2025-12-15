@@ -430,31 +430,43 @@ export class CanvasGenerator {
             const hasCreator = !!creator
             const hasFiller = !!filler
 
-            // Line 1: Brand
-            ctx.fillStyle = THEME.colors.text
-            ctx.font = `bold 28px ${THEME.typography.fontFamily}`
-            // Move up if we have secondary info
-            const offsetY = (hasCreator || hasFiller) ? 14 : 0
-            ctx.fillText('我推的格子', textX, logoY + logoSize / 2 - offsetY)
+            // Line 1: Brand (Styled like Watermark)
+            const offsetY = (hasCreator || hasFiller) ? 18 : 0
+            const brandY = logoY + logoSize / 2 - offsetY
+
+            ctx.font = `bold 36px ${THEME.typography.fontFamily}`
+
+            const part1 = '【我推'
+            const part2 = '的'
+            const part3 = '格子】'
+
+            const w1 = ctx.measureText(part1).width
+            const w2 = ctx.measureText(part2).width
+
+            ctx.fillStyle = THEME.colors.watermark || '#9ca3af'
+            ctx.fillText(part1, textX, brandY)
+
+            ctx.fillStyle = THEME.colors.accent // Pink
+            ctx.fillText(part2, textX + w1, brandY)
+
+            ctx.fillStyle = THEME.colors.watermark || '#9ca3af'
+            ctx.fillText(part3, textX + w1 + w2, brandY)
 
             // Line 2: Attribution
             if (hasCreator || hasFiller) {
                 ctx.fillStyle = '#6b7280' // gray-500
-                ctx.font = `bold 16px ${THEME.typography.fontFamily}`
+                ctx.font = `bold 24px ${THEME.typography.fontFamily}`
 
                 let text = ''
                 if (hasCreator && !hasFiller) {
-                    // Scenario 2: Creating Template
-                    text = `出题人: ${creator}`
+                    text = `制表人: ${creator}`
                 } else if (hasCreator && hasFiller) {
-                    // Scenario 3: Filling Template
-                    text = `出题: ${creator}  |  答题: ${filler}`
+                    text = `制表: ${creator}  |  填表: ${filler}`
                 } else if (!hasCreator && hasFiller) {
-                    // Just Filler (Legacy?)
-                    text = `答题: ${filler}`
+                    text = `填表: ${filler}`
                 }
 
-                ctx.fillText(text, textX, logoY + logoSize / 2 + 18)
+                ctx.fillText(text, textX, logoY + logoSize / 2 + 22)
             }
 
         } catch (e) {
