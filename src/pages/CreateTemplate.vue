@@ -105,6 +105,18 @@ function downloadImage() {
   link.href = generatedImage.value
   link.click()
 }
+
+const copied = ref(false)
+function copyLink() {
+  const url = `${window.location.origin}/t/${captureData.id}`
+  if (navigator.clipboard) {
+    navigator.clipboard.writeText(url)
+    copied.value = true
+    setTimeout(() => copied.value = false, 2000)
+  } else {
+    alert('请手动复制链接')
+  }
+}
 </script>
 
 <template>
@@ -184,9 +196,24 @@ function downloadImage() {
        <div class="bg-white rounded-2xl max-w-sm w-full p-6 flex flex-col gap-4 animate-scale-in">
            <h2 class="text-2xl font-bold text-center text-[#e4007f]">挑战书已生成！</h2>
            <div class="bg-gray-100 rounded-lg p-2 flex justify-center">
-               <img :src="generatedImage" class="max-h-[50vh] object-contain shadow-md rounded" />
+               <img :src="generatedImage" class="max-h-[40vh] object-contain shadow-md rounded" />
            </div>
-           <p class="text-xs text-center text-gray-500">长按图片保存，或点击下方按钮</p>
+           
+           <!-- Share Link Area -->
+           <div class="bg-gray-50 rounded-lg p-3 flex flex-col gap-2">
+               <div class="text-xs text-gray-500 font-bold">分享链接 (复制发送给好友)</div>
+               <div class="flex items-center gap-2">
+                   <div class="text-sm bg-white border border-gray-200 rounded px-2 py-1 flex-1 truncate select-all">{{ `${window.location.origin}/t/${captureData.id}` }}</div>
+                   <button 
+                     @click="copyLink" 
+                     class="px-3 py-1 bg-gray-200 hover:bg-gray-300 rounded text-xs font-bold transition-colors"
+                   >
+                     {{ copied ? '已复制' : '复制' }}
+                   </button>
+               </div>
+           </div>
+
+           <p class="text-xs text-center text-gray-400">长按图片保存，或点击下方按钮</p>
            
            <button @click="downloadImage" class="w-full py-3 bg-[#e4007f] text-white font-bold rounded-xl">
                保存图片
