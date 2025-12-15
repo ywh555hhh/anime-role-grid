@@ -169,32 +169,11 @@ function handleVideoExport(settings: any) {
 
     <div v-else class="flex flex-col items-center gap-6 w-full max-w-full px-4">
        <!-- Header Area -->
-       <slot name="header">
-           <!-- Default Header for Custom Mode or fallback -->
-           <div v-if="mode === 'custom'" class="text-center animate-fade-in-up">
-               <div class="inline-flex items-center gap-1 px-3 py-1 bg-purple-100 text-purple-600 rounded-full text-xs font-bold mb-2 border border-purple-200">
-                   <div i-carbon-user-avatar-filled />
-                   网友自制模版
-               </div>
-               <h1 class="text-2xl md:text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-pink-500 to-purple-600">{{ templateData?.title }}</h1>
-               <div v-if="templateData?.config.creator" class="text-sm text-gray-400 mt-1 font-bold">
-                   出题人: {{ templateData.config.creator }}
-               </div>
-               <!-- Filler Name Input (Unique to Custom) -->
-               <div class="mt-4 flex justify-center">
-                   <input 
-                     v-model="fillerName" 
-                     placeholder="填表人昵称 (可选)" 
-                     class="text-center bg-transparent border-b border-gray-300 focus:border-pink-500 outline-none py-1 text-gray-600 font-bold placeholder-gray-300"
-                   />
-               </div>
-           </div>
-       </slot>
-    
+       <slot name="header"></slot>
        <!-- Hint / Controls -->
        <div class="relative w-full flex flex-col items-center gap-2">
-            <!-- Official Mode Hint -->
-            <div v-if="mode === 'official'" class="flex items-center gap-2 text-[#e4007f] bg-pink-50/80 px-4 py-1.5 rounded-full border border-pink-100 shadow-sm animate-hint-cycle">
+            <!-- Tip -->
+            <div class="flex items-center gap-2 text-[#e4007f] bg-pink-50/80 px-4 py-1.5 rounded-full border border-pink-100 shadow-sm animate-hint-cycle">
                  <div class="i-carbon-edit text-sm" />
                  <span class="text-xs font-bold">小贴士：表格上方标题、格子下方标签文字，都是可以自定义修改的哦！</span>
             </div>
@@ -203,7 +182,7 @@ function handleVideoExport(settings: any) {
                 id="grid-capture-target"
                 :list="list" 
                 :cols="Number(templateData?.config.cols) || 3"
-                :title="mode === 'official' ? templateData?.title : ''" 
+                :title="templateData?.title" 
                 :customTitle="props.customTitle"
                 @update:customTitle="emit('update:customTitle', $event)"
                 @select-slot="handleSelectSlot"

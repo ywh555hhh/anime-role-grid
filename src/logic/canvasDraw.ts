@@ -115,7 +115,7 @@ export class CanvasGenerator {
         }
 
         if (isChallenge) {
-            this.drawChallengeHeader(customTitle, templateTitle, canvasWidth, titleHeight)
+            this.drawChallengeHeader(customTitle, templateTitle, canvasWidth, titleHeight, templateConfig?.creator)
         } else {
             this.drawTitle(customTitle, defaultTitle, templateTitle, canvasWidth, titleHeight)
         }
@@ -166,7 +166,7 @@ export class CanvasGenerator {
         this.ctx.stroke()
 
         if (isChallenge && options.qrCodeUrl) {
-            await this.drawChallengeFooter(options.qrCodeUrl, canvasWidth, canvasHeight, padding, templateConfig?.filler, templateConfig?.creator)
+            await this.drawChallengeFooter(options.qrCodeUrl, canvasWidth, canvasHeight, padding, templateConfig?.filler)
         } else {
             await this.drawWatermark(canvasWidth, canvasHeight, padding)
         }
@@ -354,17 +354,9 @@ export class CanvasGenerator {
         this.ctx.restore()
     }
 
-    private drawChallengeHeader(title: string, subtitle: string, width: number, height: number) {
+    private drawChallengeHeader(title: string, subtitle: string, width: number, height: number, creator?: string) {
         const centerX = width / 2
         const y = height / 2
-
-        // Tag
-        this.ctx.save()
-        this.ctx.font = `bold 24px sans-serif`
-        this.ctx.fillStyle = '#000000'
-        this.ctx.textAlign = 'center'
-        this.ctx.textBaseline = 'bottom'
-        this.ctx.fillText('CHALLENGE', centerX, y - 60)
 
         // Main Title (User's Custom Title)
         this.ctx.font = `bold 72px "Noto Serif SC", serif`
@@ -372,28 +364,25 @@ export class CanvasGenerator {
         this.ctx.textBaseline = 'middle'
         this.ctx.shadowColor = 'rgba(0,0,0,0.1)'
         this.ctx.shadowBlur = 10
-        this.ctx.fillText(title, centerX, y - 10)
+        this.ctx.fillText(title, centerX, y - 20)
         this.ctx.shadowBlur = 0
 
         // Subtitle (Template Name)
         if (subtitle && subtitle !== title) {
             this.ctx.font = `bold 32px ${THEME.typography.fontFamily}`
             this.ctx.fillStyle = THEME.colors.accent // pink
-            this.ctx.fillText(`— ${subtitle} —`, centerX, y + 45)
+            this.ctx.fillText(`— ${subtitle} —`, centerX, y + 35)
         }
 
-        // Creator Name (Moved to footer, removed here as per request)
-        // Kept logic clean.
-
-        // Decorative Line
-        this.ctx.fillStyle = THEME.colors.accent // pink
-        this.ctx.beginPath()
-        this.ctx.roundRect(centerX - 60, y + 70, 120, 6, 3)
-        this.ctx.fill()
-        this.ctx.restore()
+        // Creator Name (Prominent position below title)
+        if (creator) {
+            this.ctx.font = `bold 24px sans-serif`
+            this.ctx.fillStyle = '#4b5563' // gray-600
+            this.ctx.fillText(`出题人: ${creator}`, centerX, y + 80)
+        }
     }
 
-    private async drawChallengeFooter(qrUrl: string, width: number, height: number, padding: number, filler?: string, creator?: string) {
+    private async drawChallengeFooter(qrUrl: string, width: number, height: number, padding: number, filler?: string) {
         const ctx = this.ctx
         const boxHeight = 120 // Slightly smaller footer
         const boxY = height - boxHeight - padding / 2
@@ -424,19 +413,13 @@ export class CanvasGenerator {
             // "我推的格子"
             ctx.fillStyle = THEME.colors.text
             ctx.font = `bold 28px ${THEME.typography.fontFamily}`
-            ctx.fillText('我推的格子', textX, logoY + logoSize / 2 - ((filler || creator) ? 14 : 0))
+            ctx.fillText('我推的格子', textX, logoY + logoSize / 2 - (filler ? 14 : 0))
 
-            // Filler & Creator Name
-            if (filler || creator) {
+            // Filler Name Only (Creator is in header now)
+            if (filler) {
                 ctx.fillStyle = '#6b7280' // gray-500
                 ctx.font = `bold 16px ${THEME.typography.fontFamily}`
-
-                let text = ''
-                if (creator) text += `出题: ${creator}`
-                if (creator && filler) text += '  |  '
-                if (filler) text += `答题: ${filler}`
-
-                ctx.fillText(text, textX, logoY + logoSize / 2 + 18)
+                ctx.fillText(`答题: ${filler}`, textX, logoY + logoSize / 2 + 18)
             }
 
         } catch (e) {
