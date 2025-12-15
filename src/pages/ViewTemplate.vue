@@ -34,8 +34,8 @@ onMounted(async () => {
         // 1. Set ID First
         currentTemplateId.value = 'custom' 
         
-        // Initialize local title generic default (or empty to show placeholder)
-        customTitle.value = ''
+        // Initialize local title with User's Main Title (so it's not empty)
+        customTitle.value = templateData.value.title
         
         // 2. Populate list
         list.value = templateData.value.config.items.map(label => ({

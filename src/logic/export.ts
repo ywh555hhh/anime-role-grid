@@ -1,9 +1,19 @@
-
+import QRCode from 'qrcode'
 import { CanvasGenerator } from './canvasDraw'
 import type { GridItem } from '~/types'
 
 export async function exportGridAsImage(list: GridItem[], templateId: string, customTitle: string, fileName: string, showName: boolean = false, templateConfig?: any, qrCodeUrl?: string, variant?: 'standard' | 'challenge', templateName?: string) {
     try {
+        // Generate QR Code if needed (for challenge mode)
+        if (variant === 'challenge' && !qrCodeUrl) {
+            try {
+                // Use current URL
+                qrCodeUrl = await QRCode.toDataURL(window.location.href, { margin: 1 })
+            } catch (e) {
+                console.warn('QR Code generation failed', e)
+            }
+        }
+
         const generator = new CanvasGenerator()
         const dataUrl = await generator.generate({ list, templateId, customTitle, showName, templateConfig, qrCodeUrl, variant, templateName })
 
