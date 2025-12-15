@@ -180,10 +180,10 @@ function handleVideoExport(settings: any) {
             </div>
 
              <!-- Navigation for Custom Mode -->
-             <div v-if="mode === 'custom'" class="w-full flex justify-start pl-2 mb-2">
+             <div v-if="mode === 'custom'" class="w-full flex justify-center mb-2">
                  <button 
                     @click="router.push('/')" 
-                    class="flex items-center gap-1 text-gray-500 hover:text-[#e4007f] transition-colors py-1 px-3 rounded-lg hover:bg-gray-100"
+                    class="flex items-center gap-1 text-gray-500 hover:text-[#e4007f] transition-colors py-1 px-4 rounded-full border border-transparent hover:border-pink-100 hover:bg-pink-50"
                  >
                     <div i-carbon-home class="text-lg" />
                     <span class="font-bold text-sm">返回官方模版</span>
@@ -194,7 +194,7 @@ function handleVideoExport(settings: any) {
                 id="grid-capture-target"
                 :list="list" 
                 :cols="Number(templateData?.config.cols) || 3"
-                :title="templateData?.title" 
+                :title="templateData?.config?.templateName || templateData?.title" 
                 :customTitle="props.customTitle"
                 @update:customTitle="emit('update:customTitle', $event)"
                 @select-slot="handleSelectSlot"
@@ -320,32 +320,27 @@ function handleVideoExport(settings: any) {
               <div v-if="canShare" i-carbon-share />
               <span>{{ canShare ? '调用系统分享' : '好的，我去分享' }}</span>
             </button>
-            <button
-                @click="showShareModal = false"
-                class="w-full py-2.5 bg-gray-100 hover:bg-gray-200 text-gray-600 font-bold rounded-xl transition-all"
-            >
-                关闭
-            </button>
-            
-            <div class="pt-2 border-t border-gray-100 mt-2">
+             <div class="pt-2 border-t border-gray-100 mt-2">
                 <p class="text-xs text-gray-400 mb-2">觉得好玩？你也可以制作一份考考朋友！</p>
-                <button 
-                  @click="router.push('/create')" 
-                  class="w-full py-2 bg-gradient-to-r from-purple-500 to-pink-500 text-white font-bold rounded-xl text-sm shadow-md hover:shadow-lg transition-all flex items-center justify-center gap-1 mb-3"
-                >
-                  <div i-carbon-edit />
-                  <span>我也要制表</span>
-                </button>
-                
-                <a 
-                  href="https://space.bilibili.com/36078469"
-                  target="_blank"
-                  class="w-full py-2 bg-[#fb7299] text-white font-bold rounded-xl text-sm shadow-md hover:shadow-lg hover:bg-[#ff85a1] transition-all flex items-center justify-center gap-2"
-                >
-                   <!-- Bilibili Icon -->
-                   <svg class="w-4 h-4" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" fill="currentColor"><path d="M777.514667 131.669333a53.333333 53.333333 0 0 0-48.426667 26.965334l-50.816 87.168a483.2 483.2 0 0 0-166.4-29.226667c-58.453333 0-114.346667 10.197333-167.082667 29.354667l-50.176-87.296a53.333333 53.333333 0 0 0-93.610666 52.138666L246.229333 289.834667c-112.554667 64.938667-189.696 182.997333-197.888 320.128-0.554667 9.173333-0.853333 18.261333-0.853333 27.264 0 6.058667 0.170667 12.16 0.469333 18.218666 6.058667 134.4 81.365333 249.514667 189.610667 312.362667a476.330667 476.330667 0 0 0 549.973333 0.256c108.416-62.805333 183.936-177.877333 190.122667-312.576 0.298667-6.058667 0.426-12.202667 0.426-18.261333 0-8.96-0.341333-17.962667-0.938667-27.050667-8.192-137.216-85.333333-255.488-197.930666-320.384l45.226666-78.122666a53.333333 53.333333 0 0 0-46.933333-80.042667zM337.024 624.128c-30.848 0-55.850667-27.605333-55.850667-61.696s25.002667-61.696 55.850667-61.696c30.848 0 55.850667 27.605333 55.850666 61.696s-25.002667 61.696-55.850666 61.696z m352.085333 0c-30.848 0-55.850667-27.605333-55.850666-61.696s25.002667-61.696 55.850666-61.696c30.848 0 55.850667 27.605333 55.850667 61.696s-25.002667 61.696-55.850667 61.696z" /></svg>
-                   <span>关注开发者 @Shinomiya辉夜丶</span>
-                </a>
+                <div class="flex flex-col gap-3">
+                   <button 
+                     @click="router.push('/create')" 
+                     class="w-full py-2.5 bg-[#e4007f] text-white font-bold rounded-xl text-sm shadow-md hover:shadow-lg hover:bg-[#c0006b] transition-all flex items-center justify-center gap-2"
+                   >
+                     <div i-carbon-edit />
+                     <span>我也要制表</span>
+                   </button>
+                   
+                   <a 
+                     href="https://space.bilibili.com/36078469"
+                     target="_blank"
+                     class="w-full py-2.5 bg-[#e4007f] text-white font-bold rounded-xl text-sm shadow-md hover:shadow-lg hover:bg-[#c0006b] transition-all flex items-center justify-center gap-2"
+                   >
+                      <!-- Bilibili Icon -->
+                      <svg class="w-4 h-4" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" fill="currentColor"><path d="M777.514667 131.669333a53.333333 53.333333 0 0 0-48.426667 26.965334l-50.816 87.168a483.2 483.2 0 0 0-166.4-29.226667c-58.453333 0-114.346667 10.197333-167.082667 29.354667l-50.176-87.296a53.333333 53.333333 0 0 0-93.610666 52.138666L246.229333 289.834667c-112.554667 64.938667-189.696 182.997333-197.888 320.128-0.554667 9.173333-0.853333 18.261333-0.853333 27.264 0 6.058667 0.170667 12.16 0.469333 18.218666 6.058667 134.4 81.365333 249.514667 189.610667 312.362667a476.330667 476.330667 0 0 0 549.973333 0.256c108.416-62.805333 183.936-177.877333 190.122667-312.576 0.298667-6.058667 0.426-12.202667 0.426-18.261333 0-8.96-0.341333-17.962667-0.938667-27.050667-8.192-137.216-85.333333-255.488-197.930666-320.384l45.226666-78.122666a53.333333 53.333333 0 0 0-46.933333-80.042667zM337.024 624.128c-30.848 0-55.850667-27.605333-55.850667-61.696s25.002667-61.696 55.850667-61.696c30.848 0 55.850667 27.605333 55.850666 61.696s-25.002667 61.696-55.850666 61.696z m352.085333 0c-30.848 0-55.850667-27.605333-55.850666-61.696s25.002667-61.696 55.850666-61.696c30.848 0 55.850667 27.605333 55.850667 61.696s-25.002667 61.696-55.850667 61.696z" /></svg>
+                      <span>关注 @Shinomiya辉夜丶</span>
+                   </a>
+                </div>
             </div>
           </div>
         </div>
