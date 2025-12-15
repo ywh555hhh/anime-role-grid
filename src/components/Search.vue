@@ -18,11 +18,12 @@ const offset = ref(0)
 const hasMore = ref(true)
 const trendingList = shallowRef<any[]>([])
 const trendingLoading = ref(true)
+const activePeriod = ref<'12h' | '24h' | 'week' | 'all'>('24h')
 
 async function fetchTrending() {
   trendingLoading.value = true
   try {
-    const res = await fetch('/api/trending')
+    const res = await fetch(`/api/trending?period=${activePeriod.value}`)
     if (res.ok) {
         const data = await res.json()
         trendingList.value = data.results || []
@@ -33,6 +34,10 @@ async function fetchTrending() {
     trendingLoading.value = false
   }
 }
+
+watch(activePeriod, () => {
+    fetchTrending()
+})
 
 onMounted(() => {
     fetchTrending()
@@ -382,19 +387,33 @@ onMounted(() => {
         </div>
 
         <!-- Trending Section (Show when no keyword) -->
-        <div v-if="!keyword && activeTab === 'search'" class="mb-6">
-            <div class="flex items-center gap-2 mb-3 px-1 text-black">
-                <div class="i-carbon-fire text-[#e4007f] text-lg animate-pulse" />
-                <h3 class="font-bold text-sm">今日热门</h3>
-                <span class="text-xs text-gray-400 font-medium ml-auto">最近24小时</span>
+        <div v-if="!keyword && activeTab === 'search'" class="mb-8">
+            <div class="flex items-center justify-between mb-4 px-1">
+                <div class="flex items-center gap-2">
+                    <div class="i-carbon-fire text-[#e4007f] text-lg animate-pulse" />
+                    <h3 class="font-bold text-sm text-black">全站热门</h3>
+                </div>
+                <!-- Time Period Tabs -->
+                <div class="flex bg-gray-100 rounded-lg p-0.5">
+                    <button 
+                        v-for="p in ['12h', 'week', 'all']" 
+                        :key="p"
+                        class="px-3 py-1 text-xs font-bold rounded-md transition-all"
+                        :class="activePeriod === p ? 'bg-white text-[#e4007f] shadow-sm' : 'text-gray-500 hover:text-gray-700'"
+                        @click="activePeriod = p as any"
+                    >
+                        {{ p === '12h' ? '12小时' : p === 'week' ? '本周' : '总榜' }}
+                    </button>
+                </div>
             </div>
             
-            <div v-if="trendingLoading" class="flex justify-center py-8">
-                 <div i-carbon-circle-dash class="animate-spin text-2xl text-gray-300" />
+            <div v-if="trendingLoading" class="flex justify-center py-12">
+                 <div i-carbon-circle-dash class="animate-spin text-3xl text-gray-300" />
             </div>
 
-            <div v-else-if="trendingList.length > 0" class="flex flex-col gap-4">
-                 <!-- Top 3 - Horizontal Row -->
+            <div v-else-if="trendingList.length > 0" class="flex flex-col gap-6">
+                 
+                 <!-- Tier 1: Top 3 (Big Cards) -->
                  <div class="grid grid-cols-3 gap-3">
                      <div
                         v-for="item in trendingList.slice(0, 3)"
@@ -406,66 +425,98 @@ onMounted(() => {
                             images: { large: item.image, medium: item.image, grid: item.image, small: item.image, common: item.image },
                         } as any)"
                       >
-                         <div class="w-full aspect-[2/3] overflow-hidden rounded-lg bg-gray-100 relative shadow-md border-2" :class="trendingList.indexOf(item) === 0 ? 'border-yellow-400' : (trendingList.indexOf(item) === 1 ? 'border-gray-300' : 'border-orange-300')">
+                         <div class="w-full aspect-[2/3] overflow-hidden rounded-xl bg-gray-100 relative shadow-md border-2" 
+                              :class="trendingList.indexOf(item) === 0 ? 'border-yellow-400 ring-2 ring-yellow-200' : (trendingList.indexOf(item) === 1 ? 'border-gray-300' : 'border-orange-300')">
+                            
                             <!-- Rank Badge -->
                             <div 
-                               class="absolute top-0 left-0 z-10 px-2 py-0.5 text-xs font-bold text-white rounded-br-lg shadow-sm flex items-center gap-1"
-                               :class="trendingList.indexOf(item) === 0 ? 'bg-yellow-500' : (trendingList.indexOf(item) === 1 ? 'bg-gray-400' : 'bg-orange-400')"
+                               class="absolute top-0 left-0 z-10 px-2 py-1 text-xs font-black text-white rounded-br-xl shadow-sm flex items-center gap-1"
+                               :class="trendingList.indexOf(item) === 0 ? 'bg-gradient-to-r from-yellow-400 to-yellow-600' : (trendingList.indexOf(item) === 1 ? 'bg-gradient-to-r from-gray-300 to-gray-500' : 'bg-gradient-to-r from-orange-300 to-orange-500')"
                             >
                                 <div v-if="trendingList.indexOf(item) === 0" class="i-carbon-trophy" />
-                                <span>TOP {{ trendingList.indexOf(item) + 1 }}</span>
+                                <span>NO.{{ trendingList.indexOf(item) + 1 }}</span>
                             </div>
                             
                             <img 
                                 :src="item.image" 
-                                class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                                class="w-full h-full object-cover object-top group-hover:scale-105 transition-transform duration-500"
                                 loading="lazy"
                                 referrerpolicy="no-referrer"
                             >
                             
                             <!-- Name Overlay -->
-                            <div class="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent p-2 pt-6">
-                                <p class="text-white text-xs font-bold truncate text-center">{{ item.name }}</p>
-                                <p class="text-white/80 text-[10px] text-center scale-90">{{ item.count }} 人选TA</p>
+                            <div class="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/90 via-black/50 to-transparent p-2 pt-8">
+                                <p class="text-white text-sm font-bold truncate text-center">{{ item.name }}</p>
+                                <p class="text-white/80 text-[10px] text-center font-medium">{{ item.count }} 人PICK</p>
                             </div>
                          </div>
                       </div>
                  </div>
 
-                 <!-- Remaining Items - Horizontal Scroll -->
-                 <div class="overflow-x-auto pb-4 -mx-1 px-1 scrollbar-hide">
-                    <div class="flex gap-3">
-                        <div
-                            v-for="item in trendingList.slice(3)"
-                            :key="item.id"
-                            class="flex-shrink-0 w-20 flex flex-col gap-1 cursor-pointer group"
-                            @click="handleAdd({
-                                id: item.id,
-                                name: item.name,
-                                images: { large: item.image, medium: item.image, grid: item.image, small: item.image, common: item.image },
-                            } as any)"
-                        >
-                            <div class="w-20 h-28 rounded-md overflow-hidden bg-gray-100 relative shadow-sm border border-gray-100 group-hover:border-[#e4007f] transition-colors">
-                                <span class="absolute top-0 left-0 bg-black/50 text-white text-[10px] px-1.5 rounded-br font-bold z-10">{{ trendingList.indexOf(item) + 1 }}</span>
-                                <img 
-                                    :src="item.image" 
-                                    class="w-full h-full object-cover group-hover:scale-105 transition-transform"
-                                    loading="lazy"
-                                    referrerpolicy="no-referrer"
-                                >
+                 <!-- Tier 2: 4-10 (Medium Row) -->
+                 <div v-if="trendingList.length > 3" class="flex flex-col gap-2">
+                    <h4 class="text-xs font-bold text-gray-500 ml-1">潜力新星 (4-10)</h4>
+                    <div class="overflow-x-auto pb-2 -mx-1 px-1 scrollbar-hide">
+                        <div class="flex gap-3">
+                            <div
+                                v-for="item in trendingList.slice(3, 10)"
+                                :key="item.id"
+                                class="flex-shrink-0 w-20 flex flex-col gap-1 cursor-pointer group"
+                                @click="handleAdd({
+                                    id: item.id,
+                                    name: item.name,
+                                    images: { large: item.image, medium: item.image, grid: item.image, small: item.image, common: item.image },
+                                } as any)"
+                            >
+                                <div class="w-20 h-28 rounded-lg overflow-hidden bg-gray-100 relative shadow-sm border border-gray-100 group-hover:border-[#e4007f] transition-colors">
+                                    <span class="absolute top-0 left-0 bg-black/60 text-white text-[10px] px-1.5 rounded-br-lg font-bold z-10">{{ trendingList.indexOf(item) + 1 }}</span>
+                                    <img 
+                                        :src="item.image" 
+                                        class="w-full h-full object-cover object-top group-hover:scale-105 transition-transform duration-300"
+                                        loading="lazy"
+                                        referrerpolicy="no-referrer"
+                                    >
+                                </div>
+                                <p class="text-[10px] text-gray-700 font-bold truncate text-center w-full">{{ item.name }}</p>
                             </div>
-                            <p class="text-[10px] text-gray-700 font-bold truncate text-center w-full">{{ item.name }}</p>
                         </div>
                     </div>
                  </div>
+
+                 <!-- Tier 3: 11-30 (Small Grid) -->
+                 <div v-if="trendingList.length > 10" class="flex flex-col gap-2">
+                    <h4 class="text-xs font-bold text-gray-500 ml-1">更多热门 (11-30)</h4>
+                    <div class="grid grid-cols-4 md:grid-cols-5 gap-3"> <!-- Dense grid -->
+                        <div
+                            v-for="item in trendingList.slice(10)"
+                            :key="item.id"
+                            class="flex flex-col items-center gap-1 cursor-pointer group bg-gray-50 hover:bg-white p-2 rounded-lg border border-transparent hover:border-gray-200 transition-all"
+                             @click="handleAdd({
+                                    id: item.id,
+                                    name: item.name,
+                                    images: { large: item.image, medium: item.image, grid: item.image, small: item.image, common: item.image },
+                                } as any)"
+                        >
+                            <div class="relative w-10 h-10 rounded-full overflow-hidden border border-gray-200 group-hover:border-[#e4007f]">
+                                <img :src="item.image" class="w-full h-full object-cover" loading="lazy" referrerpolicy="no-referrer">
+                            </div>
+                             <div class="flex items-center gap-1 w-full justify-center">
+                                <span class="text-[9px] text-gray-400 font-mono">{{ trendingList.indexOf(item) + 1 }}</span>
+                                <p class="text-[10px] text-gray-700 font-medium truncate max-w-[4em]">{{ item.name }}</p>
+                            </div>
+                        </div>
+                    </div>
+                 </div>
+
             </div>
             
-            <div v-else class="text-center py-8 text-gray-400 text-xs">
-                暂无热门数据，快去添加角色吧！
+            <div v-else class="text-center py-12 flex flex-col items-center gap-2">
+                 <div class="i-carbon-chart-line text-4xl text-gray-200" />
+                 <p class="text-gray-400 text-xs">暂无数据，快去创造趋势！</p>
             </div>
             
              <!-- Divider -->
-            <div class="h-px bg-gray-100 my-4" />
+            <div class="h-px bg-gray-100 my-6" />
         </div>
 
         <div v-if="searchResult.length" class="columns-2 md:columns-3 lg:columns-4 gap-4 pb-4 space-y-4">

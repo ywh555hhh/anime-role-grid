@@ -3,19 +3,28 @@ interface Env {
 }
 
 export const onRequestGet: PagesFunction<Env> = async (context) => {
-    const { env } = context;
+    const { env, request } = context;
 
     try {
-        // Calculate timestamp for 24 hours ago (in seconds)
-        // SQLite 'now' is in seconds for strftime('%s')
+        const url = new URL(request.url);
+        const period = url.searchParams.get('period') || '24h';
 
-        // Query:
-        // 1. Join saves and save_items
-        // 2. Filter by saves.created_at > 24h ago
-        // 3. Filter only 'character' category (optional, or show all trending)
-        // 4. Group by bangumi_id (preferred) or character_name
-        // 5. Count frequency
-        // 6. Limit 10
+        let timeCondition = '';
+        let limit = 30;
+
+        // Logic for different periods
+        if (period === '12h') {
+            timeCondition = "AND s.created_at > (strftime('%s', 'now') - 43200)"; // 12 * 3600
+        } else if (period === '24h') {
+            timeCondition = "AND s.created_at > (strftime('%s', 'now') - 86400)";
+        } else if (period === 'week') {
+            timeCondition = "AND s.created_at > (strftime('%s', 'now') - 604800)"; // 7 * 24 * 3600
+        } else if (period === 'all') {
+            timeCondition = ""; // No time filter
+        } else {
+            // Fallback to 24h
+            timeCondition = "AND s.created_at > (strftime('%s', 'now') - 86400)";
+        }
 
         const stmt = env.DB.prepare(`
             SELECT 
@@ -25,12 +34,13 @@ export const onRequestGet: PagesFunction<Env> = async (context) => {
                 COUNT(*) as count
             FROM save_items si
             JOIN saves s ON si.save_id = s.id
-            WHERE s.created_at > (strftime('%s', 'now') - 86400)
+            WHERE 1=1
+            ${timeCondition}
             AND si.item_category = 'character' -- Focus on characters for now
             GROUP BY si.bangumi_id
             ORDER BY count DESC
-            LIMIT 12
-        `);
+            LIMIT ?
+        `).bind(limit);
 
         const { results } = await stmt.all();
 
