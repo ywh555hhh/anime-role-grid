@@ -354,7 +354,7 @@ export class CanvasGenerator {
         this.ctx.restore()
     }
 
-    private drawChallengeHeader(title: string, subtitle: string, width: number, height: number, creator?: string) {
+    private drawChallengeHeader(title: string, subtitle: string, width: number, height: number) {
         const centerX = width / 2
 
         // --- 1. Main Title (Dynamic Sizing) ---
@@ -374,31 +374,23 @@ export class CanvasGenerator {
             this.ctx.font = `bold ${mainFontSize}px "Noto Serif SC", serif`
         }
 
-        // Draw Title (Slightly higher to make room for subtitle & creator)
-        const titleY = height / 2 - 30
+        // Draw Title - Adjusted Y to be tighter
+        const titleY = height / 2 - 25
         this.ctx.fillText(title, centerX, titleY)
         this.ctx.shadowBlur = 0
 
         // --- 2. Subtitle (Template Name) ---
-        if (subtitle && subtitle !== title) {
+        // Always show subtitle
+        if (subtitle) {
             this.ctx.font = `bold 32px ${THEME.typography.fontFamily}`
             this.ctx.fillStyle = THEME.colors.accent // pink
-            this.ctx.fillText(`— ${subtitle} —`, centerX, titleY + mainFontSize / 2 + 30)
-        }
-
-        // --- 3. Creator Name (Below Subtitle) ---
-        if (creator) {
-            this.ctx.font = `bold 24px sans-serif`
-            this.ctx.fillStyle = '#6b7280' // gray-500
-            // Position relative to subtitle
-            const statsY = titleY + mainFontSize / 2 + 70
-            this.ctx.fillText(`出题人: ${creator}`, centerX, statsY)
+            this.ctx.fillText(`— ${subtitle} —`, centerX, titleY + mainFontSize / 2 + 35)
         }
     }
 
     private async drawChallengeFooter(qrUrl: string, width: number, height: number, padding: number, filler?: string, creator?: string) {
         const ctx = this.ctx
-        const boxHeight = 120
+        const boxHeight = 160 // Taller footer to accommodate bigger QR
         const boxY = height - boxHeight - padding / 2
         const boxX = padding
         const boxWidth = width - (padding * 2)
@@ -412,27 +404,26 @@ export class CanvasGenerator {
         ctx.stroke()
 
         // Logo Area
-        const logoY = boxY + (boxHeight - 40) / 2
+        // Vertically center logo in the footer box
+        const logoY = boxY + (boxHeight - 50) / 2
         try {
             const logo = await this.loadImage('/logo.png')
-            const logoSize = 40
+            const logoSize = 50 // Bigger Logo
             ctx.drawImage(logo, boxX, logoY, logoSize, logoSize)
 
             // Text
             ctx.textBaseline = 'middle'
             ctx.textAlign = 'left'
-            const textX = boxX + logoSize + 10
-
-            // Determine what to show based on scenarios
-            // Scenario 3: Filler & Creator -> Bottom
-            // Scenario 2: Creator Only -> Bottom? (Or just Creator)
+            const textX = boxX + logoSize + 15
 
             const hasCreator = !!creator
             const hasFiller = !!filler
 
             // Line 1: Brand (Styled like Watermark)
-            const offsetY = (hasCreator || hasFiller) ? 18 : 0
-            const brandY = logoY + logoSize / 2 - offsetY
+            // Center Brand/Info block vertically with Logo
+            const centerY = logoY + logoSize / 2
+
+            const brandY = (hasCreator || hasFiller) ? centerY - 16 : centerY
 
             ctx.font = `bold 36px ${THEME.typography.fontFamily}`
 
@@ -466,7 +457,7 @@ export class CanvasGenerator {
                     text = `填表: ${filler}`
                 }
 
-                ctx.fillText(text, textX, logoY + logoSize / 2 + 22)
+                ctx.fillText(text, textX, brandY + 36)
             }
 
         } catch (e) {
@@ -476,23 +467,26 @@ export class CanvasGenerator {
         // QR Area (Right aligned)
         try {
             const qr = await this.loadImage(qrUrl)
-            const qrSize = 90
+            const qrSize = 130 // Bigger QR as requested
+            // Center QR vertically in footer box
             const qrY = boxY + (boxHeight - qrSize) / 2
-            const qrX = boxX + boxWidth - qrSize
+            const qrX = boxX + boxWidth - qrSize - 10 // Padding right
 
             ctx.drawImage(qr, qrX, qrY, qrSize, qrSize)
 
             // Text left of QR
             ctx.textAlign = 'right'
             ctx.textBaseline = 'middle'
+            // Center text relative to QR
+            const qrCenterY = qrY + qrSize / 2
 
             ctx.fillStyle = '#374151'
-            ctx.font = `bold 18px ${THEME.typography.fontFamily}`
-            ctx.fillText('扫码接受挑战', qrX - 15, qrY + qrSize / 2 - 10)
+            ctx.font = `bold 20px ${THEME.typography.fontFamily}`
+            ctx.fillText('扫码接受挑战', qrX - 20, qrCenterY - 14)
 
             ctx.fillStyle = '#9ca3af'
-            ctx.font = `14px ${THEME.typography.fontFamily}`
-            ctx.fillText('长按识别二维码', qrX - 15, qrY + qrSize / 2 + 10)
+            ctx.font = `16px ${THEME.typography.fontFamily}`
+            ctx.fillText('长按识别二维码', qrX - 20, qrCenterY + 14)
 
         } catch (e) { console.warn('QR load failed') }
     }
