@@ -183,7 +183,7 @@ function handleVideoExport(settings: any) {
            </div>
        </div>
 
-      <div class="relative w-full"> 
+      <div class="relative w-full flex flex-col items-center gap-2"> 
           <Grid 
             id="grid-capture-target"
             :list="list" 
@@ -194,25 +194,38 @@ function handleVideoExport(settings: any) {
             @select-slot="handleSelectSlot"
             :show-character-name="showCharacterName"
         />
+
+         <!-- View Options -->
+         <div class="flex items-center gap-4 mt-2">
+            <button 
+              class="flex items-center gap-2 px-4 py-2 rounded-full border-2 transition-all font-bold text-sm"
+              :class="showCharacterName ? 'bg-[#e4007f] text-white border-[#e4007f]' : 'bg-white text-gray-600 border-gray-200 hover:border-[#e4007f]'"
+              @click="showCharacterName = !showCharacterName"
+            >
+              <div :class="showCharacterName ? 'i-carbon-checkbox-checked' : 'i-carbon-checkbox'" class="text-lg" />
+              <span>显示角色名字</span>
+            </button>
+         </div>
       </div>
 
        <!-- Action Buttons -->
-       <div class="flex flex-col sm:flex-row gap-4 w-full max-w-md">
+       <div class="flex flex-col items-center gap-4 w-full max-w-md mt-4">
            <button 
               @click="handleSave"
-              class="flex-1 py-3 bg-[#e4007f] text-white rounded-xl font-bold shadow-lg shadow-pink-500/30 flex items-center justify-center gap-2 transition-transform hover:-translate-y-1"
+              class="px-10 py-3 bg-[#e4007f] text-white rounded-full text-lg font-bold hover:bg-[#c0006b] transition-all flex items-center justify-center gap-3 shadow-lg hover:shadow-xl hover:shadow-pink-500/30 transform hover:-translate-y-1 w-full"
+              :disabled="saving"
             >
-              <div v-if="saving" class="i-carbon-circle-dash animate-spin" />
-              <div v-else class="i-carbon-image" />
-              保存图片
+              <div v-if="saving" class="i-carbon-circle-dash animate-spin text-xl" />
+              <div v-else class="i-carbon-image text-xl" />
+              <span>{{ saving ? '生成中...' : '保存高清图片' }}</span>
             </button>
             
             <button 
               @click="router.push('/create')"
-              class="flex-1 py-3 bg-white border-2 border-[#e4007f] text-[#e4007f] rounded-xl font-bold flex items-center justify-center gap-2 hover:bg-pink-50 transition-colors"
+              class="w-full py-3 bg-white border-2 border-[#e4007f] text-[#e4007f] rounded-full text-lg font-bold flex items-center justify-center gap-2 hover:bg-pink-50 transition-colors shadow-md hover:shadow-lg"
             >
-              <div class="i-carbon-add-alt" />
-              我也要出题
+              <div class="i-carbon-add-alt text-xl" />
+              <span>我也要出题</span>
             </button>
        </div>
     </div>
@@ -232,13 +245,61 @@ function handleVideoExport(settings: any) {
     <VideoExportModal v-model="isVideoModalOpen" :loading="isExporting" :progress="progress" :status-text="statusText" @start-export="handleVideoExport" />
     <VideoSuccessModal :show="isSuccessModalOpen" :format="lastExportFormat" @close="isSuccessModalOpen = false" />
 
-    <!-- Share Modal -->
-    <div v-if="showShareModal" class="fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-4" @click="showShareModal = false">
-        <div class="bg-white p-6 rounded-2xl max-w-sm w-full" @click.stop>
-            <img :src="generatedImage" class="w-full rounded shadow-md mb-4" />
-            <button @click="handleShare" class="w-full py-3 bg-[#e4007f] text-white rounded-xl font-bold">分享图片</button>
+    <!-- Share Modal (Aligned with Home.vue) -->
+    <Transition
+      enter-active-class="transition duration-300 ease-out"
+      enter-from-class="opacity-0 scale-95"
+      enter-to-class="opacity-100 scale-100"
+      leave-active-class="transition duration-200 ease-in"
+      leave-from-class="opacity-100 scale-100"
+      leave-to-class="opacity-0 scale-95"
+    >
+      <div 
+        v-if="showShareModal" 
+        class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm px-4" 
+        @click="showShareModal = false"
+      >
+        <div 
+          class="bg-white p-8 rounded-2xl shadow-2xl text-center max-w-sm w-full transform transition-all border-2 border-[#e4007f]" 
+          @click.stop
+        >
+          <div class="w-full mb-4 flex items-center justify-center">
+            <img 
+              v-if="generatedImage"
+              :src="generatedImage" 
+              class="w-full h-auto max-h-[50vh] object-contain rounded-lg shadow-sm border border-gray-100" 
+              alt="Generated Grid"
+            />
+            <div v-else class="w-32 h-32 mx-auto animate-bounce-low">
+               <!-- Placeholder or Loading State if needed, currently reusing logic -->
+               <div class="text-6xl">🎉</div>
+            </div>
+          </div>
+          <h3 class="text-2xl font-bold mb-2 text-gray-900" style="font-family: 'Noto Serif SC', serif;">图片生成成功！</h3>
+          <p class="text-gray-600 mb-8 font-medium">
+            已尝试保存到相册。<br/>
+            <span class="text-sm text-gray-500">如果未自动保存，请长按上方图片手动保存哦~</span>
+          </p>
+          
+          <div class="flex flex-col gap-3">
+            <button 
+              @click="handleShare" 
+              class="w-full px-6 py-3 bg-[#e4007f] text-white rounded-xl font-bold hover:bg-[#c0006b] transition-colors shadow-lg hover:shadow-pink-500/30 flex items-center justify-center gap-2"
+            >
+              <div v-if="canShare" i-carbon-share />
+              <span>{{ canShare ? '调用系统分享' : '好的，我去分享' }}</span>
+            </button>
+            
+            <button
+                @click="showShareModal = false"
+                class="w-full py-2.5 bg-gray-100 hover:bg-gray-200 text-gray-600 font-bold rounded-xl transition-all"
+            >
+                关闭
+            </button>
+          </div>
         </div>
-    </div>
+      </div>
+    </Transition>
   </div>
 </template>
 
