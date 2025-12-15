@@ -190,15 +190,26 @@ function handleVideoExport(settings: any) {
                 :show-character-name="showCharacterName"
             />
             
-             <div class="flex items-center gap-4 mt-2">
-                <button 
-                  class="flex items-center gap-2 px-4 py-2 rounded-full border-2 transition-all font-bold text-sm"
-                  :class="showCharacterName ? 'bg-[#e4007f] text-white border-[#e4007f]' : 'bg-white text-gray-600 border-gray-200 hover:border-[#e4007f]'"
-                  @click="showCharacterName = !showCharacterName"
-                >
-                  <div :class="showCharacterName ? 'i-carbon-checkbox-checked' : 'i-carbon-checkbox'" class="text-lg" />
-                  <span>显示角色名字</span>
-                </button>
+             <div class="flex flex-wrap items-center justify-center gap-4 mt-4 w-full px-4">
+                <!-- Toggle: Character Names -->
+                 <button 
+                   class="flex items-center gap-2 px-4 py-2 rounded-full border-2 transition-all font-bold text-sm"
+                   :class="showCharacterName ? 'bg-[#e4007f] text-white border-[#e4007f]' : 'bg-white text-gray-600 border-gray-200 hover:border-[#e4007f]'"
+                   @click="showCharacterName = !showCharacterName"
+                 >
+                   <div :class="showCharacterName ? 'i-carbon-checkbox-checked' : 'i-carbon-checkbox'" class="text-lg" />
+                   <span>显示角色名字</span>
+                 </button>
+
+                 <!-- Input: Filler Name (Only for Custom Mode) -->
+                 <div v-if="mode === 'custom'" class="flex items-center gap-2 px-4 py-2 bg-white rounded-full border-2 border-gray-200 focus-within:border-[#e4007f] transition-all">
+                     <div class="i-carbon-user text-gray-400" />
+                     <input 
+                       v-model="fillerName" 
+                       placeholder="您的昵称 (可选)" 
+                       class="bg-transparent outline-none text-sm font-bold text-gray-700 w-32 placeholder-gray-400"
+                     />
+                 </div>
              </div>
        </div>
 
