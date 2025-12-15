@@ -48,7 +48,10 @@ onMounted(async () => {
         currentTemplateId.value = 'custom' 
     }
   } catch (e: any) {
+    console.error(e)
     error.value = e.message
+    // Using alert to show detailed error on mobile for debugging
+    alert(`加载出错: ${e.name}: ${e.message}\n${e.stack || ''}`)
   } finally {
     loading.value = false
   }

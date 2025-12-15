@@ -107,12 +107,10 @@ export class CanvasGenerator {
         this.ctx.fillRect(0, 0, canvasWidth, canvasHeight)
 
         // Decor for challenge
+        // Decor for challenge
         if (isChallenge) {
-            // Subtle grad decoration
-            const grad = this.ctx.createLinearGradient(0, 0, canvasWidth, canvasHeight)
-            grad.addColorStop(0, '#fff5f9') // pink-ish
-            grad.addColorStop(1, '#f9f5ff') // purple-ish
-            this.ctx.fillStyle = grad
+            // Clean white background for consistency
+            this.ctx.fillStyle = '#ffffff'
             this.ctx.fillRect(0, 0, canvasWidth, canvasHeight)
         }
 
@@ -395,61 +393,66 @@ export class CanvasGenerator {
 
     private async drawChallengeFooter(qrUrl: string, width: number, height: number, padding: number) {
         const ctx = this.ctx
-        const boxHeight = 140
+        const boxHeight = 120 // Slightly smaller footer
         const boxY = height - boxHeight - padding / 2
         const boxX = padding
         const boxWidth = width - (padding * 2)
 
-        // White box background
-        ctx.save()
-        ctx.shadowColor = 'rgba(0,0,0,0.05)'
-        ctx.shadowBlur = 15
-        ctx.shadowOffsetY = 5
-        ctx.fillStyle = '#ffffff'
+        // Simple Border at top of footer
         ctx.beginPath()
-        ctx.roundRect(boxX, boxY, boxWidth, boxHeight, 20)
-        ctx.fill()
-        ctx.restore()
+        ctx.moveTo(boxX, boxY)
+        ctx.lineTo(boxX + boxWidth, boxY)
+        ctx.lineWidth = 2
+        ctx.strokeStyle = '#f3f4f6' // gray-100
+        ctx.stroke()
 
-        // Logo
+        // Logo Area
+        const logoY = boxY + (boxHeight - 40) / 2
         try {
+            // Align with watermark logic
             const logo = await this.loadImage('/logo.png')
-            const logoSize = 80
-            const logoY = boxY + (boxHeight - logoSize) / 2
-            ctx.drawImage(logo, boxX + 40, logoY, logoSize, logoSize)
+            const logoSize = 40
+            ctx.drawImage(logo, boxX, logoY, logoSize, logoSize)
 
-            // Text next to Logo
-            ctx.fillStyle = '#111827'
-            ctx.font = 'bold 36px sans-serif'
-            ctx.textAlign = 'left'
+            // Text
             ctx.textBaseline = 'middle'
-            ctx.fillText('我推的格子', boxX + 140, logoY + logoSize / 2 - 15)
+            ctx.textAlign = 'left'
+            const textX = boxX + logoSize + 10
 
+            // "我推的格子"
+            ctx.fillStyle = THEME.colors.text
+            ctx.font = `bold 28px ${THEME.typography.fontFamily}`
+            ctx.fillText('我推的格子', textX, logoY + logoSize / 2)
+
+            // "ANIME ROLE GRID"
             ctx.fillStyle = THEME.colors.accent
-            ctx.font = 'bold 18px sans-serif'
-            ctx.fillText('ANIME ROLE GRID', boxX + 140, logoY + logoSize / 2 + 15)
+            ctx.font = `bold 14px ${THEME.typography.fontFamily}`
+            // ctx.fillText('ANIME ROLE GRID', textX, logoY + logoSize/2 + 20) // Optional, maybe too cluttered
 
-        } catch (e) { console.warn('Logo load failed') }
+        } catch (e) {
+            console.warn('Logo failed', e)
+        }
 
-        // QR Code
+        // QR Area (Right aligned)
         try {
             const qr = await this.loadImage(qrUrl)
-            const qrSize = 100
+            const qrSize = 90
             const qrY = boxY + (boxHeight - qrSize) / 2
-            const qrX = boxX + boxWidth - qrSize - 40
+            const qrX = boxX + boxWidth - qrSize
 
             ctx.drawImage(qr, qrX, qrY, qrSize, qrSize)
 
-            // Scan Text
+            // Text left of QR
             ctx.textAlign = 'right'
             ctx.textBaseline = 'middle'
+
             ctx.fillStyle = '#374151'
-            ctx.font = 'bold 20px sans-serif'
-            ctx.fillText('扫码接受挑战', qrX - 20, qrY + qrSize / 2 - 12)
+            ctx.font = `bold 18px ${THEME.typography.fontFamily}`
+            ctx.fillText('扫码接受挑战', qrX - 15, qrY + qrSize / 2 - 10)
 
             ctx.fillStyle = '#9ca3af'
-            ctx.font = '16px sans-serif'
-            ctx.fillText('长按识别二维码', qrX - 20, qrY + qrSize / 2 + 12)
+            ctx.font = `14px ${THEME.typography.fontFamily}`
+            ctx.fillText('长按识别二维码', qrX - 15, qrY + qrSize / 2 + 10)
 
         } catch (e) { console.warn('QR load failed') }
     }
