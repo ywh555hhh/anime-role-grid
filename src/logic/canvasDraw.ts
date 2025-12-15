@@ -412,52 +412,53 @@ export class CanvasGenerator {
             ctx.drawImage(logo, boxX, logoY, logoSize, logoSize)
 
             // Text
-            ctx.textBaseline = 'middle'
             ctx.textAlign = 'left'
-            const textX = boxX + logoSize + 15
+            ctx.textBaseline = 'middle'
+            const textX = boxX + logoSize + 20
 
-            const hasCreator = !!creator
-            const hasFiller = !!filler
-
-            // Line 1: Brand (Styled like Watermark)
-            // Center Brand/Info block vertically with Logo
+            // Combine Brand and Info into one line, vertically aligned with Logo
             const centerY = logoY + logoSize / 2
 
-            const brandY = (hasCreator || hasFiller) ? centerY - 16 : centerY
+            ctx.font = `bold 30px ${THEME.typography.fontFamily}`
 
-            ctx.font = `bold 36px ${THEME.typography.fontFamily}`
-
+            // Part 1: Brand
             const part1 = '【我推'
             const part2 = '的'
             const part3 = '格子】'
 
             const w1 = ctx.measureText(part1).width
             const w2 = ctx.measureText(part2).width
+            const w3 = ctx.measureText(part3).width
 
             ctx.fillStyle = THEME.colors.watermark || '#9ca3af'
-            ctx.fillText(part1, textX, brandY)
+            ctx.fillText(part1, textX, centerY)
 
             ctx.fillStyle = THEME.colors.accent // Pink
-            ctx.fillText(part2, textX + w1, brandY)
+            ctx.fillText(part2, textX + w1, centerY)
 
             ctx.fillStyle = THEME.colors.watermark || '#9ca3af'
-            ctx.fillText(part3, textX + w1 + w2, brandY)
+            ctx.fillText(part3, textX + w1 + w2, centerY)
 
-            // Line 2: Attribution
+            // Part 2: Attribution (Same Line, Same Size)
+            const hasCreator = !!creator
+            const hasFiller = !!filler
             if (hasCreator || hasFiller) {
+                const brandWidth = w1 + w2 + w3
+                const infoX = textX + brandWidth + 30 // 30px spacing
+
                 ctx.fillStyle = '#6b7280' // gray-500
-                ctx.font = `bold 24px ${THEME.typography.fontFamily}`
+                // Font is already 30px from above
 
                 let text = ''
                 if (hasCreator && !hasFiller) {
-                    text = `制表人: ${creator}`
+                    text = `制表: ${creator}`
                 } else if (hasCreator && hasFiller) {
                     text = `制表: ${creator}  |  填表: ${filler}`
                 } else if (!hasCreator && hasFiller) {
                     text = `填表: ${filler}`
                 }
 
-                ctx.fillText(text, textX, brandY + 36)
+                ctx.fillText(text, infoX, centerY)
             }
 
         } catch (e) {
@@ -480,13 +481,14 @@ export class CanvasGenerator {
             // Center text relative to QR
             const qrCenterY = qrY + qrSize / 2
 
+            // Bigger Fonts for QR Text
             ctx.fillStyle = '#374151'
-            ctx.font = `bold 20px ${THEME.typography.fontFamily}`
-            ctx.fillText('扫码接受挑战', qrX - 20, qrCenterY - 14)
+            ctx.font = `bold 24px ${THEME.typography.fontFamily}`
+            ctx.fillText('扫码接受挑战', qrX - 25, qrCenterY - 16)
 
             ctx.fillStyle = '#9ca3af'
-            ctx.font = `16px ${THEME.typography.fontFamily}`
-            ctx.fillText('长按识别二维码', qrX - 20, qrCenterY + 14)
+            ctx.font = `20px ${THEME.typography.fontFamily}`
+            ctx.fillText('长按识别二维码', qrX - 25, qrCenterY + 16)
 
         } catch (e) { console.warn('QR load failed') }
     }

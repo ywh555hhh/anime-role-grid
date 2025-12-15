@@ -50,8 +50,8 @@ onMounted(async () => {
         // 1. Set ID First
         currentTemplateId.value = 'custom' 
         
-        // Initialize local title with User's Main Title (so it's not empty)
-        customTitle.value = templateData.value.title
+        // Initialize local title with empty string (wait for user input or default)
+        customTitle.value = ''
         
         // 2. Populate list
         list.value = templateData.value.config.items.map(label => ({
