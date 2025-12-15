@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, reactive, watch } from 'vue'
+import { ref, reactive, watch, computed } from 'vue'
 import Header from '~/components/Header.vue'
 import Footer from '~/components/Footer.vue'
 import Grid from '~/components/Grid.vue'
@@ -107,8 +107,13 @@ function downloadImage() {
 }
 
 const copied = ref(false)
+
+const shareLink = computed(() => {
+  return `${window.location.origin}/t/${captureData.id}`
+})
+
 function copyLink() {
-  const url = `${window.location.origin}/t/${captureData.id}`
+  const url = shareLink.value
   if (navigator.clipboard) {
     navigator.clipboard.writeText(url)
     copied.value = true
@@ -203,7 +208,7 @@ function copyLink() {
            <div class="bg-gray-50 rounded-lg p-3 flex flex-col gap-2">
                <div class="text-xs text-gray-500 font-bold">分享链接 (复制发送给好友)</div>
                <div class="flex items-center gap-2">
-                   <div class="text-sm bg-white border border-gray-200 rounded px-2 py-1 flex-1 truncate select-all">{{ `${window.location.origin}/t/${captureData.id}` }}</div>
+                   <div class="text-sm bg-white border border-gray-200 rounded px-2 py-1 flex-1 truncate select-all">{{ shareLink }}</div>
                    <button 
                      @click="copyLink" 
                      class="px-3 py-1 bg-gray-200 hover:bg-gray-300 rounded text-xs font-bold transition-colors"
