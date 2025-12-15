@@ -10,6 +10,7 @@ const props = defineProps<{
   defaultTitle?: string
   forExport?: boolean
   showCharacterName?: boolean
+  editable?: boolean // New prop to force editability
 }>()
 
 const emit = defineEmits(['select-slot', 'update:customTitle', 'update-label'])
@@ -20,7 +21,8 @@ const editingLabel = ref('')
 const labelInput = ref<HTMLInputElement[] | null>(null)
 
 function handleLabelClick(index: number) {
-  if (props.forExport) return
+  // Allow edit if (not exporting) OR (explicitly editable)
+  if (props.forExport && !props.editable) return
   editingIndex.value = index
   if (props.list[index]) {
       editingLabel.value = props.list[index].label
@@ -168,7 +170,7 @@ function getImageUrl(url: string) {
           @click.stop="handleLabelClick(index)"
         >
           <input
-            v-if="editingIndex === index && !forExport"
+            v-if="editingIndex === index && (!forExport || editable)"
             ref="labelInput"
             v-model="editingLabel"
             class="w-full h-full text-center text-[10px] md:text-sm font-bold text-black bg-white outline-none p-0 border-none"

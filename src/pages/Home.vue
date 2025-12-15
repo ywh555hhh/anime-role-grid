@@ -1,0 +1,549 @@
+<script setup lang="ts">
+import { ref, computed, watch, nextTick } from 'vue'
+import Header from '~/components/Header.vue'
+import Grid from '~/components/Grid.vue'
+import Search from '~/components/Search.vue'
+import Footer from '~/components/Footer.vue'
+import GuideModal from '~/components/GuideModal.vue'
+import FirstTimeGuide from '~/components/FirstTimeGuide.vue'
+import TrendingGuideModal from '~/components/TrendingGuideModal.vue'
+import { list, name, currentTemplateId } from '~/logic/storage'
+import { TEMPLATES } from '~/logic/templates'
+import type { GridItemCharacter } from '~/types'
+import { exportGridAsImage } from '~/logic/export'
+import { useVideoExport } from '~/logic/video-export'
+import VideoExportModal from '~/components/VideoExportModal.vue'
+import VideoSuccessModal from '~/components/VideoSuccessModal.vue'
+import TemplateGalleryModal from '~/components/TemplateGalleryModal.vue'
+import JoinGroupModal from '~/components/JoinGroupModal.vue'
+
+const showSearch = ref(false)
+const showShareModal = ref(false)
+const showJoinGroupModal = ref(false)
+const showGuideModal = ref(false)
+const showFirstTimeGuide = ref(false)
+const showTrendingGuide = ref(false)
+const shouldShowTrendingAfterGuide = ref(false)
+const showCharacterName = ref(false)
+
+// Check for first time visit (Daily)
+if (typeof window !== 'undefined') {
+  const today = new Date().toDateString()
+  const lastShownDate = localStorage.getItem('lastGuideDate')
+
+  if (lastShownDate !== today) {
+    showFirstTimeGuide.value = true
+    shouldShowTrendingAfterGuide.value = true
+    localStorage.setItem('lastGuideDate', today)
+  }
+}
+
+// Watch for FirstTimeGuide close to show TrendingGuide (only if auto-triggered)
+watch(showFirstTimeGuide, (newVal, oldVal) => {
+  if (oldVal === true && newVal === false) {
+    if (shouldShowTrendingAfterGuide.value) {
+      // Small delay to make it feel natural
+      setTimeout(() => {
+        showTrendingGuide.value = true
+        shouldShowTrendingAfterGuide.value = false // Reset
+      }, 300)
+    }
+  }
+})
+
+const currentSlotIndex = ref<number | null>(null)
+
+const showTemplateModal = ref(false)
+
+function handleManualGuideOpen() {
+  shouldShowTrendingAfterGuide.value = false
+  showFirstTimeGuide.value = true
+}
+
+function selectTemplate(id: string) {
+  currentTemplateId.value = id
+  showTemplateModal.value = false
+}
+
+async function handleTrendingSelect(payload: { id: string, title: string }) {
+  currentTemplateId.value = payload.id
+  await nextTick()
+  name.value = payload.title
+  showTrendingGuide.value = false
+}
+
+function handleOpenGallery() {
+  showTrendingGuide.value = false
+  showTemplateModal.value = true
+}
+
+const currentTemplate = computed(() => 
+  TEMPLATES.find(t => t.id === currentTemplateId.value) || TEMPLATES[0]!
+)
+
+// Auto-reset custom title when template changes to show new default
+watch(currentTemplate, () => {
+  name.value = ''
+})
+
+function handleSelectSlot(index: number) {
+  currentSlotIndex.value = index
+  showSearch.value = true
+}
+
+function handleAdd(character: GridItemCharacter) {
+  const index = currentSlotIndex.value
+  if (index === null) return
+  
+  // Create a shallow copy of the list to trigger the setter
+  const newList = [...list.value]
+  if (!newList[index]) return
+
+  // Update the character in the selected slot
+  newList[index] = {
+    ...newList[index],
+    character
+  }
+  
+  // Trigger the computed setter in storage.ts
+  list.value = newList
+  
+  // Close search
+  showSearch.value = false
+  currentSlotIndex.value = null
+  currentSlotIndex.value = null
+}
+
+function handleClear() {
+  const index = currentSlotIndex.value
+  if (index === null) return
+  
+  // Create a shallow copy
+  const newList = [...list.value]
+  if (!newList[index]) return
+
+  // Clear the character
+  const item = newList[index]
+  if (item.character) {
+    newList[index] = {
+      ...item,
+      character: undefined
+    }
+  }
+  
+  list.value = newList
+  showSearch.value = false
+  currentSlotIndex.value = null
+}
+
+const saving = ref(false)
+
+const imageLoadError = ref(false)
+const generatedImage = ref('')
+const canShare = ref(false)
+
+// Check share support
+if (typeof navigator !== 'undefined' && 'share' in navigator) {
+  canShare.value = true
+}
+
+async function handleShare() {
+  if (!generatedImage.value) {
+    showShareModal.value = false
+    return
+  }
+
+  // If native share is supported, try it
+  if (canShare.value) {
+    try {
+      const blob = await (await fetch(generatedImage.value)).blob()
+      const file = new File([blob], 'anime-grid.png', { type: 'image/png' })
+      
+      if ('canShare' in navigator && navigator.canShare({ files: [file] })) {
+        await navigator.share({
+          files: [file],
+          title: '我的二次元成分表',
+          text: '快来看看我的二次元成分表吧！'
+        })
+        return
+      }
+    } catch (e) {
+      console.error('Share failed:', e)
+      // Fallback to just closing modal if share fails/cancelled
+    }
+  }
+  
+  showShareModal.value = false
+}
+
+async function handleSave() {
+  if (saving.value) return
+  saving.value = true
+  
+  try {
+    // Collect data (Fire and forget, non-blocking)
+    fetch('/api/save', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        templateId: currentTemplateId.value,
+        customTitle: name.value,
+        items: list.value.map(item => {
+          // Deep clone key properties to avoid mutation
+          const character = item.character ? { ...item.character } : undefined
+          
+          // Remove base64 image data to save bandwidth and DB space
+          // Only keep HTTP URLs (Bangumi images)
+          let finalImage = character?.image;
+          if (finalImage && finalImage.startsWith('data:')) {
+             finalImage = undefined;
+          }
+
+          return {
+            label: item.label,
+            character: character ? {
+                name: character.name,
+                image: finalImage,
+                // Fallback: If bangumiId is missing (old data), try to use 'id' if it's a number
+                bangumiId: character.bangumiId ?? (typeof character.id === 'number' ? character.id : undefined),
+                category: character.category,
+                subjectType: character.subjectType
+            } : undefined
+          }
+        })
+      })
+    }).catch(err => {
+      // Slient fail for analytics
+      console.warn('Analytics failed:', err)
+    })
+
+    // Give UI a moment to show loading state
+    await new Promise(resolve => setTimeout(resolve, 100))
+
+    generatedImage.value = await exportGridAsImage(list.value, currentTemplateId.value, name.value, 'anime-grid', showCharacterName.value)
+    showShareModal.value = true
+  } catch (error: any) {
+    console.error('Export failed:', error)
+    let msg = error.message || error
+    if (Object.prototype.toString.call(error) === '[object Event]' && error.type === 'error') {
+      msg = '资源加载失败 (可能是网络问题或图片跨域)'
+    }
+    alert(`图片生成失败: ${msg}`)
+  } finally {
+    saving.value = false
+  }
+}
+
+// Video Export Logic
+const { 
+  isModalOpen: isVideoModalOpen, 
+  isSuccessModalOpen,
+  isExporting: isVideoExporting, 
+  progress: videoProgress, 
+  statusText: videoStatusText,
+  lastExportFormat,
+  generateVideo 
+} = useVideoExport()
+
+function handleVideoExport(settings: any) {
+  generateVideo(list.value, currentTemplate.value.items, { ...settings, showName: showCharacterName.value })
+}
+
+function handleUpdateLabel(payload: { index: number, label: string }) {
+  const { index, label } = payload
+  
+  // Shallow copy to trigger reactivity
+  const newList = [...list.value]
+  if (!newList[index]) return
+  
+  // Update the label
+  newList[index] = {
+    ...newList[index],
+    label
+  }
+  
+  // Trigger storage setter
+  list.value = newList
+}
+
+function handleResetTags() {
+  if (!confirm('确定要重置当前模板的所有标签文字吗？(图片不会被清除)')) return
+  
+  const templateItems = currentTemplate.value.items
+  const newList = list.value.map((item, index) => ({
+    ...item,
+    label: templateItems[index] || ''
+  }))
+  
+  list.value = newList
+}
+</script>
+
+<template>
+  <div class="min-h-screen bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 font-sans pb-20">
+    <Header />
+    
+    <div class="container mx-auto flex flex-col items-center gap-6 px-4 max-w-full">
+      <!-- Live Interactive Grid (Responsive, Direct URLs) -->
+      <div class="relative w-full flex flex-col items-center gap-2">
+         <!-- Hint Text (Static & Visible) -->
+         <div class="flex items-center gap-2 text-[#e4007f] bg-pink-50/80 px-4 py-1.5 rounded-full border border-pink-100 shadow-sm animate-hint-cycle">
+             <div class="i-carbon-edit text-sm" />
+             <span class="text-xs font-bold">小贴士：表格上方标题、格子下方标签文字，都是可以自定义修改的哦！</span>
+         </div>
+         
+         <div class="relative w-full"> 
+             <Grid 
+                id="grid-capture-target"
+                :list="list" 
+                :cols="currentTemplate.cols"
+                :title="currentTemplate.name"
+                :default-title="currentTemplate.defaultTitle"
+                v-model:customTitle="name"
+                @select-slot="handleSelectSlot"
+                @update-label="handleUpdateLabel"
+                :show-character-name="showCharacterName"
+            />
+         </div>
+         
+         <!-- View Options -->
+         <div class="flex items-center gap-4 mt-2">
+            <button 
+              class="flex items-center gap-2 px-4 py-2 rounded-full border-2 transition-all font-bold text-sm"
+              :class="showCharacterName ? 'bg-[#e4007f] text-white border-[#e4007f]' : 'bg-white text-gray-600 border-gray-200 hover:border-[#e4007f]'"
+              @click="showCharacterName = !showCharacterName"
+            >
+              <div :class="showCharacterName ? 'i-carbon-checkbox-checked' : 'i-carbon-checkbox'" class="text-lg" />
+              <span>显示角色名字</span>
+            </button>
+         </div>
+      </div>
+
+      <div class="flex flex-col items-center gap-4">
+        <button 
+          class="px-10 py-3 bg-[#e4007f] text-white rounded-full text-lg font-bold hover:bg-[#c0006b] transition-all flex items-center gap-3 shadow-lg hover:shadow-xl hover:shadow-pink-500/30 transform hover:-translate-y-1"
+          :disabled="saving"
+          @click="handleSave"
+        >
+          <div v-if="saving" class="i-carbon-circle-dash animate-spin text-xl" />
+          <div v-else class="i-carbon-image text-xl" />
+          <span>{{ saving ? '生成中...' : '保存高清图片' }}</span>
+        </button>
+
+        <!-- Video Export Button -->
+        <button 
+          class="px-10 py-3 bg-white text-[#e4007f] border-2 border-[#e4007f] rounded-full text-lg font-bold hover:bg-pink-50 transition-all flex items-center gap-3 shadow-md hover:shadow-lg transform hover:-translate-y-1"
+          @click="isVideoModalOpen = true"
+        >
+          <div i-carbon-video-filled class="text-xl" />
+          <span>导出视频 (Beta)</span>
+        </button>
+
+        <!-- New UGC Button -->
+        <button 
+          @click="$router.push('/create')"
+          class="w-full max-w-xs py-4 bg-gradient-to-r from-purple-500 to-pink-500 text-white rounded-2xl text-xl font-bold hover:from-purple-600 hover:to-pink-600 transition-all flex items-center justify-center gap-3 shadow-xl hover:shadow-2xl hover:shadow-purple-500/30 transform hover:-translate-y-1 mt-2 relative overflow-hidden group"
+        >
+          <div class="absolute inset-0 bg-white/20 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-700 skew-x-12"></div>
+          <div class="i-carbon-idea text-2xl animate-pulse" />
+          <span>我要出题</span>
+          <span class="text-xs bg-white/20 px-2 py-0.5 rounded text-white/90">New</span>
+        </button>
+
+        <!-- Guide & Help Buttons -->
+        <div class="flex flex-col gap-2 mt-1">
+            <button 
+              @click="showGuideModal = true"
+              class="text-xs font-bold text-gray-600 hover:text-[#e4007f] flex items-center gap-1.5 transition-colors group"
+            >
+              <div class="p-1 rounded bg-gray-100 group-hover:bg-pink-50 transition-colors">
+                  <div class="i-carbon-help text-sm" />
+              </div>
+              <span>食用指南 & 常见问题</span>
+            </button>
+
+            <button 
+              @click="handleManualGuideOpen"
+              class="text-xs font-bold text-gray-600 hover:text-[#e4007f] flex items-center gap-1.5 transition-colors group"
+            >
+              <div class="p-1 rounded bg-gray-100 group-hover:bg-pink-50 transition-colors">
+                  <div class="i-carbon-bullhorn text-sm" />
+              </div>
+              <span>查看更新 & 加入组织</span>
+            </button>
+        </div>
+
+        <!-- Template Switcher & Reset -->
+        <div class="flex flex-col items-center gap-3 w-full">
+            <div class="flex items-center gap-2">
+            <img src="/logo.png" class="w-5 h-5 object-contain" />
+            <label class="text-sm text-black font-bold">当前模板:</label>
+            <button
+                @click="showTemplateModal = true"
+                class="flex items-center justify-center gap-2 bg-white border-2 border-black px-4 py-1.5 rounded-md text-sm font-bold min-w-[160px] transition-colors hover:border-[#e4007f] hover:text-[#e4007f] focus:outline-none"
+            >
+                <span>{{ currentTemplate.name }}</span>
+                <div i-carbon-chevron-right class="text-xs" />
+            </button>
+            </div>
+            
+            <!-- Reset Button: More visible pill style -->
+            <button 
+                @click="handleResetTags"
+                class="flex items-center gap-1.5 px-4 py-1.5 rounded-full bg-gray-100 hover:bg-[#e4007f] hover:text-white transition-colors text-xs font-bold"
+                title="将所有标签重置为默认值"
+            >
+                <div class="i-carbon-reset" />
+                <span>重置当前模板所有标签</span>
+            </button>
+        </div>
+      </div>
+    </div>
+
+    <Footer />
+
+    <!-- Modals -->
+    <FirstTimeGuide :show="showFirstTimeGuide" @close="showFirstTimeGuide = false" />
+    <TrendingGuideModal 
+      :show="showTrendingGuide" 
+      @close="showTrendingGuide = false"
+      @select="handleTrendingSelect"
+      @open-gallery="handleOpenGallery"
+    />
+    <GuideModal :show="showGuideModal" @close="showGuideModal = false" />
+    <TemplateGalleryModal 
+      :show="showTemplateModal" 
+      :current-id="currentTemplateId"
+      @close="showTemplateModal = false"
+      @select="selectTemplate"
+    />
+    <VideoExportModal 
+      v-model="isVideoModalOpen" 
+      :loading="isVideoExporting"
+      :progress="videoProgress"
+      :status-text="videoStatusText"
+      :last-export-format="lastExportFormat"
+      @start-export="handleVideoExport"
+    />
+
+    <VideoSuccessModal
+      :show="isSuccessModalOpen"
+      :format="lastExportFormat"
+      @close="isSuccessModalOpen = false"
+      @open-join-group="() => { isSuccessModalOpen = false; showJoinGroupModal = true }"
+    />
+
+    <Transition
+      enter-active-class="transition duration-200 ease-out"
+      enter-from-class="opacity-0"
+      enter-to-class="opacity-100"
+      leave-active-class="transition duration-200 ease-in"
+      leave-from-class="opacity-100"
+      leave-to-class="opacity-0"
+    >
+      <div 
+        v-if="showSearch" 
+        class="fixed inset-0 z-50 bg-black/50 backdrop-blur-sm" 
+        @click="showSearch = false" 
+      />
+    </Transition>
+
+    <Transition
+      enter-active-class="transition duration-300 ease-out"
+      enter-from-class="translate-y-10 opacity-0"
+      enter-to-class="translate-y-0 opacity-100"
+      leave-active-class="transition duration-200 ease-in"
+      leave-from-class="translate-y-0 opacity-100"
+      leave-to-class="translate-y-10 opacity-0"
+    >
+      <Search
+        v-if="showSearch"
+        class="fixed left-1/2 top-1/2 z-50 -translate-x-1/2 -translate-y-1/2 w-[90%] max-w-5xl h-[80vh] bg-white dark:bg-gray-900 rounded-2xl shadow-2xl overflow-hidden border border-gray-200 dark:border-gray-800"
+        @add="handleAdd"
+        @clear="handleClear"
+        @close="showSearch = false"
+      />
+    </Transition>
+
+    <!-- Success/Share Modal -->
+    <Transition
+      enter-active-class="transition duration-300 ease-out"
+      enter-from-class="opacity-0 scale-95"
+      enter-to-class="opacity-100 scale-100"
+      leave-active-class="transition duration-200 ease-in"
+      leave-from-class="opacity-100 scale-100"
+      leave-to-class="opacity-0 scale-95"
+    >
+      <div 
+        v-if="showShareModal" 
+        class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm px-4" 
+        @click="showShareModal = false"
+      >
+        <div 
+          class="bg-white p-8 rounded-2xl shadow-2xl text-center max-w-sm w-full transform transition-all border-2 border-[#e4007f]" 
+          @click.stop
+        >
+          <div class="w-full mb-4 flex items-center justify-center">
+            <img 
+              v-if="generatedImage"
+              :src="generatedImage" 
+              class="w-full h-auto max-h-[50vh] object-contain rounded-lg shadow-sm border border-gray-100" 
+              alt="Generated Grid"
+            />
+            <div v-else class="w-32 h-32 mx-auto animate-bounce-low">
+              <img 
+                v-if="!imageLoadError"
+                src="/cana.png" 
+                class="w-full h-full object-contain" 
+                alt="Success"
+                style="will-change: transform;"
+                @error="imageLoadError = true"
+              />
+              <div v-else class="text-6xl">🎉</div>
+            </div>
+          </div>
+          <h3 class="text-2xl font-bold mb-2 text-gray-900" style="font-family: 'Noto Serif SC', serif;">图片生成成功！</h3>
+          <p class="text-gray-600 mb-8 font-medium">
+            已尝试保存到相册。<br/>
+            <span class="text-sm text-gray-500">如果未自动保存，请长按上方图片手动保存哦~</span>
+          </p>
+          
+          <div class="flex flex-col gap-3">
+            <button 
+              @click="handleShare" 
+              class="w-full px-6 py-3 bg-[#e4007f] text-white rounded-xl font-bold hover:bg-[#c0006b] transition-colors shadow-lg hover:shadow-pink-500/30 flex items-center justify-center gap-2"
+            >
+              <div v-if="canShare" i-carbon-share />
+              <span>{{ canShare ? '调用系统分享' : '好的，我去分享' }}</span>
+            </button>
+            
+            <p class="text-xs text-gray-400 mt-2 mb-1">分享后别忘了来群里玩哦！</p>
+            <button
+                @click="showJoinGroupModal = true"
+                class="w-full py-2.5 bg-pink-50 hover:bg-pink-100 text-[#e4007f] font-bold rounded-xl transition-all border border-pink-100 flex items-center justify-center gap-2 group"
+            >
+                <div class="i-carbon-group text-lg group-hover:scale-110 transition-transform" />
+                <span>加入组织，寻找同好</span>
+            </button>
+          </div>
+        </div>
+      </div>
+    </Transition>
+
+    <JoinGroupModal :show="showJoinGroupModal" @close="showJoinGroupModal = false" />
+  </div>
+</template>
+
+<style>
+@keyframes hint-cycle {
+  0% { opacity: 0; transform: translateY(5px); }
+  5% { opacity: 1; transform: translateY(0); }
+  40% { opacity: 1; transform: translateY(0); }
+  45% { opacity: 0; transform: translateY(-5px); }
+  100% { opacity: 0; transform: translateY(-5px); }
+}
+
+.animate-hint-cycle {
+  animation: hint-cycle 8s ease-in-out infinite;
+}
+</style>
