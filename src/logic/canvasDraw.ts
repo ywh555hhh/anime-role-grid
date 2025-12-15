@@ -115,7 +115,7 @@ export class CanvasGenerator {
         }
 
         if (isChallenge) {
-            this.drawChallengeHeader(customTitle, templateTitle, canvasWidth, titleHeight, templateConfig?.creator)
+            this.drawChallengeHeader(customTitle, templateTitle, canvasWidth, titleHeight)
         } else {
             this.drawTitle(customTitle, defaultTitle, templateTitle, canvasWidth, titleHeight)
         }
@@ -166,7 +166,7 @@ export class CanvasGenerator {
         this.ctx.stroke()
 
         if (isChallenge && options.qrCodeUrl) {
-            await this.drawChallengeFooter(options.qrCodeUrl, canvasWidth, canvasHeight, padding, templateConfig?.filler)
+            await this.drawChallengeFooter(options.qrCodeUrl, canvasWidth, canvasHeight, padding, templateConfig?.filler, templateConfig?.creator)
         } else {
             await this.drawWatermark(canvasWidth, canvasHeight, padding)
         }
@@ -356,40 +356,54 @@ export class CanvasGenerator {
 
     private drawChallengeHeader(title: string, subtitle: string, width: number, height: number, creator?: string) {
         const centerX = width / 2
-        const y = height / 2
 
-        // Main Title (User's Custom Title)
-        this.ctx.font = `bold 72px "Noto Serif SC", serif`
+        // --- 1. Main Title (Dynamic Sizing) ---
         this.ctx.fillStyle = '#111827' // gray-900
+        this.ctx.textAlign = 'center'
         this.ctx.textBaseline = 'middle'
         this.ctx.shadowColor = 'rgba(0,0,0,0.1)'
         this.ctx.shadowBlur = 10
-        this.ctx.fillText(title, centerX, y - 20)
+
+        // Start big, shrink to fit
+        const maxWidth = width - 60
+        let mainFontSize = 72
+        this.ctx.font = `bold ${mainFontSize}px "Noto Serif SC", serif`
+
+        while (this.ctx.measureText(title).width > maxWidth && mainFontSize > 30) {
+            mainFontSize -= 2
+            this.ctx.font = `bold ${mainFontSize}px "Noto Serif SC", serif`
+        }
+
+        // Draw Title (Slightly higher to make room for subtitle & creator)
+        const titleY = height / 2 - 30
+        this.ctx.fillText(title, centerX, titleY)
         this.ctx.shadowBlur = 0
 
-        // Subtitle (Template Name)
+        // --- 2. Subtitle (Template Name) ---
         if (subtitle && subtitle !== title) {
             this.ctx.font = `bold 32px ${THEME.typography.fontFamily}`
             this.ctx.fillStyle = THEME.colors.accent // pink
-            this.ctx.fillText(`— ${subtitle} —`, centerX, y + 35)
+            this.ctx.fillText(`— ${subtitle} —`, centerX, titleY + mainFontSize / 2 + 30)
         }
 
-        // Creator Name (Prominent position below title)
+        // --- 3. Creator Name (Below Subtitle) ---
         if (creator) {
             this.ctx.font = `bold 24px sans-serif`
-            this.ctx.fillStyle = '#4b5563' // gray-600
-            this.ctx.fillText(`出题人: ${creator}`, centerX, y + 80)
+            this.ctx.fillStyle = '#6b7280' // gray-500
+            // Position relative to subtitle
+            const statsY = titleY + mainFontSize / 2 + 70
+            this.ctx.fillText(`出题人: ${creator}`, centerX, statsY)
         }
     }
 
-    private async drawChallengeFooter(qrUrl: string, width: number, height: number, padding: number, filler?: string) {
+    private async drawChallengeFooter(qrUrl: string, width: number, height: number, padding: number, filler?: string, creator?: string) {
         const ctx = this.ctx
-        const boxHeight = 120 // Slightly smaller footer
+        const boxHeight = 120
         const boxY = height - boxHeight - padding / 2
         const boxX = padding
         const boxWidth = width - (padding * 2)
 
-        // Simple Border at top of footer
+        // Simple Border
         ctx.beginPath()
         ctx.moveTo(boxX, boxY)
         ctx.lineTo(boxX + boxWidth, boxY)
@@ -400,7 +414,6 @@ export class CanvasGenerator {
         // Logo Area
         const logoY = boxY + (boxHeight - 40) / 2
         try {
-            // Align with watermark logic
             const logo = await this.loadImage('/logo.png')
             const logoSize = 40
             ctx.drawImage(logo, boxX, logoY, logoSize, logoSize)
@@ -410,16 +423,38 @@ export class CanvasGenerator {
             ctx.textAlign = 'left'
             const textX = boxX + logoSize + 10
 
-            // "我推的格子"
+            // Determine what to show based on scenarios
+            // Scenario 3: Filler & Creator -> Bottom
+            // Scenario 2: Creator Only -> Bottom? (Or just Creator)
+
+            const hasCreator = !!creator
+            const hasFiller = !!filler
+
+            // Line 1: Brand
             ctx.fillStyle = THEME.colors.text
             ctx.font = `bold 28px ${THEME.typography.fontFamily}`
-            ctx.fillText('我推的格子', textX, logoY + logoSize / 2 - (filler ? 14 : 0))
+            // Move up if we have secondary info
+            const offsetY = (hasCreator || hasFiller) ? 14 : 0
+            ctx.fillText('我推的格子', textX, logoY + logoSize / 2 - offsetY)
 
-            // Filler Name Only (Creator is in header now)
-            if (filler) {
+            // Line 2: Attribution
+            if (hasCreator || hasFiller) {
                 ctx.fillStyle = '#6b7280' // gray-500
                 ctx.font = `bold 16px ${THEME.typography.fontFamily}`
-                ctx.fillText(`答题: ${filler}`, textX, logoY + logoSize / 2 + 18)
+
+                let text = ''
+                if (hasCreator && !hasFiller) {
+                    // Scenario 2: Creating Template
+                    text = `出题人: ${creator}`
+                } else if (hasCreator && hasFiller) {
+                    // Scenario 3: Filling Template
+                    text = `出题: ${creator}  |  答题: ${filler}`
+                } else if (!hasCreator && hasFiller) {
+                    // Just Filler (Legacy?)
+                    text = `答题: ${filler}`
+                }
+
+                ctx.fillText(text, textX, logoY + logoSize / 2 + 18)
             }
 
         } catch (e) {
