@@ -1,6 +1,5 @@
 <script setup lang="ts">
-import { ref, reactive, watch, nextTick, onMounted } from 'vue'
-import { useRouter } from 'vue-router'
+import { ref, reactive, watch, nextTick } from 'vue'
 import Header from '~/components/Header.vue'
 import Footer from '~/components/Footer.vue'
 import Grid from '~/components/Grid.vue'
@@ -10,7 +9,6 @@ import type { GridItem } from '~/types'
 
 console.log('CreateTemplate loaded')
 
-const router = useRouter()
 const title = ref('')
 const cols = ref(4)
 const rowCount = ref(3) // Virtual helper
@@ -38,8 +36,9 @@ initGrid() // Run once
 
 // Handle label updates from Grid.vue
 function handleUpdateLabel(payload: { index: number, label: string }) {
-  if (list.value[payload.index]) {
-    list.value[payload.index].label = payload.label
+  const item = list.value[payload.index]
+  if (item) {
+    item.label = payload.label
   }
 }
 

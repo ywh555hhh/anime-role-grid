@@ -342,7 +342,7 @@ function handleResetTags() {
         <!-- New UGC Button -->
         <button 
           @click="$router.push('/create')"
-          class="w-full max-w-xs py-4 bg-gradient-to-r from-purple-500 to-pink-500 text-white rounded-2xl text-xl font-bold hover:from-purple-600 hover:to-pink-600 transition-all flex items-center justify-center gap-3 shadow-xl hover:shadow-2xl hover:shadow-purple-500/30 transform hover:-translate-y-1 mt-2 relative overflow-hidden group"
+          class="w-full max-w-xs py-4 bg-[#e4007f] text-white rounded-2xl text-xl font-bold hover:bg-[#c0006b] transition-all flex items-center justify-center gap-3 shadow-xl hover:shadow-2xl hover:shadow-pink-500/30 transform hover:-translate-y-1 mt-2 relative overflow-hidden group"
         >
           <div class="absolute inset-0 bg-white/20 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-700 skew-x-12"></div>
           <div class="i-carbon-idea text-2xl animate-pulse" />

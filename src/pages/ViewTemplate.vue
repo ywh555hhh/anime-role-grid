@@ -10,7 +10,7 @@ import { exportGridAsImage } from '~/logic/export'
 import { useVideoExport } from '~/logic/video-export'
 import VideoExportModal from '~/components/VideoExportModal.vue'
 import VideoSuccessModal from '~/components/VideoSuccessModal.vue'
-import JoinGroupModal from '~/components/JoinGroupModal.vue'
+// Removed unused JoinGroupModal
 
 const route = useRoute()
 const router = useRouter()
@@ -57,7 +57,6 @@ onMounted(async () => {
 // Reuse Logic
 const showSearch = ref(false)
 const showShareModal = ref(false)
-const showJoinGroupModal = ref(false)
 const showCharacterName = ref(false)
 const currentSlotIndex = ref<number | null>(null)
 const saving = ref(false)
@@ -73,7 +72,7 @@ function handleAdd(character: any) {
   const index = currentSlotIndex.value
   if (index === null) return
   const newList = [...list.value]
-  if (!newList[index]) newList[index] = { label: templateData.value?.config.items[index] || '' }
+  if (!newList[index]) newList[index] = { label: templateData.value?.config.items[index] || '', character: undefined }
   newList[index] = { ...newList[index], character }
   list.value = newList
   showSearch.value = false

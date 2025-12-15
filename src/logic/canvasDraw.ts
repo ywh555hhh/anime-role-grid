@@ -14,6 +14,7 @@ interface DrawOptions {
     templateId: string
     customTitle: string
     showName?: boolean
+    templateConfig?: { cols: number }
 }
 
 export class CanvasGenerator {
@@ -70,11 +71,14 @@ export class CanvasGenerator {
     }
 
     async generate(options: DrawOptions): Promise<string> {
-        const { list, templateId, customTitle } = options
-        const template = TEMPLATES.find(t => t.id === templateId) || TEMPLATES[0]
-        if (!template) throw new Error('Template not found')
+        const { list, templateId, customTitle, templateConfig } = options
+        const template = TEMPLATES.find(t => t.id === templateId)
 
-        const cols = template.cols
+        // Fallback or Custom logic
+        const cols = template ? template.cols : (templateConfig?.cols || 3)
+        const templateTitle = template?.name || '自定义模版'
+        const defaultTitle = template?.defaultTitle || customTitle
+
         const rows = Math.ceil(list.length / cols)
 
         const gridWidth = cols * CELL_WIDTH
@@ -97,7 +101,7 @@ export class CanvasGenerator {
         this.ctx.fillStyle = THEME.colors.bg
         this.ctx.fillRect(0, 0, canvasWidth, canvasHeight)
 
-        this.drawTitle(customTitle, template.defaultTitle, template.name, canvasWidth, titleHeight)
+        this.drawTitle(customTitle, defaultTitle, templateTitle, canvasWidth, titleHeight)
 
         const images = await Promise.all(
             list.map(item => item.character ? this.loadImage(this.getImageUrl(item.character.image)) : Promise.resolve(null))

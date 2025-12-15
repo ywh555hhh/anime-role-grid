@@ -2,10 +2,10 @@
 import { CanvasGenerator } from './canvasDraw'
 import type { GridItem } from '~/types'
 
-export async function exportGridAsImage(list: GridItem[], templateId: string, customTitle: string, fileName: string, showName: boolean = false) {
+export async function exportGridAsImage(list: GridItem[], templateId: string, customTitle: string, fileName: string, showName: boolean = false, templateConfig?: any) {
     try {
         const generator = new CanvasGenerator()
-        const dataUrl = await generator.generate({ list, templateId, customTitle, showName })
+        const dataUrl = await generator.generate({ list, templateId, customTitle, showName, templateConfig })
 
         // Detect Mobile/iOS
         const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !(window as any).MSStream
