@@ -76,8 +76,8 @@ async function updateStats(env: Env, templateId: string, period: string) {
         const label = row.slot_label as string
         if (!statsBySlot[label]) statsBySlot[label] = []
 
-        // Limit to Top 5 per slot
-        if (statsBySlot[label].length < 5) {
+        // Limit to Top 50 per slot
+        if (statsBySlot[label].length < 50) {
             statsBySlot[label].push({
                 name: row.character_name,
                 id: row.bangumi_id,
