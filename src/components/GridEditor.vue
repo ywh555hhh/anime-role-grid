@@ -8,7 +8,8 @@ import JoinGroupModal from '~/components/JoinGroupModal.vue'
 import GridCanvas from '~/components/GridCanvas.vue'
 import GridActionButtons from '~/components/GridActionButtons.vue'
 import ImageExportModal from '~/components/ImageExportModal.vue'
-import { useGridStore } from '~/stores/gridStore' // NEW: Store
+import { useGridStore } from '~/stores/gridStore'
+import { startStreamerTour } from '~/logic/streamerTour' // NEW: Store
 import { exportGridAsImage } from '~/logic/export'
 import { useVideoExport } from '~/logic/video-export'
 import { toast } from 'vue-sonner' 
@@ -258,21 +259,23 @@ function handleVideoExport(settings: any) {
 
     <div v-else :class="mainContainerClass">
        
-       <div :class="canvasAreaClass">
+       <div :class="canvasAreaClass" id="streamer-mode-container">
            
            <!-- Streamer Mode: Zoom & Scroll Layout -->
            <template v-if="isStreamerMode">
                <!-- Zoom Controls -->
-               <div class="absolute bottom-6 left-6 z-30 flex items-center gap-2 bg-white/80 dark:bg-gray-800/80 backdrop-blur rounded-full px-4 py-2 shadow-lg border border-gray-200 dark:border-gray-700 transition-opacity hover:opacity-100 opacity-60">
+               <div id="zoom-controls" class="absolute bottom-6 left-6 z-30 flex items-center gap-2 bg-white/80 dark:bg-gray-800/80 backdrop-blur rounded-full px-4 py-2 shadow-lg border border-gray-200 dark:border-gray-700 transition-opacity hover:opacity-100 opacity-60">
                     <button @click="canvasScale = Math.max(0.5, canvasScale - 0.1)" class="p-1 hover:text-primary transition-colors"><div i-carbon-subtract /></button>
                     <span class="text-xs font-bold w-12 text-center tabular-nums">{{ Math.round(canvasScale * 100) }}%</span>
                     <button @click="canvasScale = Math.min(2, canvasScale + 0.1)" class="p-1 hover:text-primary transition-colors"><div i-carbon-add /></button>
                     <div class="w-px h-3 bg-gray-300 mx-1"></div>
                     <button @click="canvasScale = 1" class="text-xs text-gray-500 hover:text-primary" title="重置">重置</button>
+                    <div class="w-px h-3 bg-gray-300 mx-1"></div>
+                    <button @click="startStreamerTour" class="p-1 hover:text-primary transition-colors" title="使用教程"><div i-carbon-help class="text-base" /></button>
                </div>
 
                <!-- Scroll Container -->
-               <div class="w-full h-full overflow-auto flex flex-col items-center py-10">
+               <div id="streamer-canvas-area" class="w-full h-full overflow-auto flex flex-col items-center py-10">
                     <!-- Scalable Wrapper -->
                     <div 
                         :style="{ transform: `scale(${canvasScale})`, transformOrigin: 'top center' }"

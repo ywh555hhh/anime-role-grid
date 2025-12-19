@@ -24,10 +24,23 @@ function onTrashAdd(evt: any) {
 // Mobile Shake Mode (Long Press)
 const isDeleteMode = ref(false)
 
+const dragOptions = {
+    animation: 200,
+    group: { name: 'grid', pull: 'clone' as const, put: false },
+    sort: false,
+    forceFallback: true, // "THE" Solution
+    fallbackClass: 'dock-drag-fallback',
+    fallbackOnBody: true, // Essential for "sticky" z-index behavior
+    touchStartThreshold: 5,
+    filter: '.dock-delete-btn', // Prevent drag on delete button
+    preventOnFilter: false // Allow click event to pass through
+}
+
 </script>
 
 <template>
   <div 
+    id="streamer-dock"
     class="z-40 bg-white/90 dark:bg-gray-800/90 backdrop-blur-md shadow-2xl border-gray-200 dark:border-gray-700 transition-all duration-300 flex"
     :class="[
       // Mobile: Bottom Drawer - Taller (h-48) for double row history
@@ -47,25 +60,25 @@ const isDeleteMode = ref(false)
     <div class="flex-1 overflow-auto min-w-0 min-h-0 w-full no-scrollbar">
          <VueDraggable
             v-model="dockItems"
-            :group="{ name: 'grid', pull: 'clone', put: false }"
-            :sort="false"
-            :forceFallback="true"
-            class="grid grid-rows-2 grid-flow-col auto-cols-max md:grid md:grid-flow-row md:grid-cols-2 md:auto-rows-min gap-3 p-1 min-h-full content-start"
+            v-bind="dragOptions"
+            class="grid grid-rows-2 grid-flow-col auto-cols-max md:grid md:grid-flow-row md:grid-cols-2 md:auto-rows-min gap-2 p-2 min-h-0 w-full content-start"
             ghost-class="sortable-ghost"
          >
             <div
                 v-for="(item, index) in dockItems"
                 :key="item.id"
                 :data-id="item.id"
-                class="relative group shrink-0 cursor-grab active:cursor-grabbing transition-transform flex justify-center"
-                :class="isDeleteMode ? 'animate-shake' : 'hover:scale-105'"
+                class="relative group shrink-0 cursor-grab active:cursor-grabbing transition-all flex justify-center select-none touch-none rounded-lg"
+                style="touch-action: none;"
+                :class="isDeleteMode ? 'animate-shake' : 'hover:ring-2 hover:ring-primary hover:shadow-lg'"
                 @contextmenu.prevent="isDeleteMode = !isDeleteMode"
             >
                 <!-- Image -->
                 <div class="w-16 h-16 md:w-24 md:h-24 rounded-lg overflow-hidden border-2 border-white shadow-md relative bg-gray-100">
                     <img 
                         :src="item.image" 
-                        class="w-full h-full object-cover object-top pointer-events-none" 
+                        draggable="false"
+                        class="w-full h-full object-cover object-top pointer-events-none select-none" 
                     />
                     <!-- Name Tag (Overlay) -->
                     <div class="absolute bottom-0 left-0 right-0 bg-black/70 text-white text-[10px] md:text-xs font-bold text-center truncate px-1 py-1 opacity-0 group-hover:opacity-100 transition-opacity duration-200 z-20">
@@ -106,6 +119,7 @@ const isDeleteMode = ref(false)
 
         <!-- Tool Toggle -->
         <button 
+            id="dock-tool-toggle"
             class="w-10 h-10 md:w-full md:h-12 rounded-xl border-2 transition-all flex items-center justify-center hover:scale-105 active:scale-95"
             :class="isToolbarOpen ? 'bg-black text-white border-black' : 'bg-white text-black border-gray-200 hover:border-black'"
             @click="isToolbarOpen = !isToolbarOpen"
@@ -165,7 +179,19 @@ const isDeleteMode = ref(false)
 
 /* Hide delete button when dragging */
 :global(.sortable-drag .dock-delete-btn),
+:global(.dock-drag-fallback .dock-delete-btn),
 :global(.sortable-ghost .dock-delete-btn) {
     display: none !important;
+}
+
+/* Mobile Drag Fallback Visibility */
+:global(.sortable-fallback),
+:global(.dock-drag-fallback) {
+    opacity: 1 !important;
+    z-index: 99999 !important;
+    pointer-events: none;
+    width: auto !important;
+    display: block !important;
+    transition: none !important; /* Critical: Disable transition to prevent "rubber band" lag */
 }
 </style>

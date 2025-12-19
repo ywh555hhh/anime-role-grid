@@ -13,6 +13,7 @@
   "dependencies": {
     "@types/qrcode": "^1.5.6",
     "cropperjs": "^1.6.2",
+    "driver.js": "^1.4.0",
     "mp4-muxer": "^5.2.2",
     "qrcode": "^1.5.4",
     "vue": "^3.5.24",

@@ -72,18 +72,33 @@ function getImageUrl(url: string) {
   return url
 }
 
-// Helper to bridge GridItem (Object) <-> Sortable (Array)
-function useSlotModel(index: number) {
-    return computed({
-        get: () => {
-            const item = props.list[index]
-            return item?.character ? [item.character] : []
-        },
-        set: (val: GridItemCharacter[]) => {
-            const char = val.length > 0 ? val[val.length - 1] : undefined
-            emit('drop-item', { index, item: char, isMove: true })
+// Direct handler for drop events to avoid ephemeral computed refs
+function handleSlotDrop(index: number, val: GridItemCharacter[]) {
+    // Current item in this slot (if any)
+    const current = props.list[index]?.character
+    
+    let char: GridItemCharacter | undefined
+
+    if (val.length === 0) {
+        // Case: Dragged out (Empty)
+        char = undefined
+    } else if (val.length === 1) {
+        // Case: Simple add or swap into empty
+        char = val[0]
+    } else {
+        // Case: Collision [Old, New] or [New, Old]
+        // We want the *new* item, i.e., the one that isn't the current one.
+        if (current) {
+            char = val.find(c => c.id !== current.id)
+            // Fallback: If IDs match (same item dropped?) or other edge case, take last
+            if (!char) char = val[val.length - 1]
+        } else {
+            // Should be rare (length > 1 but no current?), take last
+            char = val[val.length - 1]
         }
-    })
+    }
+
+    emit('drop-item', { index, item: char, isMove: true })
 }
 
 function onDropAdd(evt: any) {
@@ -168,8 +183,8 @@ function onDropAdd(evt: any) {
           <!-- Drop Zone Overlay (Streamer Mode) -->
           <VueDraggable
              v-if="isStreamerMode"
-             :modelValue="useSlotModel(index).value"
-             @update:modelValue="useSlotModel(index).value = $event"
+             :modelValue="item.character ? [item.character] : []"
+             @update:modelValue="handleSlotDrop(index, $event)"
              :group="{ name: 'grid', put: true, pull: true }"
              class="absolute inset-0 z-20 w-full h-full flex items-stretch justify-stretch"
              :class="{ 'pointer-events-auto': isStreamerMode, 'cursor-grab': isStreamerMode && item.character }"
