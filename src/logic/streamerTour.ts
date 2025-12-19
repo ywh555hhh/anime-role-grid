@@ -38,10 +38,19 @@ export function startStreamerTour() {
                 }
             },
             {
+                element: '#streamer-toolbar',
+                popover: {
+                    title: '悬浮工具栏 (Toolbar)',
+                    description: '这里集合了撤销、重做、全屏和保存功能。<br>不使用时可以将其收起，享受最大化视野。',
+                    side: "top",
+                    align: 'center'
+                }
+            },
+            {
                 element: '#dock-tool-toggle',
                 popover: {
                     title: '工具栏设置',
-                    description: '切换显示常用的工具栏，例如保存、导出视频等功能。',
+                    description: '点击这里可以<b>收起/展开</b>悬浮工具栏。',
                     side: "top",
                     align: 'center'
                 }

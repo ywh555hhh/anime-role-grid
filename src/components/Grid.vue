@@ -2,6 +2,7 @@
 import { computed, ref, nextTick } from 'vue'
 import type { GridItem, GridItemCharacter } from '~/types'
 import { VueDraggable } from 'vue-draggable-plus'
+import { useGridStore } from '~/stores/gridStore' // Import Store
 
 const props = defineProps<{
   list: GridItem[]
@@ -16,6 +17,10 @@ const props = defineProps<{
 }>()
 
 const emit = defineEmits(['select-slot', 'update:customTitle', 'update-label', 'drop-item'])
+
+// Store access for global drag state
+const { isDragging } = useGridStore() 
+
 
 const editingIndex = ref<number | null>(null)
 const editingLabel = ref('')
@@ -172,7 +177,11 @@ function onDropAdd(evt: any) {
       <div
         v-for="(item, index) in list"
         :key="index"
-        class="relative border-r-2 border-b-2 border-black cursor-pointer group box-border flex flex-col"
+        class="relative border-r-2 border-b-2 border-black cursor-pointer group box-border flex flex-col transition-colors duration-200"
+        :class="{ 
+            'ring-4 ring-primary/50 ring-inset bg-primary/5': isStreamerMode && isDragging,
+            'hover:bg-primary/10': isStreamerMode && isDragging 
+        }"
         :style="{ aspectRatio: showCharacterName ? '120 / 212' : '120/187' }"
         @click="handleSelect(index)"
       >

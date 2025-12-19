@@ -206,7 +206,8 @@ export const useGridStore = createGlobalState(() => {
     function addToDock(character: GridItemCharacter) {
         // Prevent duplicates by ID
         if (!dockItems.value.find(i => i.id === character.id)) {
-            dockItems.value.push(character)
+            // Clone to ensure no reactivity overlap if same object used elsewhere
+            dockItems.value.push({ ...character })
         }
     }
 
@@ -219,6 +220,10 @@ export const useGridStore = createGlobalState(() => {
             dockItems.value = []
         }
     }
+
+    // Drag State
+    const isDragging = ref(false)
+    const isCanvasLocked = useStorage('anime-grid-canvas-locked', false)
 
     return {
         // State
@@ -237,6 +242,8 @@ export const useGridStore = createGlobalState(() => {
         isStreamerMode,
         isToolbarOpen,
         dockItems,
+        isDragging,
+        isCanvasLocked, // NEW
         canUndo,
         canRedo,
 

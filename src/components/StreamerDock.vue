@@ -4,7 +4,7 @@ import { VueDraggable } from 'vue-draggable-plus'
 import { useGridStore } from '~/stores/gridStore'
 
 const gridStore = useGridStore()
-const { dockItems, removeFromDock, clearDock, isToolbarOpen } = gridStore
+const { dockItems, removeFromDock, clearDock, isToolbarOpen, isDragging } = gridStore
 
 // Trash Logic: Accept drops to delete
 const trashList = ref([]) 
@@ -56,20 +56,50 @@ const dragOptions = {
     
 
 
+    <!-- Dock Branding (Desktop Streamer Only) -->
+    <div class="hidden md:flex px-6 py-6 border-b border-gray-100 dark:border-gray-800 bg-transparent shrink-0 flex-col items-center gap-2 select-none">
+        <h1 class="text-xl font-black text-gray-900 dark:text-gray-100 tracking-widest" style="font-family: 'Noto Serif SC', serif;">
+            【我推<span class="text-primary">的</span>格子】
+        </h1>
+        <a href="https://oshigrid.me" target="_blank" class="text-xs text-gray-400 font-mono hover:text-primary transition-colors tracking-wide">oshigrid.me</a>
+        
+        <!-- Social Links (Reliable SVGs) -->
+        <div class="flex items-center gap-6 mt-2 opacity-60 hover:opacity-100 transition-opacity">
+             <a href="https://qun.qq.com/universal-share/share?ac=1&authKey=axd5YDW0i5ZiyX8jTultFRVHCHv9FAsCnqHq40itBLuQEoUOdCo06bAh05W%2Bv1c7&busi_data=eyJncm91cENvZGUiOiIxMDU1NTkxMDY0IiwidG9rZW4iOiJMazMxZ1pPZHdQejMyS1BaSFZ2UkJIdHp5b29NbTI4VU9NaGhSSW96T0NpcS9ha0oyZzJEVmpPRXZ1Nit2eTVNIiwidWluIjoiMTkxNjY0NzYxNiJ9&data=Tsay2nkLgPoS1UGFPbFnpdAsQeLPgFErKFco7mYPmWPldhqQme_u6smVnM0ifq8X5nO5TiLUbxgl57S9deOLIw&svctype=4&tempid=h5_group_info" target="_blank" title="QQ群" class="text-gray-600 dark:text-gray-400 hover:text-black dark:hover:text-white transition-colors">
+                 <!-- QQ SVG -->
+                 <svg class="w-4.5 h-4.5" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" fill="currentColor"><path d="M824.8 613.2c-16-51.4-34.4-94.6-62.7-165.3C766.5 262.2 689.3 112 511.5 112 331.7 112 256.2 265.2 261 447.9c-28.4 70.8-46.7 113.7-62.7 165.3-34 109.5-23 154.8-14.6 155.8 18 2.2 70.1-82.4 70.1-82.4 0 49 25.2 112.9 79.8 159-26.4 8.1-85.7 29.9-71.6 53.8 11.4 19.3 196.2 12.3 249.5 6.3 53.3 6 238.1 13 249.5-6.3 14.1-23.8-45.3-45.7-71.6-53.8 54.6-46.2 79.8-110.1 79.8-159 0 0 52.1 84.6 70.1 82.4 8.5-1.1 19.5-46.4-14.5-155.8z" /></svg>
+             </a>
+             <a href="https://space.bilibili.com/36078469" target="_blank" title="B站" class="text-gray-600 dark:text-gray-400 hover:text-[#00AEEC] transition-colors">
+                 <!-- Bilibili SVG -->
+                 <svg class="w-4.5 h-4.5" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" fill="currentColor"><path d="M777.514667 131.669333a53.333333 53.333333 0 0 0-48.426667 26.965334l-50.816 87.168a483.2 483.2 0 0 0-166.4-29.226667c-58.453333 0-114.346667 10.197333-167.082667 29.354667l-50.176-87.296a53.333333 53.333333 0 0 0-93.610666 52.138666L246.229333 289.834667c-112.554667 64.938667-189.696 182.997333-197.888 320.128-0.554667 9.173333-0.853333 18.261333-0.853333 27.264 0 6.058667 0.170667 12.16 0.469333 18.218666 6.058667 134.4 81.365333 249.514667 189.610667 312.362667a476.330667 476.330667 0 0 0 549.973333 0.256c108.416-62.805333 183.936-177.877333 190.122667-312.576 0.298667-6.058667 0.426-12.202667 0.426-18.261333 0-8.96-0.341333-17.962667-0.938667-27.050667-8.192-137.216-85.333333-255.488-197.930666-320.384l45.226666-78.122666a53.333333 53.333333 0 0 0-46.933333-80.042667zM337.024 624.128c-30.848 0-55.850667-27.605333-55.850667-61.696s25.002667-61.696 55.850667-61.696c30.848 0 55.850667 27.605333 55.850666 61.696s-25.002667 61.696-55.850666 61.696z m352.085333 0c-30.848 0-55.850667-27.605333-55.850666-61.696s25.002667-61.696 55.850666-61.696c30.848 0 55.850667 27.605333 55.850667 61.696s-25.002667 61.696-55.850667 61.696z" /></svg>
+             </a>
+             <a href="https://discord.gg/8xF22PN4jW" target="_blank" title="Discord" class="text-gray-600 dark:text-gray-400 hover:text-[#5865F2] transition-colors">
+                 <div class="i-carbon-logo-discord text-lg" />
+             </a>
+        </div>
+    </div>
+
     <!-- Dock Scroller -->
-    <div class="flex-1 overflow-auto min-w-0 min-h-0 w-full no-scrollbar">
+    <div class="flex-1 overflow-auto min-w-0 min-h-0 w-full no-scrollbar relative">
+         <!-- Empty State -->
+         <div v-if="dockItems.length === 0" class="absolute inset-0 flex flex-col items-center justify-center text-gray-400 pointer-events-none">
+             <div class="i-carbon-upload text-3xl mb-1 animate-bounce" />
+             <span class="text-xs font-bold">点击右侧按钮添加角色</span>
+         </div>
+
          <VueDraggable
             v-model="dockItems"
             v-bind="dragOptions"
-            class="grid grid-rows-2 grid-flow-col auto-cols-max md:grid md:grid-flow-row md:grid-cols-2 md:auto-rows-min gap-2 p-2 min-h-0 w-full content-start"
+            class="grid grid-rows-2 grid-flow-col auto-cols-max gap-2 p-2 h-full w-max min-w-full content-start items-start md:grid-rows-none md:grid-flow-row md:grid-cols-2 md:auto-rows-min md:w-full md:h-auto md:min-w-0"
             ghost-class="sortable-ghost"
+            @start="isDragging = true"
+            @end="isDragging = false"
          >
             <div
                 v-for="(item, index) in dockItems"
                 :key="item.id"
                 :data-id="item.id"
-                class="relative group shrink-0 cursor-grab active:cursor-grabbing transition-all flex justify-center select-none touch-none rounded-lg"
-                style="touch-action: none;"
+                class="relative group shrink-0 cursor-grab active:cursor-grabbing transition-transform transition-shadow duration-200 flex justify-center select-none rounded-lg"
                 :class="isDeleteMode ? 'animate-shake' : 'hover:ring-2 hover:ring-primary hover:shadow-lg'"
                 @contextmenu.prevent="isDeleteMode = !isDeleteMode"
             >
@@ -137,11 +167,12 @@ const dragOptions = {
             @add="onTrashAdd"
         >
             <button 
-                class="absolute inset-0 flex items-center justify-center text-gray-400 hover:text-red-500 transition-colors w-full h-full border-2 border-dashed border-gray-300 rounded-xl hover:border-red-500 hover:bg-red-50"
+                class="absolute inset-0 flex items-center justify-center text-gray-400 hover:text-red-500 transition-all duration-200 w-full h-full border-2 border-dashed border-gray-300 rounded-xl hover:border-red-500 hover:bg-red-50"
+                :class="{ 'border-red-400 bg-red-50 text-red-500 scale-105 shadow-md': isDragging }"
                 @click="clearDock"
                 title="清空暂存区 / 拖入删除"
             >
-                <div i-carbon-trash-can class="text-xl pointer-events-none" />
+                <div i-carbon-trash-can class="text-xl pointer-events-none" :class="{ 'animate-bounce': isDragging }" />
             </button>
         </VueDraggable>
 
