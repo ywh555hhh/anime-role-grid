@@ -16,7 +16,7 @@ const showQQModal = ref(false)
       <a 
         href="https://github.com/ywh555hhh/anime-role-grid" 
         target="_blank" 
-        class="flex items-center gap-2 hover:text-[#e4007f] transition-colors group"
+        class="flex items-center gap-2 hover:text-primary transition-colors group"
       >
         <div i-carbon-logo-github class="text-xl group-hover:scale-110 transition-transform" />
         <span class="font-bold tracking-widest">GitHub</span>
@@ -24,14 +24,14 @@ const showQQModal = ref(false)
       <a 
         href="https://discord.gg/8xF22PN4jW" 
         target="_blank" 
-        class="flex items-center gap-2 hover:text-[#e4007f] transition-colors group"
+        class="flex items-center gap-2 hover:text-primary transition-colors group"
       >
         <div i-carbon-logo-discord class="text-xl group-hover:scale-110 transition-transform" />
         <span class="font-bold tracking-widest">Discord</span>
       </a>
       <button 
         @click="showQQModal = true"
-        class="flex items-center gap-2 hover:text-[#e4007f] transition-colors group"
+        class="flex items-center gap-2 hover:text-primary transition-colors group"
       >
         <!-- Custom QQ Icon SVG -->
         <svg class="w-5 h-5 group-hover:scale-110 transition-transform" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg">
@@ -42,7 +42,7 @@ const showQQModal = ref(false)
       <a 
         href="https://space.bilibili.com/36078469" 
         target="_blank" 
-        class="flex items-center gap-2 hover:text-[#e4007f] transition-colors group"
+        class="flex items-center gap-2 hover:text-primary transition-colors group"
       >
         <!-- Bilibili Icon SVG -->
         <svg class="w-5 h-5 group-hover:scale-110 transition-transform" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg">
@@ -59,7 +59,7 @@ const showQQModal = ref(false)
       <p class="tracking-wide flex items-center justify-center gap-2">
         <span class="i-carbon-data-base text-gray-400" />
         <span>数据来源</span>
-        <a href="https://bgm.tv" target="_blank" class="font-bold text-[#e4007f] hover:text-[#c0006b] transition-colors mx-1 flex items-center gap-1">
+        <a href="https://bgm.tv" target="_blank" class="font-bold text-primary hover:text-primary-hover transition-colors mx-1 flex items-center gap-1">
           Bangumi 番组计划
           <span class="i-carbon-favorite-filled text-xs" />
         </a>
@@ -68,7 +68,7 @@ const showQQModal = ref(false)
       <div class="flex items-center justify-center gap-2 text-xs opacity-80">
         <span class="i-carbon-idea text-gray-400" />
         <span>致敬灵感</span>
-        <a href="https://github.com/itorr/anime-grid" target="_blank" class="hover:text-[#e4007f] transition-colors border-b border-transparent hover:border-[#e4007f] flex items-center gap-1">
+        <a href="https://github.com/itorr/anime-grid" target="_blank" class="hover:text-primary transition-colors border-b border-transparent hover:border-primary flex items-center gap-1">
           itorr/anime-grid
           <span class="i-carbon-launch text-[10px]" />
         </a>

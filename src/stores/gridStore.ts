@@ -1,7 +1,7 @@
 
 import { createGlobalState, useStorage } from '@vueuse/core'
 import { ref, computed } from 'vue'
-import type { GridItem, StatsResponse } from '~/types/grid'
+import type { GridItem, StatsResponse, GridItemCharacter } from '~/types'
 import { api } from '~/services/api'
 import { TEMPLATES } from '~/logic/templates'
 
@@ -111,7 +111,7 @@ export const useGridStore = createGlobalState(() => {
     /**
      * Update a specific slot
      */
-    function updateItem(index: number, character: any) {
+    function updateItem(index: number, character: GridItemCharacter | undefined) {
         const list = [...currentList.value]
         if (list[index]) {
             list[index] = { ...list[index], character }

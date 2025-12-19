@@ -64,7 +64,7 @@ onMounted(() => {
     <!-- Header & Controls -->
     <div class="flex items-center justify-between mb-6">
         <div class="flex items-center gap-3">
-             <div class="p-2 bg-pink-50 rounded-lg text-[#e4007f]">
+             <div class="p-2 bg-pink-50 rounded-lg text-primary">
                  <div i-carbon-analytics class="text-2xl" />
              </div>
              <div>
@@ -106,7 +106,7 @@ onMounted(() => {
     <div v-else-if="!loading && rawData" class="animate-fade-in">
         
         <!-- Total Counter -->
-        <div v-if="totalVotes > 0" class="bg-gradient-to-r from-[#e4007f] to-pink-500 text-white rounded-xl p-4 mb-6 shadow-md flex items-center justify-between">
+        <div v-if="totalVotes > 0" class="bg-gradient-to-r from-primary to-pink-500 text-white rounded-xl p-4 mb-6 shadow-md flex items-center justify-between">
             <span class="font-bold">累计投票</span>
             <span class="font-mono text-2xl font-black">{{ totalVotes }}</span>
         </div>
@@ -144,7 +144,7 @@ onMounted(() => {
                         </div>
                         <div class="flex-1 min-w-0">
                             <div class="font-bold text-gray-800 text-sm truncate leading-tight">{{ slot.candidates[0].name }}</div>
-                            <div class="text-xs text-[#e4007f] font-bold mt-0.5">{{ slot.candidates[0].count }} 票</div>
+                            <div class="text-xs text-primary font-bold mt-0.5">{{ slot.candidates[0].count }} 票</div>
                         </div>
                     </div>
 

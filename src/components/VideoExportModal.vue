@@ -79,9 +79,9 @@ const showSuccessTips = computed(() => {
           <div class="relative w-24 h-24">
             <div class="absolute inset-0 border-4 border-gray-100 rounded-full" />
             <div 
-              class="absolute inset-0 border-4 border-[#e4007f] rounded-full border-t-transparent animate-spin" 
+              class="absolute inset-0 border-4 border-primary rounded-full border-t-transparent animate-spin" 
             />
-            <div class="absolute inset-0 flex items-center justify-center text-sm font-bold text-[#e4007f]">
+            <div class="absolute inset-0 flex items-center justify-center text-sm font-bold text-primary">
                 {{ Math.round((progress || 0) * 100) }}%
             </div>
           </div>
@@ -102,24 +102,24 @@ const showSuccessTips = computed(() => {
                 <label 
                     class="relative flex flex-col p-3 rounded-lg border-2 cursor-pointer transition-all"
                     :class="[
-                        settings.format === 'mp4' ? 'border-[#e4007f] bg-pink-50' : 'border-gray-200 hover:border-gray-300',
+                        settings.format === 'mp4' ? 'border-primary bg-pink-50' : 'border-gray-200 hover:border-gray-300',
                         !isMp4Supported ? 'opacity-50 cursor-not-allowed bg-gray-50' : ''
                     ]"
                 >
                     <input type="radio" value="mp4" v-model="settings.format" :disabled="!isMp4Supported" class="sr-only">
                     <div class="flex items-center gap-2 mb-1">
                         <span class="font-bold text-gray-900">MP4</span>
-                        <span v-if="isMp4Supported" class="text-[10px] bg-[#e4007f] text-white px-1.5 rounded-sm">推荐</span>
+                        <span v-if="isMp4Supported" class="text-[10px] bg-primary text-white px-1.5 rounded-sm">推荐</span>
                     </div>
                     <span class="text-xs text-gray-500">{{ isMp4Supported ? '兼容性好 / 极速' : '当前浏览器不支持' }}</span>
                     
-                    <div v-if="settings.format === 'mp4'" class="absolute top-2 right-2 i-carbon-checkmark-filled text-[#e4007f]" />
+                    <div v-if="settings.format === 'mp4'" class="absolute top-2 right-2 i-carbon-checkmark-filled text-primary" />
                 </label>
 
                 <!-- WebM Option -->
                 <label 
                     class="relative flex flex-col p-3 rounded-lg border-2 cursor-pointer transition-all"
-                    :class="settings.format === 'webm' ? 'border-[#e4007f] bg-pink-50' : 'border-gray-200 hover:border-gray-300'"
+                    :class="settings.format === 'webm' ? 'border-primary bg-pink-50' : 'border-gray-200 hover:border-gray-300'"
                 >
                     <input type="radio" value="webm" v-model="settings.format" class="sr-only">
                     <div class="flex items-center gap-2 mb-1">
@@ -128,7 +128,7 @@ const showSuccessTips = computed(() => {
                     </div>
                     <span class="text-xs text-gray-500">体积小 / 需转换</span>
 
-                    <div v-if="settings.format === 'webm'" class="absolute top-2 right-2 i-carbon-checkmark-filled text-[#e4007f]" />
+                    <div v-if="settings.format === 'webm'" class="absolute top-2 right-2 i-carbon-checkmark-filled text-primary" />
                 </label>
             </div>
           </div>
@@ -141,7 +141,7 @@ const showSuccessTips = computed(() => {
                 v-for="opt in platformOptions"
                 :key="opt.value"
                 class="flex items-center gap-3 px-4 py-3 rounded-lg border-2 transition-all text-left group"
-                :class="settings.platform === opt.value ? 'border-[#e4007f] bg-pink-50 text-[#e4007f]' : 'border-gray-200 hover:border-gray-300 text-gray-600'"
+                :class="settings.platform === opt.value ? 'border-primary bg-pink-50 text-primary' : 'border-gray-200 hover:border-gray-300 text-gray-600'"
                 @click="settings.platform = opt.value"
               >
                 <div :class="opt.icon" class="text-xl" />
@@ -149,7 +149,7 @@ const showSuccessTips = computed(() => {
                 <div 
                   v-if="settings.platform === opt.value" 
                   i-carbon-checkmark-filled 
-                  class="ml-auto text-[#e4007f]" 
+                  class="ml-auto text-primary" 
                 />
               </button>
             </div>
@@ -163,7 +163,7 @@ const showSuccessTips = computed(() => {
                 v-for="opt in speedOptions"
                 :key="opt.value"
                 class="flex-1 py-2 rounded-lg border text-sm font-medium transition-colors"
-                :class="settings.speed === opt.value ? 'bg-[#e4007f] text-white border-[#e4007f]' : 'bg-white text-gray-600 border-gray-200 hover:border-gray-300'"
+                :class="settings.speed === opt.value ? 'bg-primary text-white border-primary' : 'bg-white text-gray-600 border-gray-200 hover:border-gray-300'"
                 @click="settings.speed = opt.value"
               >
                 {{ opt.label }}
@@ -182,7 +182,7 @@ const showSuccessTips = computed(() => {
             </div>
             <div 
               class="w-12 h-6 rounded-full relative transition-colors duration-200"
-              :class="settings.includeEmpty ? 'bg-[#e4007f]' : 'bg-gray-300'"
+              :class="settings.includeEmpty ? 'bg-primary' : 'bg-gray-300'"
             >
               <div 
                 class="absolute top-1 left-1 bg-white w-4 h-4 rounded-full transition-transform duration-200 shadow-sm"
@@ -197,7 +197,7 @@ const showSuccessTips = computed(() => {
       <!-- Footer Action -->
       <div v-if="!loading" class="p-6 border-t border-gray-100 bg-gray-50">
         <button 
-          class="w-full py-3.5 bg-[#e4007f] hover:bg-[#c90070] active:scale-[0.98] text-white font-bold rounded-xl transition-all shadow-lg shadow-pink-200 flex items-center justify-center gap-2"
+          class="w-full py-3.5 bg-primary hover:bg-primary-hover active:scale-[0.98] text-white font-bold rounded-xl transition-all shadow-lg shadow-pink-200 flex items-center justify-center gap-2"
           @click="start"
         >
           <div i-carbon-video-filled class="text-lg" />

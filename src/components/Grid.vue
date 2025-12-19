@@ -95,7 +95,7 @@ function getImageUrl(url: string) {
           :class="[
             !customTitle ? 'border-gray-100 dark:border-gray-800' : 'border-transparent',
             'hover:border-gray-300 hover:border-dashed',
-            'focus:border-[#e4007f] focus:border-solid focus:bg-gray-50/30 dark:focus:bg-gray-800/30',
+            'focus:border-primary focus:border-solid focus:bg-gray-50/30 dark:focus:bg-gray-800/30',
             { 'pointer-events-none border-none': forExport }
           ]"
           style="font-family: 'Noto Serif SC', serif;"
@@ -109,7 +109,7 @@ function getImageUrl(url: string) {
     <!-- Template Title -->
     <h2 
       v-if="title"
-      class="text-xl font-bold text-[#e4007f] mb-4 tracking-widest"
+      class="text-xl font-bold text-primary mb-4 tracking-widest"
       style="font-family: 'Noto Serif SC', serif;"
     >
       — {{ title }} —
@@ -197,7 +197,7 @@ function getImageUrl(url: string) {
         class="text-black text-sm font-bold tracking-widest" 
         style="font-family: 'Noto Serif SC', 'FZQingKeBenYueSong', 'FangSong', serif;"
       >
-        【我推<span style="color: #e4007f;">的</span>格子】
+        【我推<span class="text-primary">的</span>格子】
       </span>
       <img src="/logo.png" class="w-6 h-6 object-contain" />
     </div>

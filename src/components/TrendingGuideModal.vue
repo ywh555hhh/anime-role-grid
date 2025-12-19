@@ -76,13 +76,13 @@ function handleMore() {
           <button
             v-for="opt in TRENDING_OPTIONS"
             :key="opt.id"
-            class="w-full flex items-center p-4 rounded-xl border-2 transition-all group text-left relative overflow-hidden bg-white hover:bg-pink-50 border-gray-100 hover:border-[#e4007f] text-gray-700 hover:text-[#e4007f] shrink-0"
+            class="w-full flex items-center p-4 rounded-xl border-2 transition-all group text-left relative overflow-hidden bg-white hover:bg-pink-50 border-gray-100 hover:border-primary text-gray-700 hover:text-primary shrink-0"
             @click="handleSelect(opt)"
           >
             <div 
-              class="w-12 h-12 rounded-lg bg-pink-50 flex items-center justify-center mr-4 shadow-sm shrink-0 group-hover:bg-[#e4007f] transition-colors"
+              class="w-12 h-12 rounded-lg bg-pink-50 flex items-center justify-center mr-4 shadow-sm shrink-0 group-hover:bg-primary transition-colors"
             >
-              <div :class="[opt.icon, 'text-2xl text-[#e4007f] group-hover:text-white transition-colors']" />
+              <div :class="[opt.icon, 'text-2xl text-primary group-hover:text-white transition-colors']" />
             </div>
             <div class="flex-1 z-10">
               <div class="font-bold text-base mb-0.5">{{ opt.title }}</div>
@@ -95,7 +95,7 @@ function handleMore() {
         <!-- More Button -->
         <button 
           @click="handleMore"
-          class="text-gray-500 hover:text-[#e4007f] font-bold text-sm flex items-center gap-1 transition-colors px-4 py-2 rounded-full hover:bg-gray-50 dark:hover:bg-gray-700"
+          class="text-gray-500 hover:text-primary font-bold text-sm flex items-center gap-1 transition-colors px-4 py-2 rounded-full hover:bg-gray-50 dark:hover:bg-gray-700"
         >
           <span>查看更多模板</span>
           <div i-carbon-chevron-right />

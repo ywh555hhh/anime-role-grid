@@ -172,14 +172,14 @@ async function copyLink() {
         <h1 class="text-3xl font-bold mb-8 text-center flex flex-col md:flex-row items-center justify-center gap-4 relative">
             <button 
                 @click="router.push('/')"
-                class="absolute left-0 top-1/2 -translate-y-1/2 p-2 text-gray-400 hover:text-[#e4007f] hover:bg-gray-100 rounded-full transition-all md:flex hidden"
+                class="absolute left-0 top-1/2 -translate-y-1/2 p-2 text-gray-400 hover:text-primary hover:bg-gray-100 rounded-full transition-all md:flex hidden"
                 title="返回首页"
             >
                 <div i-carbon-arrow-left class="text-2xl" />
             </button>
            
            <div class="flex items-center gap-2">
-               <div i-carbon-edit class="text-[#e4007f]" />
+               <div i-carbon-edit class="text-primary" />
                <span>制表器</span>
            </div>
            
@@ -202,7 +202,7 @@ async function copyLink() {
                   v-model="mainTitle" 
                   type="text" 
                   placeholder="例如：我的二次元成分表"
-                  class="w-full text-lg font-bold border-b-2 border-gray-200 focus:border-[#e4007f] outline-none py-2 bg-transparent transition-colors placeholder-gray-300"
+                  class="w-full text-lg font-bold border-b-2 border-gray-200 focus:border-primary outline-none py-2 bg-transparent transition-colors placeholder-gray-300"
                 />
               </div>
 
@@ -212,7 +212,7 @@ async function copyLink() {
                   v-model="templateName" 
                   type="text" 
                   placeholder="例如：火影忍者人物表"
-                  class="w-full text-lg font-bold border-b-2 border-gray-200 focus:border-[#e4007f] outline-none py-2 bg-transparent transition-colors placeholder-gray-300"
+                  class="w-full text-lg font-bold border-b-2 border-gray-200 focus:border-primary outline-none py-2 bg-transparent transition-colors placeholder-gray-300"
                 />
               </div>
 
@@ -220,9 +220,8 @@ async function copyLink() {
                 <label class="block text-sm font-bold mb-2 text-gray-600">② 制表人 (可选)</label>
                 <input 
                   v-model="creatorName" 
-                  type="text" 
                   placeholder="留下你的大名"
-                  class="w-full text-lg font-bold border-b-2 border-gray-200 focus:border-[#e4007f] outline-none py-2 bg-transparent transition-colors placeholder-gray-300"
+                  class="w-full text-lg font-bold border-b-2 border-gray-200 focus:border-primary outline-none py-2 bg-transparent transition-colors placeholder-gray-300"
                 />
               </div>
               
@@ -230,13 +229,13 @@ async function copyLink() {
                  <div class="flex-1">
                     <label class="block text-sm font-bold mb-2 text-gray-600">② 列数</label>
                     <div class="flex flex-wrap items-center gap-2 bg-gray-100 rounded-lg p-1">
-                       <button v-for="n in [1,2,3,4,5,6]" :key="n" @click="cols = n" class="flex-1 min-w-[30px] py-1 rounded-md text-sm font-bold transition-all" :class="cols === n ? 'bg-white text-[#e4007f] shadow-sm' : 'text-gray-400'">{{n}}</button>
+                       <button v-for="n in [1,2,3,4,5,6]" :key="n" @click="cols = n" class="flex-1 min-w-[30px] py-1 rounded-md text-sm font-bold transition-all" :class="cols === n ? 'bg-white text-primary shadow-sm' : 'text-gray-400'">{{n}}</button>
                     </div>
                  </div>
                  <div class="flex-1">
                     <label class="block text-sm font-bold mb-2 text-gray-600">③ 行数</label>
                     <div class="flex flex-wrap items-center gap-2 bg-gray-100 rounded-lg p-1">
-                       <button v-for="n in [1,2,3,4,5,6]" :key="n" @click="rowCount = n" class="flex-1 min-w-[30px] py-1 rounded-md text-sm font-bold transition-all" :class="rowCount === n ? 'bg-white text-[#e4007f] shadow-sm' : 'text-gray-400'">{{n}}</button>
+                       <button v-for="n in [1,2,3,4,5,6]" :key="n" @click="rowCount = n" class="flex-1 min-w-[30px] py-1 rounded-md text-sm font-bold transition-all" :class="rowCount === n ? 'bg-white text-primary shadow-sm' : 'text-gray-400'">{{n}}</button>
                     </div>
                  </div>
               </div>
@@ -246,14 +245,14 @@ async function copyLink() {
                <div class="flex items-center justify-between bg-gray-50 p-4 rounded-xl border-2 border-transparent hover:border-pink-100 transition-colors">
                   <div class="flex flex-col">
                       <span class="font-bold text-gray-700 flex items-center gap-2">
-                          <div class="i-carbon-chart-relationship text-[#e4007f]" />
+                          <div class="i-carbon-chart-relationship text-primary" />
                           开启全民投票统计
                       </span>
                       <span class="text-xs text-gray-400">开启后，将汇总所有人的填表结果生成榜单</span>
                       <!-- Stats Benefits List -->
                        <div v-if="enableVoting" class="mt-2 space-y-1 text-[10px] text-gray-500 bg-white/50 p-2 rounded-lg border border-gray-100 animate-fade-in">
                            <div class="flex items-center gap-1.5">
-                               <div i-carbon-chart-bar class="text-[#e4007f]" />
+                               <div i-carbon-chart-bar class="text-primary" />
                                <span>全网数据实时汇总</span>
                            </div>
                            <div class="flex items-center gap-1.5">
@@ -269,7 +268,7 @@ async function copyLink() {
                   
                   <button 
                     class="relative w-12 h-7 rounded-full transition-colors duration-300 focus:outline-none"
-                    :class="enableVoting ? 'bg-[#e4007f]' : 'bg-gray-300'"
+                    :class="enableVoting ? 'bg-primary' : 'bg-gray-300'"
                     @click="enableVoting = !enableVoting"
                   >
                       <div 
@@ -302,7 +301,7 @@ async function copyLink() {
         <button 
           @click="generateChallengeCard"
           :disabled="loading"
-          class="w-full py-4 bg-[#e4007f] text-white font-bold text-xl rounded-xl shadow-lg hover:shadow-pink-500/30 transition-all transform hover:-translate-y-1 flex items-center justify-center gap-3 active:scale-95"
+          class="w-full py-4 bg-primary text-white font-bold text-xl rounded-xl shadow-lg hover:shadow-primary/30 transition-all transform hover:-translate-y-1 flex items-center justify-center gap-3 active:scale-95"
         >
           <div v-if="loading" class="i-carbon-circle-dash animate-spin" />
           <div v-else class="i-carbon-send-alt" />
@@ -314,7 +313,7 @@ async function copyLink() {
     <!-- Step 2: Success Modal -->
     <div v-if="step === 2" class="fixed inset-0 z-50 bg-black/90 flex flex-col items-center justify-center p-4">
        <div class="bg-white rounded-2xl max-w-sm w-full p-6 flex flex-col gap-4 animate-scale-in">
-           <h2 class="text-2xl font-bold text-center text-[#e4007f]">挑战书已生成！</h2>
+           <h2 class="text-2xl font-bold text-center text-primary">挑战书已生成！</h2>
            <div class="bg-gray-100 rounded-lg p-2 flex justify-center">
                <img :src="generatedImage" class="max-h-[40vh] object-contain shadow-md rounded" />
            </div>
@@ -335,7 +334,7 @@ async function copyLink() {
 
            <p class="text-xs text-center text-gray-400">长按图片保存，或点击下方按钮</p>
            
-           <button @click="downloadImage" class="w-full py-3 bg-[#e4007f] text-white font-bold rounded-xl">
+           <button @click="downloadImage" class="w-full py-3 bg-primary text-white font-bold rounded-xl">
                保存图片
            </button>
            <button @click="step = 1; generatedImage = ''" class="w-full py-2 text-gray-500 font-bold">

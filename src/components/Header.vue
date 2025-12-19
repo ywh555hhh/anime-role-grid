@@ -13,12 +13,12 @@
           class="text-3xl md:text-5xl font-bold text-gray-900 tracking-widest"
           style="font-family: 'Noto Serif SC', serif;"
         >
-          【我推<span class="text-[#e4007f]">的</span>格子】
+          【我推<span class="text-primary">的</span>格子】
         </h1>
       </div>
       
       <!-- Decorative Separator (Matches width of content above) -->
-      <div class="w-full h-[4px] bg-[#e4007f] rounded-full" />
+      <div class="w-full h-[4px] bg-primary rounded-full" />
     </div>
   </header>
 </template>

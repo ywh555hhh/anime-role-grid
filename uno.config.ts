@@ -8,6 +8,11 @@ export default defineConfig({
     ],
     theme: {
         colors: {
+            primary: {
+                DEFAULT: '#e4007f',
+                hover: '#c2006b',
+                light: '#fce7f3', // pink-100
+            },
             black: '#000000',
             white: '#ffffff',
             gray: {
@@ -36,6 +41,16 @@ export default defineConfig({
                 900: '#1e3a8a',
                 950: '#172554',
             },
+            // Semantics
+            border: {
+                DEFAULT: '#e5e7eb',
+                dark: '#374151'
+            }
+        },
+        borderRadius: {
+            'std': '0.75rem',  // rounded-xl
+            'btn': '9999px',   // rounded-full
+            'inp': '0.5rem',   // rounded-lg
         },
         animation: {
             keyframes: {
@@ -49,4 +64,11 @@ export default defineConfig({
             },
         },
     },
+    shortcuts: {
+        'btn-primary': 'bg-primary text-white hover:bg-primary-hover transition-colors rounded-btn px-4 py-2 flex items-center justify-center gap-2 font-bold shadow-md hover:shadow-lg',
+        'btn-outline-primary': 'bg-white text-primary border-2 border-primary hover:bg-primary-light transition-colors rounded-btn px-4 py-2 flex items-center justify-center gap-2 font-bold shadow-sm',
+        'card-base': 'bg-white dark:bg-gray-800 rounded-std border border-border dark:border-border-dark shadow-sm',
+        'input-std': 'rounded-inp border border-black px-4 py-3 bg-white text-black outline-none focus:border-primary',
+        'icon-btn': 'p-1 rounded bg-gray-100 hover:bg-primary-light transition-colors text-gray-600 hover:text-primary',
+    }
 })

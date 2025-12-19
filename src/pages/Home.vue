@@ -124,9 +124,9 @@ function handleResetTags() {
                     <div class="flex gap-4">
                         <button 
                         @click="showGuideModal = true"
-                        class="text-xs font-bold text-gray-600 hover:text-[#e4007f] flex items-center gap-1.5 transition-colors group"
+                        class="text-xs font-bold text-gray-600 hover:text-primary flex items-center gap-1.5 transition-colors group"
                         >
-                        <div class="p-1 rounded bg-gray-100 group-hover:bg-pink-50 transition-colors">
+                        <div class="icon-btn group-hover:bg-primary-light">
                             <div class="i-carbon-help text-sm" />
                         </div>
                         <span>食用指南</span>
@@ -134,9 +134,9 @@ function handleResetTags() {
 
                         <button 
                         @click="handleManualGuideOpen"
-                        class="text-xs font-bold text-gray-600 hover:text-[#e4007f] flex items-center gap-1.5 transition-colors group"
+                        class="text-xs font-bold text-gray-600 hover:text-primary flex items-center gap-1.5 transition-colors group"
                         >
-                        <div class="p-1 rounded bg-gray-100 group-hover:bg-pink-50 transition-colors">
+                        <div class="icon-btn group-hover:bg-primary-light">
                             <div class="i-carbon-bullhorn text-sm" />
                         </div>
                         <span>加入组织</span>
@@ -150,7 +150,7 @@ function handleResetTags() {
                         <label class="text-sm text-black font-bold">当前模板:</label>
                         <button
                             @click="showTemplateModal = true"
-                            class="flex items-center justify-center gap-2 bg-white border-2 border-black px-4 py-1.5 rounded-md text-sm font-bold min-w-[160px] transition-colors hover:border-[#e4007f] hover:text-[#e4007f] focus:outline-none"
+                            class="flex items-center justify-center gap-2 bg-white border-2 border-black px-4 py-1.5 rounded-md text-sm font-bold min-w-[160px] transition-colors hover:border-primary hover:text-primary focus:outline-none"
                         >
                             <span>{{ currentTemplateName }}</span>
                             <div i-carbon-chevron-right class="text-xs" />
@@ -159,7 +159,7 @@ function handleResetTags() {
                         
                         <button 
                             @click="handleResetTags"
-                            class="flex items-center gap-1.5 px-4 py-1.5 rounded-full bg-gray-100 hover:bg-[#e4007f] hover:text-white transition-colors text-xs font-bold"
+                            class="flex items-center gap-1.5 px-4 py-1.5 rounded-full bg-gray-100 hover:bg-primary hover:text-white transition-colors text-xs font-bold"
                             title="将所有标签重置为默认值"
                         >
                             <div class="i-carbon-reset" />

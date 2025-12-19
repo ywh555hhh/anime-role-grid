@@ -79,11 +79,11 @@ function select(id: string) {
           <div class="text-xs font-bold text-gray-400 mb-2 mt-2 hidden md:block px-3 uppercase tracking-wider">核心分类</div>
           <button
             v-for="cat in categories"
-            :key="cat"
-            class="px-4 py-3 rounded-xl text-sm font-bold transition-all whitespace-nowrap text-left flex items-center gap-2"
-            :class="activeCategory === cat ? 'bg-white text-[#e4007f] shadow-sm' : 'text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700'"
-            @click="activeCategory = cat"
-          >
+             :key="cat"
+             class="px-4 py-3 rounded-xl text-sm font-bold transition-all whitespace-nowrap text-left flex items-center gap-2"
+             :class="activeCategory === cat ? 'bg-white text-primary shadow-sm' : 'text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700'"
+             @click="activeCategory = cat"
+           >
             <!-- Icons optional, can add map later if needed -->
              {{ CATEGORY_MAP[cat] }}
           </button>
@@ -95,7 +95,7 @@ function select(id: string) {
           <div class="p-6 pb-2 border-b border-gray-100 dark:border-gray-800">
              <div class="flex items-center justify-between mb-4">
                 <h2 class="text-2xl font-bold text-gray-900 dark:text-white flex items-center gap-2">
-                  <div i-carbon-grid class="text-[#e4007f]" />
+                  <div i-carbon-grid class="text-primary" />
                   <span>{{ CATEGORY_MAP[activeCategory] }}</span>
                 </h2>
                 <button 
@@ -109,12 +109,12 @@ function select(id: string) {
              <!-- Sub Label Tabs -->
              <div v-if="subLabels.length > 1" class="flex flex-wrap gap-2">
                 <button
-                  v-for="label in subLabels"
-                  :key="label"
-                  class="px-3 py-1.5 rounded-full text-xs font-bold transition-all border"
-                  :class="activeSubLabel === label ? 'bg-[#e4007f] text-white border-[#e4007f]' : 'bg-white text-gray-500 border-gray-200 hover:border-gray-300 hover:bg-gray-50'"
-                  @click="activeSubLabel = label"
-                >
+                   v-for="label in subLabels"
+                   :key="label"
+                   class="px-3 py-1.5 rounded-full text-xs font-bold transition-all border"
+                   :class="activeSubLabel === label ? 'bg-primary text-white border-primary' : 'bg-white text-gray-500 border-gray-200 hover:border-gray-300 hover:bg-gray-50'"
+                   @click="activeSubLabel = label"
+                 >
                   {{ label }}
                 </button>
              </div>
@@ -127,7 +127,7 @@ function select(id: string) {
                 v-for="template in filteredTemplates"
                 :key="template.id"
                 class="group relative flex flex-col items-start p-4 rounded-xl border-2 transition-all hover:-translate-y-1 hover:shadow-lg text-left bg-white dark:bg-gray-800"
-                :class="currentId === template.id ? 'border-[#e4007f] bg-pink-50 dark:bg-pink-900/20' : 'border-gray-100 dark:border-gray-700 hover:border-[#e4007f]'"
+                :class="currentId === template.id ? 'border-primary bg-primary-light/30 dark:bg-pink-900/20' : 'border-gray-100 dark:border-gray-700 hover:border-primary'"
                 @click="select(template.id)"
               >
                 <div class="flex items-center justify-between w-full mb-2">
@@ -159,7 +159,7 @@ function select(id: string) {
 
                 <div 
                   v-if="currentId === template.id"
-                  class="absolute top-2 right-2 w-2 h-2 rounded-full bg-[#e4007f]" 
+                  class="absolute top-2 right-2 w-2 h-2 rounded-full bg-primary" 
                 />
               </button>
             </div>

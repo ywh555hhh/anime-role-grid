@@ -27,7 +27,7 @@ const emit = defineEmits(['close'])
       >
         <!-- Close Button -->
         <button 
-          class="absolute top-4 right-4 w-8 h-8 flex items-center justify-center bg-black text-white rounded-full hover:bg-[#e4007f] transition-colors z-20"
+          class="absolute top-4 right-4 w-8 h-8 flex items-center justify-center bg-black text-white rounded-full hover:bg-primary transition-colors z-20"
           @click="emit('close')"
         >
           <div class="i-carbon-close text-xl" />
@@ -50,7 +50,7 @@ const emit = defineEmits(['close'])
             <h2 class="text-2xl font-bold text-black dark:text-white mb-1" style="font-family: 'Noto Serif SC', serif;">
               食用指南
             </h2>
-            <div class="w-12 h-1 bg-[#e4007f] mx-auto rounded-full" />
+            <div class="w-12 h-1 bg-primary mx-auto rounded-full" />
           </div>
 
           <!-- Sections -->
@@ -95,15 +95,15 @@ const emit = defineEmits(['close'])
                 <div class="space-y-2">
                     <p>视频导出功能目前处于测试阶段，为了获得最佳体验，我们<strong>强烈推荐</strong>使用以下环境：</p>
                     <ul class="list-disc list-inside pl-1 text-xs space-y-1 text-gray-800 dark:text-gray-300">
-                        <li><b class="text-[#e4007f]">Windows 电脑 + Chrome 浏览器</b> (推荐)</li>
-                        <li><b class="text-[#e4007f]">iOS + Chrome 浏览器</b> (完美支持)</li>
+                        <li><b class="text-primary">Windows 电脑 + Chrome 浏览器</b> (推荐)</li>
+                        <li><b class="text-primary">iOS + Chrome 浏览器</b> (完美支持)</li>
                     </ul>
 
                     <div class="bg-gray-50 dark:bg-gray-800 p-2 rounded border border-gray-100 dark:border-gray-700">
                         <p class="font-bold text-xs text-gray-900 dark:text-gray-100 mb-1">iOS / Safari 特别说明：</p>
                         <ul class="list-disc list-inside text-xs text-gray-600 dark:text-gray-400">
-                            <li>导出后请点击分享 -> <b class="text-[#e4007f]">"存储到文件"</b>。</li>
-                            <li>微信请发给 <b class="text-[#e4007f]">"文件传输助手"</b> 保存。</li>
+                            <li>导出后请点击分享 -> <b class="text-primary">"存储到文件"</b>。</li>
+                            <li>微信请发给 <b class="text-primary">"文件传输助手"</b> 保存。</li>
                         </ul>
                     </div>
 
@@ -115,7 +115,7 @@ const emit = defineEmits(['close'])
             </div>
 
             <div class="bg-gray-100 dark:bg-gray-800 p-3 rounded-lg text-xs">
-              <span class="font-bold text-[#e4007f]">💡 小贴士：</span>
+              <span class="font-bold text-primary">💡 小贴士：</span>
               如果遇到图片生成不全，请尝试重新点击保存。iOS 用户请长按弹出的图片保存。
             </div>
 
@@ -126,7 +126,7 @@ const emit = defineEmits(['close'])
             <p class="text-xs text-gray-500">
               觉得好用的话，就分享给朋友们一起玩吧！
               <br>
-              <a href="https://github.com/ywh555hhh/anime-role-grid" target="_blank" class="text-[#e4007f] hover:underline">GitHub 贡献模板</a>
+              <a href="https://github.com/ywh555hhh/anime-role-grid" target="_blank" class="text-primary hover:underline">GitHub 贡献模板</a>
             </p>
           </div>
 

@@ -64,12 +64,12 @@ onUnmounted(() => {
             <template #extra-actions>
                  <!-- Voting Tip -->
                  <div class="w-full bg-pink-50 border border-pink-100 rounded-lg p-3 mb-4 flex items-center gap-3 animate-pulse-slow">
-                     <div class="p-1.5 bg-[#e4007f] rounded-full text-white shrink-0">
+                     <div class="p-1.5 bg-primary rounded-full text-white shrink-0">
                          <div class="i-carbon-thumbs-up text-sm" />
                      </div>
                      <div class="flex-1">
-                         <div class="text-xs font-bold text-[#e4007f]">应援小贴士:</div>
-                         <div class="text-[10px] text-gray-500 font-bold">点击<span class="mx-0.5 text-[#e4007f]">“保存并生成图片”</span>即可自动为你的真爱投出一票！</div>
+                         <div class="text-xs font-bold text-primary">应援小贴士:</div>
+                         <div class="text-[10px] text-gray-500 font-bold">点击<span class="mx-0.5 text-primary">“保存并生成图片”</span>即可自动为你的真爱投出一票！</div>
                      </div>
                  </div>
 
@@ -78,7 +78,7 @@ onUnmounted(() => {
                     <div class="flex gap-4">
                         <button 
                         @click="showGuideModal = true"
-                        class="text-xs font-bold text-gray-600 hover:text-[#e4007f] flex items-center gap-1.5 transition-colors group"
+                        class="text-xs font-bold text-gray-600 hover:text-primary flex items-center gap-1.5 transition-colors group"
                         >
                         <div class="p-1 rounded bg-gray-100 group-hover:bg-pink-50 transition-colors">
                             <div class="i-carbon-help text-sm" />
@@ -88,7 +88,7 @@ onUnmounted(() => {
 
                         <button 
                         @click="showFirstTimeGuide = true"
-                        class="text-xs font-bold text-gray-600 hover:text-[#e4007f] flex items-center gap-1.5 transition-colors group"
+                        class="text-xs font-bold text-gray-600 hover:text-primary flex items-center gap-1.5 transition-colors group"
                         >
                         <div class="p-1 rounded bg-gray-100 group-hover:bg-pink-50 transition-colors">
                             <div class="i-carbon-bullhorn text-sm" />
@@ -111,7 +111,7 @@ onUnmounted(() => {
                         
                         <button 
                             @click="handleResetTags"
-                            class="flex items-center gap-1.5 px-4 py-1.5 rounded-full bg-gray-100 hover:bg-[#e4007f] hover:text-white transition-colors text-xs font-bold"
+                            class="flex items-center gap-1.5 px-4 py-1.5 rounded-full bg-gray-100 hover:bg-primary hover:text-white transition-colors text-xs font-bold"
                             title="将所有标签重置为默认值"
                         >
                             <div class="i-carbon-reset" />

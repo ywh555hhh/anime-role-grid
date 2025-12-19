@@ -29,7 +29,7 @@ const emit = defineEmits(['close'])
         <!-- Header -->
         <div class="bg-gradient-to-r from-pink-50 to-white dark:from-pink-900/20 dark:to-gray-800 p-4 border-b border-pink-100 dark:border-pink-800/30 flex items-center justify-between shrink-0">
            <h3 class="font-bold text-lg flex items-center gap-2 text-gray-900 dark:text-white">
-              <div class="i-carbon-group text-[#e4007f]" />
+              <div class="i-carbon-group text-primary" />
               <span>加入组织</span>
            </h3>
            <button 

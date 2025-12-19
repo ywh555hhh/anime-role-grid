@@ -26,7 +26,7 @@ async function fetchTrending() {
     const res = await fetch(`/api/trending?period=${activePeriod.value}`)
     if (res.ok) {
         const data = await res.json()
-        trendingList.value = data.results || []
+        trendingList.value = (data.results || []) as BgmSearchResultItem[]
     }
   } catch (e) {
     console.warn('Failed to fetch trending:', e)
@@ -110,8 +110,8 @@ async function handleSearch() {
     
     searchResult.value = results
     if (results.length < 20) hasMore.value = false
-  } catch (e: any) {
-    errorMessage.value = e.message
+  } catch (e: unknown) {
+    errorMessage.value = e instanceof Error ? e.message : String(e)
   } finally {
     loading.value = false
   }
@@ -131,14 +131,14 @@ async function loadMore() {
     } else {
       hasMore.value = false
     }
-  } catch (e: any) {
-    errorMessage.value = e.message
+  } catch (e: unknown) {
+    errorMessage.value = e instanceof Error ? e.message : String(e)
   } finally {
     loading.value = false
   }
 }
 
-function handleAdd(item: BgmSearchResultItem) {
+function handleAdd(item: BgmSearchResultItem | { id: string | number, name: string, images?: any, image?: string }) {
   // Determine analytics data
   const category = searchType.value === 'anime' || searchType.value === 'game' || searchType.value === 'manga' || searchType.value === 'novel' || searchType.value === 'music' 
     ? 'subject' 
@@ -297,7 +297,7 @@ onMounted(() => {
         <input
           ref="input"
           v-model="keyword"
-          class="w-full px-4 py-3 rounded-lg border-2 border-black bg-white text-lg text-black outline-none focus:border-[#e4007f]"
+          class="w-full px-4 py-3 rounded-lg border-2 border-black bg-white text-lg text-black outline-none focus:border-primary"
           placeholder="搜索角色..."
           type="text"
           @keydown.enter="handleSearch"
@@ -306,7 +306,7 @@ onMounted(() => {
           class="absolute right-3 top-1/2 -translate-y-1/2 text-xl p-2 cursor-pointer hover:bg-gray-100 rounded-full transition-colors"
           @click="handleSearch"
         >
-          <div v-if="loading" i-carbon-circle-dash class="animate-spin text-[#e4007f]" />
+          <div v-if="loading" i-carbon-circle-dash class="animate-spin text-primary" />
           <div v-else i-carbon-search class="text-black" />
         </div>
       </div>
@@ -320,19 +320,19 @@ onMounted(() => {
       <div class="flex border-b-2 border-gray-200 mb-4 items-center">
         <button 
           class="flex-1 py-2 text-sm font-bold transition-colors relative"
-          :class="activeTab === 'search' ? 'text-[#e4007f]' : 'text-black hover:text-[#e4007f]'"
+          :class="activeTab === 'search' ? 'text-primary' : 'text-black hover:text-primary'"
           @click="activeTab = 'search'"
         >
           在线搜索
-          <div v-if="activeTab === 'search'" class="absolute bottom-0 left-0 right-0 h-0.5 bg-[#e4007f]" />
+          <div v-if="activeTab === 'search'" class="absolute bottom-0 left-0 right-0 h-0.5 bg-primary" />
         </button>
         <button 
           class="flex-1 py-2 text-sm font-bold transition-colors relative"
-          :class="activeTab === 'custom' ? 'text-[#e4007f]' : 'text-black hover:text-[#e4007f]'"
+          :class="activeTab === 'custom' ? 'text-primary' : 'text-black hover:text-primary'"
           @click="activeTab = 'custom'"
         >
           自定义上传
-          <div v-if="activeTab === 'custom'" class="absolute bottom-0 left-0 right-0 h-0.5 bg-[#e4007f]" />
+          <div v-if="activeTab === 'custom'" class="absolute bottom-0 left-0 right-0 h-0.5 bg-primary" />
         </button>
         
         <!-- Clear Button -->
@@ -355,7 +355,7 @@ onMounted(() => {
                v-for="type in ['character', 'person', 'anime', 'manga', 'novel', 'game', 'music', 'real']"
                :key="type"
                class="px-3 py-1.5 text-xs font-bold rounded-full transition-all border border-transparent"
-               :class="searchType === type ? 'bg-[#e4007f] text-white shadow-md transform scale-105' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'"
+               :class="searchType === type ? 'bg-primary text-white shadow-md transform scale-105' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'"
                @click="searchType = type as any"
              >
                {{ 
@@ -373,7 +373,7 @@ onMounted(() => {
 
           <!-- Secondary Filters (Year) -->
           <div v-if="['anime', 'game'].includes(searchType)" class="flex items-center justify-center gap-2">
-             <div class="flex items-center gap-2 bg-gray-50 rounded-lg px-3 py-1.5 border border-gray-200 hover:border-[#e4007f] transition-colors focus-within:border-[#e4007f] focus-within:bg-white w-32">
+             <div class="flex items-center gap-2 bg-gray-50 rounded-lg px-3 py-1.5 border border-gray-200 hover:border-primary transition-colors focus-within:border-primary focus-within:bg-white w-32">
                  <div i-carbon-calendar class="text-gray-400 text-sm" />
                  <input 
                    v-model="searchYear"
@@ -389,7 +389,7 @@ onMounted(() => {
         <div v-if="!keyword && activeTab === 'search'" class="mb-8">
             <div class="flex items-center justify-between mb-4 px-1">
                 <div class="flex items-center gap-2">
-                    <div class="i-carbon-fire text-[#e4007f] text-lg animate-pulse" />
+                    <div class="i-carbon-fire text-primary text-lg animate-pulse" />
                     <h3 class="font-bold text-sm text-black">全站热门</h3>
                 </div>
                 <!-- Time Period Tabs -->
@@ -398,7 +398,7 @@ onMounted(() => {
                         v-for="p in ['week', '24h', 'all']" 
                         :key="p"
                         class="px-3 py-1 text-xs font-bold rounded-md transition-all"
-                        :class="activePeriod === p ? 'bg-white text-[#e4007f] shadow-sm' : 'text-gray-500 hover:text-gray-700'"
+                        :class="activePeriod === p ? 'bg-white text-primary shadow-sm' : 'text-gray-500 hover:text-gray-700'"
                         @click="activePeriod = p as any"
                     >
                         {{ p === '24h' ? '日榜' : p === 'week' ? '本周' : '总榜' }}
@@ -421,7 +421,7 @@ onMounted(() => {
                         @click="handleAdd({
                             id: item.id,
                             name: item.name,
-                            images: { large: item.image, medium: item.image, grid: item.image, small: item.image, common: item.image },
+                            images: { large: item.images?.large || item.image, medium: item.images?.medium || item.image, grid: item.images?.grid || item.image, small: item.images?.small || item.image, common: item.images?.common || item.image },
                         } as any)"
                       >
                          <div class="w-full aspect-[2/3] overflow-hidden rounded-xl bg-gray-100 relative shadow-md border-2" 
@@ -462,10 +462,10 @@ onMounted(() => {
                             @click="handleAdd({
                                 id: item.id,
                                 name: item.name,
-                                images: { large: item.image, medium: item.image, grid: item.image, small: item.image, common: item.image },
+                                images: { large: item.images?.large || item.image, medium: item.images?.medium || item.image, grid: item.images?.grid || item.image, small: item.images?.small || item.image, common: item.images?.common || item.image },
                             } as any)"
                         >
-                            <div class="w-full aspect-[2/3] rounded-lg overflow-hidden bg-gray-100 relative shadow-sm border border-gray-100 group-hover:border-[#e4007f] transition-colors">
+                            <div class="w-full aspect-[2/3] rounded-lg overflow-hidden bg-gray-100 relative shadow-sm border border-gray-100 group-hover:border-primary transition-colors">
                                 <span class="absolute top-0 left-0 bg-black/60 text-white text-[10px] px-1.5 rounded-br-lg font-bold z-10">{{ trendingList.indexOf(item) + 1 }}</span>
                                 <img 
                                     :src="item.image" 
@@ -549,7 +549,7 @@ onMounted(() => {
             <label class="text-sm font-bold text-black">角色名字 (可选)</label>
             <input 
                 v-model="customName"
-                class="w-full px-4 py-3 rounded-lg border-2 border-black bg-white text-black outline-none focus:border-[#e4007f]"
+                class="w-full px-4 py-3 rounded-lg border-2 border-black bg-white text-black outline-none focus:border-primary"
                 placeholder="给图片起个名字..."
                 type="text"
             >
@@ -558,7 +558,7 @@ onMounted(() => {
         <div class="flex flex-col gap-2">
           <label class="text-sm font-bold text-black">上传图片</label>
           <div 
-          class="border-2 border-dashed border-black rounded-lg p-8 flex flex-col items-center justify-center cursor-pointer hover:border-[#e4007f] transition-colors relative"
+          class="border-2 border-dashed border-black rounded-lg p-8 flex flex-col items-center justify-center cursor-pointer hover:border-primary transition-colors relative"
           @click="triggerFileInput"
           @dragover.prevent
           @drop.prevent="handleDrop"
@@ -597,7 +597,7 @@ onMounted(() => {
         </div>
 
         <button 
-          class="w-full py-3 bg-[#e4007f] hover:bg-[#c0006b] text-white rounded-lg font-bold transition-colors disabled:opacity-50 disabled:cursor-not-allowed mt-4"
+          class="w-full py-3 bg-primary hover:bg-primary-hover text-white rounded-lg font-bold transition-colors disabled:opacity-50 disabled:cursor-not-allowed mt-4"
           :disabled="!customImagePreview"
           @click="handleCustomAdd"
         >

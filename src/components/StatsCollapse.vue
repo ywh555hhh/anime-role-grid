@@ -11,7 +11,7 @@ const sortedStats = computed(() => {
     if (!store.stats) return []
     return Object.entries(store.stats).map(([label, candidates]) => ({
         label,
-        candidates
+        candidates: candidates as any[] // Temporarily cast to any[] or StatsCandidate[] if imported
     })).filter(item => item.candidates.length > 0)
 })
 
@@ -34,8 +34,8 @@ function handleLoad() {
       class="w-full flex items-center justify-between px-4 py-3 bg-gray-50 hover:bg-gray-100 rounded-lg transition-colors group"
     >
       <div class="flex items-center gap-2">
-        <div i-carbon-chart-relationship class="text-xl text-[#e4007f]" />
-        <span class="font-bold text-gray-700 group-hover:text-[#e4007f] transition-colors">
+        <div i-carbon-chart-relationship class="text-xl text-primary" />
+        <span class="font-bold text-gray-700 group-hover:text-primary transition-colors">
             全民党争统计 
             <span class="text-xs font-normal text-gray-400 ml-2">(看看大家都选了谁)</span>
         </span>
@@ -55,7 +55,7 @@ function handleLoad() {
         <div class="flex justify-center mb-6">
              <button 
                 @click="handleLoad"
-                class="flex items-center gap-2 px-6 py-2 bg-[#e4007f] text-white rounded-full font-bold hover:bg-pink-600 transition-colors shadow-md hover:shadow-lg active:scale-95 transform duration-100"
+                class="flex items-center gap-2 px-6 py-2 bg-primary text-white rounded-full font-bold hover:bg-primary-hover transition-colors shadow-md hover:shadow-lg active:scale-95 transform duration-100"
              >
                 <div v-if="store.statsLoading" class="i-carbon-circle-dash animate-spin" />
                 <div v-else class="i-carbon-renew" />
@@ -109,7 +109,7 @@ function handleLoad() {
                             <p class="text-xs font-bold truncate">{{ cand.name }}</p>
                             <div class="w-full bg-gray-100 h-1.5 rounded-full mt-1 overflow-hidden">
                                 <div 
-                                    class="h-full bg-[#e4007f] opacity-50" 
+                                    class="h-full bg-primary opacity-50" 
                                     :style="{ width: `${(cand.count / slot.candidates[0].count) * 100}%` }"
                                 />
                             </div>

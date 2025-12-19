@@ -45,10 +45,10 @@ const groups = [
       :key="group.title"
       :href="group.url" 
       target="_blank" 
-      class="w-full group relative overflow-hidden rounded-2xl bg-white dark:bg-gray-800 border-2 border-pink-100 dark:border-gray-700 hover:border-[#e4007f] transition-all duration-300 shadow-sm hover:shadow-md p-4 flex items-center gap-4"
+      class="w-full group relative overflow-hidden rounded-2xl bg-white dark:bg-gray-800 border-2 border-pink-100 dark:border-gray-700 hover:border-primary transition-all duration-300 shadow-sm hover:shadow-md p-4 flex items-center gap-4"
     >
         <!-- Icon -->
-        <div class="bg-pink-50 dark:bg-pink-900/30 p-3 rounded-full text-[#e4007f] border border-pink-100 dark:border-pink-800/30 shrink-0">
+        <div class="bg-pink-50 dark:bg-pink-900/30 p-3 rounded-full text-primary border border-pink-100 dark:border-pink-800/30 shrink-0">
             <div :class="group.icon" class="text-2xl" />
         </div>
         
@@ -56,13 +56,13 @@ const groups = [
         <div class="flex-1 min-w-0">
           <div class="flex flex-wrap items-center gap-2 mb-1">
              <div class="font-black text-base text-gray-900 dark:text-gray-100 truncate">{{ group.title }}</div>
-             <span class="bg-[#e4007f] text-white text-[10px] px-1.5 py-0.5 rounded font-bold shrink-0">{{ group.tag }}</span>
+             <span class="bg-primary text-white text-[10px] px-1.5 py-0.5 rounded font-bold shrink-0">{{ group.tag }}</span>
           </div>
           <div class="text-xs text-gray-400 leading-relaxed line-clamp-2">{{ group.desc }}</div>
         </div>
         
         <!-- Arrow -->
-        <div class="i-carbon-arrow-right text-gray-300 group-hover:text-[#e4007f] group-hover:translate-x-1 transition-all shrink-0" />
+        <div class="i-carbon-arrow-right text-gray-300 group-hover:text-primary group-hover:translate-x-1 transition-all shrink-0" />
     </a>
   </div>
 </template>

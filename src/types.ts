@@ -65,3 +65,12 @@ export interface GridItem {
     label: string;
     character?: GridItemCharacter;
 }
+// 统计数据类型
+export interface StatsCandidate {
+    id: string | number;
+    name: string;
+    image: string;
+    count: number;
+}
+
+export type StatsResponse = Record<string, StatsCandidate[]>;
