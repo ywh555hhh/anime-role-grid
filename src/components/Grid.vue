@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { computed, ref, nextTick } from 'vue'
-import type { GridItem } from '~/types'
+import type { GridItem, GridItemCharacter } from '~/types'
+import { VueDraggable } from 'vue-draggable-plus'
 
 const props = defineProps<{
   list: GridItem[]
@@ -11,9 +12,10 @@ const props = defineProps<{
   forExport?: boolean
   showCharacterName?: boolean
   editable?: boolean // New prop to force editability
+  isStreamerMode?: boolean
 }>()
 
-const emit = defineEmits(['select-slot', 'update:customTitle', 'update-label'])
+const emit = defineEmits(['select-slot', 'update:customTitle', 'update-label', 'drop-item'])
 
 const editingIndex = ref<number | null>(null)
 const editingLabel = ref('')
@@ -65,10 +67,30 @@ function getImageUrl(url: string) {
   if (!url) return ''
   if (props.forExport) {
     // Use proxy for export to ensure CORS headers are correct
-    // wsrv.nl is reliable and fast
     return `https://wsrv.nl/?url=${encodeURIComponent(url)}&output=png`
   }
   return url
+}
+
+// Helper to bridge GridItem (Object) <-> Sortable (Array)
+function useSlotModel(index: number) {
+    return computed({
+        get: () => {
+            const item = props.list[index]
+            return item?.character ? [item.character] : []
+        },
+        set: (val: GridItemCharacter[]) => {
+            const char = val.length > 0 ? val[val.length - 1] : undefined
+            emit('drop-item', { index, item: char, isMove: true })
+        }
+    })
+}
+
+function onDropAdd(evt: any) {
+  // Clean DOM element added by Sortable, let Vue render data
+  if (evt.item && evt.item.parentNode) {
+    evt.item.parentNode.removeChild(evt.item)
+  }
 }
 </script>
 
@@ -141,9 +163,35 @@ function getImageUrl(url: string) {
       >
         <!-- Character Image -->
         <!-- flex-grow ensures image takes available space minus label -->
-        <div class="flex-grow w-full relative overflow-hidden">
+        <div class="flex-grow w-full relative overflow-hidden bg-gray-50">
+          
+          <!-- Drop Zone Overlay (Streamer Mode) -->
+          <VueDraggable
+             v-if="isStreamerMode"
+             :modelValue="useSlotModel(index).value"
+             @update:modelValue="useSlotModel(index).value = $event"
+             :group="{ name: 'grid', put: true, pull: true }"
+             class="absolute inset-0 z-20 w-full h-full flex items-stretch justify-stretch"
+             :class="{ 'pointer-events-auto': isStreamerMode, 'cursor-grab': isStreamerMode && item.character }"
+             ghost-class="ghost-preview"
+             :sort="false"
+             @add="onDropAdd($event)"
+          >
+             <template v-if="item.character">
+                  <div 
+                    :data-id="item.character.id" 
+                    class="w-full h-full relative"
+                  >
+                      <img 
+                        :src="getImageUrl(item.character.image)" 
+                        class="w-full h-full object-cover object-top pointer-events-none"
+                      />
+                  </div>
+             </template>
+          </VueDraggable>
+
           <img 
-            v-if="item.character"
+            v-if="!isStreamerMode && item.character"
             :src="getImageUrl(item.character.image)" 
             class="absolute inset-0 w-full h-full object-cover object-top"
             :loading="forExport ? 'eager' : 'lazy'"
@@ -205,6 +253,39 @@ function getImageUrl(url: string) {
 </template>
 
 <style scoped>
-/* Hide scrollbar for cleaner look if desired, but keeping it is better for usability */
+:deep(.ghost-preview) {
+   position: absolute !important;
+   top: 0;
+   left: 0;
+   width: 100% !important;
+   height: 100% !important;
+   opacity: 1 !important;
+   z-index: 50;
+   border: 3px solid #e4007f; /* Primary */
+   background-color: white;
+   overflow: hidden; /* Ensure image doesn't overflow */
+}
 
+/* Force the inner content of the ghost (the dock item clone) to fill the area */
+:deep(.ghost-preview > div) {
+    width: 100% !important;
+    height: 100% !important;
+    border: none !important;
+    border-radius: 0 !important;
+    box-shadow: none !important;
+    background: transparent !important;
+}
+
+:deep(.ghost-preview img) {
+    width: 100% !important;
+    height: 100% !important;
+    object-fit: cover !important;
+    object-position: top !important; /* Keep focus on face */
+    border-radius: 0 !important;
+}
+
+/* Hide any overlays (name tag, delete button) in the grid ghost */
+:deep(.ghost-preview .absolute) {
+    display: none !important;
+}
 </style>

@@ -6,6 +6,9 @@ import type { BgmSearchResultItem } from '~/types'
 import Cropper from 'cropperjs'
 import 'cropperjs/dist/cropper.css'
 
+const props = defineProps<{
+    mode?: 'single' | 'streamer'
+}>()
 
 const emit = defineEmits(['add', 'close', 'clear'])
 
@@ -138,7 +141,7 @@ async function loadMore() {
   }
 }
 
-function handleAdd(item: BgmSearchResultItem | { id: string | number, name: string, images?: any, image?: string }) {
+function handleAdd(item: BgmSearchResultItem | { id: string | number, name: string, images?: any, image?: string }, event?: MouseEvent) {
   // Determine analytics data
   const category = searchType.value === 'anime' || searchType.value === 'game' || searchType.value === 'manga' || searchType.value === 'novel' || searchType.value === 'music' 
     ? 'subject' 
@@ -154,16 +157,28 @@ function handleAdd(item: BgmSearchResultItem | { id: string | number, name: stri
        subjectType = searchType.value;
   }
 
+  // Get Click Coordinates for animation logic in parent
+  let rect = undefined
+  if (event && event.target) {
+     const target = (event.target as HTMLElement).closest('.group') || (event.target as HTMLElement)
+     rect = target.getBoundingClientRect()
+  }
+
   emit('add', {
-    id: item.id,
-    name: item.name,
-    image: item.images.large,
-    // V3 Analytics
-    bangumiId: item.id,
-    category: category, 
-    subjectType: subjectType
+    item: {
+        id: item.id,
+        name: item.name,
+        image: (item as any).images?.large || (item as any).images?.grid || (item as any).image || (item as any).images?.common, // Fallback chain
+        bangumiId: item.id,
+        category: category, 
+        subjectType: subjectType
+    },
+    rect
   })
-  emit('close')
+  
+  if (props.mode !== 'streamer') {
+      emit('close')
+  }
 }
 
 function triggerFileInput() {
@@ -231,13 +246,21 @@ function applyCrop() {
   const instance = cropperInstance.value
   if (!instance) return null
   try {
+    // Streamer Mode: Compress heavily for Dock (Thumbnail)
+    // Standard: 800px. Streamer: 150px.
+    const targetWidth = props.mode === 'streamer' ? 150 : CROP_EXPORT_WIDTH
+    
     const canvas = instance.getCroppedCanvas({
-      width: CROP_EXPORT_WIDTH,
-      height: Math.round(CROP_EXPORT_WIDTH / GRID_ASPECT_RATIO),
+      width: targetWidth,
+      height: Math.round(targetWidth / GRID_ASPECT_RATIO),
       imageSmoothingEnabled: true,
       imageSmoothingQuality: 'high',
     })
-    const dataUrl = canvas.toDataURL('image/png')
+    // Use JPEG 0.8 for thumbnails to save space, PNG for high quality
+    const mime = props.mode === 'streamer' ? 'image/jpeg' : 'image/png'
+    const quality = props.mode === 'streamer' ? 0.8 : undefined
+    
+    const dataUrl = canvas.toDataURL(mime, quality)
     customImagePreview.value = dataUrl
     return dataUrl
   } catch (error) {
@@ -288,29 +311,52 @@ onMounted(() => {
 </script>
 
 <template>
-  <div class="flex flex-col gap-4 p-6 h-full">
-    <div class="relative shrink-0 flex items-center gap-3">
-      <!-- Small Logo -->
-      <img src="/logo.png" class="w-8 h-8 object-contain" />
-      
-      <div class="relative flex-1">
-        <input
-          ref="input"
-          v-model="keyword"
-          class="w-full px-4 py-3 rounded-lg border-2 border-black bg-white text-lg text-black outline-none focus:border-primary"
-          placeholder="搜索角色..."
-          type="text"
-          @keydown.enter="handleSearch"
+  <div 
+    class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm transition-all duration-200"
+    :class="{
+      'md:pr-64': mode === 'streamer', // Shift center to left (Dock 56 + extra padding)
+      'p-4 md:p-8': true
+    }"
+    @click.self="emit('close')"
+  >
+    <div 
+      class="bg-white rounded-3xl w-full max-w-4xl h-[85vh] flex flex-col relative overflow-hidden shadow-xl"
+    >
+        <!-- Close Button (Top Right) -->
+        <button 
+            class="absolute top-4 right-4 p-2 text-gray-400 hover:text-red-500 hover:bg-gray-100 rounded-full transition-colors z-[60]"
+            @click="emit('close')"
+            title="关闭"
         >
-        <div 
-          class="absolute right-3 top-1/2 -translate-y-1/2 text-xl p-2 cursor-pointer hover:bg-gray-100 rounded-full transition-colors"
-          @click="handleSearch"
-        >
-          <div v-if="loading" i-carbon-circle-dash class="animate-spin text-primary" />
-          <div v-else i-carbon-search class="text-black" />
+            <div i-carbon-close class="text-2xl" />
+        </button>
+
+      <div class="flex flex-col gap-4 p-6 h-full">
+        <div class="relative shrink-0 flex items-center gap-3 pr-8">
+            <!-- Small Logo -->
+            <img src="/logo.png" class="w-8 h-8 object-contain" />
+            
+            <div class="relative flex-1">
+                <input
+                ref="input"
+                v-model="keyword"
+                class="w-full px-4 py-3 rounded-lg border-2 border-black bg-white text-lg text-black outline-none focus:border-primary"
+                placeholder="搜索角色..."
+                type="text"
+                @keydown.enter="handleSearch"
+                >
+                <div 
+                class="absolute right-3 top-1/2 -translate-y-1/2 text-xl p-2 cursor-pointer hover:bg-gray-100 rounded-full transition-colors"
+                @click="handleSearch"
+                >
+                <div v-if="loading" i-carbon-circle-dash class="animate-spin text-primary" />
+                <div v-else i-carbon-search class="text-black" />
+                </div>
+            </div>
         </div>
-      </div>
-    </div>
+    
+
+
     <p class="text-xs text-black px-1 ml-11 font-medium">
       提示：如果搜不到，请尝试输入<b>完整全名</b> (Bangumi 搜索较严格)。例如：`四宫`搜不到，就输入`四宫辉夜`。 
     </p>
@@ -422,7 +468,7 @@ onMounted(() => {
                             id: item.id,
                             name: item.name,
                             images: { large: item.images?.large || item.image, medium: item.images?.medium || item.image, grid: item.images?.grid || item.image, small: item.images?.small || item.image, common: item.images?.common || item.image },
-                        } as any)"
+                        } as any, $event)"
                       >
                          <div class="w-full aspect-[2/3] overflow-hidden rounded-xl bg-gray-100 relative shadow-md border-2" 
                               :class="trendingList.indexOf(item) === 0 ? 'border-yellow-400 ring-2 ring-yellow-200' : (trendingList.indexOf(item) === 1 ? 'border-gray-300' : 'border-orange-300')">
@@ -463,7 +509,7 @@ onMounted(() => {
                                 id: item.id,
                                 name: item.name,
                                 images: { large: item.images?.large || item.image, medium: item.images?.medium || item.image, grid: item.images?.grid || item.image, small: item.images?.small || item.image, common: item.images?.common || item.image },
-                            } as any)"
+                            } as any, $event)"
                         >
                             <div class="w-full aspect-[2/3] rounded-lg overflow-hidden bg-gray-100 relative shadow-sm border border-gray-100 group-hover:border-primary transition-colors">
                                 <span class="absolute top-0 left-0 bg-black/60 text-white text-[10px] px-1.5 rounded-br-lg font-bold z-10">{{ trendingList.indexOf(item) + 1 }}</span>
@@ -498,7 +544,7 @@ onMounted(() => {
             v-for="item in searchResult"
             :key="item.id"
             class="break-inside-avoid group flex flex-col gap-2 cursor-pointer p-2 rounded-lg hover:bg-gray-100 transition-colors"
-            @click="handleAdd(item)"
+            @click="handleAdd(item, $event)"
           >
             <div class="w-full overflow-hidden rounded-lg bg-gray-100 relative">
               <img 
@@ -605,5 +651,7 @@ onMounted(() => {
         </button>
       </div>
     </div>
+  </div>
+  </div>
   </div>
 </template>

@@ -10,6 +10,7 @@ defineProps<{
   showCharacterName: boolean
   modeIsCustom?: boolean
   fillerName?: string
+  isStreamerMode?: boolean
 }>()
 
 const emit = defineEmits<{
@@ -19,6 +20,7 @@ const emit = defineEmits<{
   (e: 'select-slot', index: number): void
   (e: 'update-label', payload: { index: number, label: string }): void
   (e: 'return-home'): void
+  (e: 'drop-item', payload: any): void
 }>()
 
 </script>
@@ -26,7 +28,8 @@ const emit = defineEmits<{
 <template>
   <div class="relative w-full flex flex-col items-center gap-2">
     <!-- Tip -->
-    <div class="flex items-center gap-2 text-primary bg-primary-light/80 px-4 py-1.5 rounded-full border border-primary-light shadow-sm animate-hint-cycle">
+    <!-- Tip -->
+    <div v-if="!isStreamerMode" class="flex items-center gap-2 text-primary bg-primary-light/80 px-4 py-1.5 rounded-full border border-primary-light shadow-sm animate-hint-cycle">
          <div class="i-carbon-edit text-sm" />
          <span class="text-xs font-bold">小贴士：表格上方标题、格子下方标签文字，都是可以自定义修改的哦！</span>
     </div>
@@ -51,19 +54,14 @@ const emit = defineEmits<{
         @update:customTitle="emit('update:customTitle', $event)"
         @select-slot="emit('select-slot', $event)"
         @update-label="emit('update-label', $event)"
+        @drop-item="emit('drop-item', $event)"
         :show-character-name="showCharacterName"
+        :is-streamer-mode="isStreamerMode"
     />
     
      <div class="flex flex-wrap items-center justify-center gap-4 mt-4 w-full px-4">
         <!-- Toggle: Character Names -->
-         <button 
-           class="flex items-center gap-2 px-4 py-2 rounded-full border-2 transition-all font-bold text-sm"
-           :class="showCharacterName ? 'bg-primary text-white border-primary' : 'bg-white text-gray-600 border-gray-200 hover:border-primary'"
-           @click="emit('update:showCharacterName', !showCharacterName)"
-         >
-           <div :class="showCharacterName ? 'i-carbon-checkbox-checked' : 'i-carbon-checkbox'" class="text-lg" />
-           <span>显示角色名字</span>
-         </button>
+
 
          <!-- Input: Filler Name (Only for Custom Mode) -->
          <div v-if="modeIsCustom" class="flex items-center gap-2 px-4 py-2 bg-white rounded-full border-2 border-gray-200 focus-within:border-primary transition-all">

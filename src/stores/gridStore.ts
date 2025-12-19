@@ -1,5 +1,5 @@
 
-import { createGlobalState, useStorage } from '@vueuse/core'
+import { createGlobalState, useStorage, useRefHistory } from '@vueuse/core'
 import { ref, computed } from 'vue'
 import type { GridItem, StatsResponse, GridItemCharacter } from '~/types'
 import { api } from '~/services/api'
@@ -20,6 +20,19 @@ export const useGridStore = createGlobalState(() => {
     // The definitive list of items in the grid
     // We use a map { [templateId]: GridItem[] } to persist data across template switches locally
     const savedGrids = useStorage<Record<string, GridItem[]>>('anime-grid-data-v2', {})
+
+    // --- Streamer Mode State ---
+    const isStreamerMode = useStorage('anime-grid-mode-streamer', false)
+    const isToolbarOpen = useStorage('anime-grid-toolbar-open', true)
+
+    // Dock items are just Characters (no label needed)
+    const dockItems = useStorage<GridItemCharacter[]>('anime-grid-dock-v1', [])
+
+    // --- History (Undo/Redo) ---
+    const { undo, redo, canUndo, canRedo } = useRefHistory(savedGrids, {
+        deep: true,
+        capacity: 20
+    })
 
     // --- Legacy Migration (v1 -> v2) ---
     // Detects if user has old data but no new data, and migrates it.
@@ -189,6 +202,24 @@ export const useGridStore = createGlobalState(() => {
         }
     }
 
+    // --- Dock Actions ---
+    function addToDock(character: GridItemCharacter) {
+        // Prevent duplicates by ID
+        if (!dockItems.value.find(i => i.id === character.id)) {
+            dockItems.value.push(character)
+        }
+    }
+
+    function removeFromDock(index: number) {
+        dockItems.value.splice(index, 1)
+    }
+
+    function clearDock() {
+        if (confirm('确定要清空暂存区吗？')) {
+            dockItems.value = []
+        }
+    }
+
     return {
         // State
         currentTemplateId,
@@ -198,15 +229,29 @@ export const useGridStore = createGlobalState(() => {
         isLoading,
         error,
         currentList,
-        stats, // NEW
-        statsLoading, // NEW
-        statsError, // NEW
+        stats,
+        statsLoading,
+        statsError,
+
+        // Streamer Mode
+        isStreamerMode,
+        isToolbarOpen,
+        dockItems,
+        canUndo,
+        canRedo,
 
         // Actions
         loadTemplate,
         updateItem,
         saveToCloud,
-        loadStats // NEW
+        loadStats,
+
+        // Dock Actions
+        addToDock,
+        removeFromDock,
+        clearDock,
+        undo,
+        redo
     }
 })
 

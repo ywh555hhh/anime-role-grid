@@ -13,7 +13,7 @@ import { TEMPLATES } from '~/logic/templates'
 
 // Store
 const store = useGridStore()
-const { loadTemplate, currentTitle, currentTemplateId } = store
+const { loadTemplate, currentTitle, currentTemplateId, isStreamerMode } = store
 
 // Modals
 const showGuideModal = ref(false)
@@ -116,7 +116,10 @@ function handleResetTags() {
     
     <div class="container mx-auto flex flex-col items-center gap-6 px-4 max-w-full">
         <!-- Unified Editor Component -->
-        <GridEditor>
+        <GridEditor 
+            @open-gallery="handleOpenGallery"
+            @reset-tags="handleResetTags"
+        >
             <!-- Slot: Extra Actions (Specific to Home) -->
             <template #extra-actions>
                  <!-- Guide Buttons -->
@@ -187,6 +190,6 @@ function handleResetTags() {
       @select="selectTemplate"
     />
     
-    <Footer />
+    <Footer v-if="!isStreamerMode" />
   </div>
 </template>

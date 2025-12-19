@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref } from 'vue'
+import { ref, computed } from 'vue'
 import { useRouter } from 'vue-router'
 import Search from '~/components/Search.vue'
 import VideoExportModal from '~/components/VideoExportModal.vue'
@@ -11,8 +11,9 @@ import ImageExportModal from '~/components/ImageExportModal.vue'
 import { useGridStore } from '~/stores/gridStore' // NEW: Store
 import { exportGridAsImage } from '~/logic/export'
 import { useVideoExport } from '~/logic/video-export'
-import { toast } from 'vue-sonner' // NEW
-
+import { toast } from 'vue-sonner' 
+import StreamerDock from '~/components/StreamerDock.vue'
+import { useFullscreen } from '@vueuse/core' // NEW
 
 // Props: Minimal now, just UI flags if needed
 // Actually, for backward compat with slots, we might keep it simple.
@@ -41,8 +42,19 @@ const {
   isLoading: storeLoading,
   error: storeError,
   updateItem,
-  saveToCloud
+  saveToCloud,
+  isStreamerMode, // NEW
+  isToolbarOpen, // NEW: Synced with Dock
+  addToDock,
+  undo, redo, canUndo, canRedo // NEW
 } = store
+
+// Full Screen Logic
+const { isFullscreen, toggle: toggleFullscreen } = useFullscreen()
+
+
+
+
 
 // Local State
 const showSearch = ref(false)
@@ -51,6 +63,7 @@ const showJoinGroupModal = ref(false)
 const showCharacterName = ref(false)
 const currentSlotIndex = ref<number | null>(null)
 const fillerName = ref('') // For custom mode
+const canvasScale = ref(1) // Zoom Level
 
 // Reuse Logic
 const saving = ref(false)
@@ -73,6 +86,62 @@ function handleAdd(character: any) {
   showSearch.value = false
   currentSlotIndex.value = null
 }
+
+function handleSearchAdd(payload: any) {
+    // Normalise item (Search emits wrapped {item, rect}, Custom emits item directly)
+    const item = payload.item || payload
+    
+    if (isStreamerMode.value) {
+        if (item) {
+           addToDock(item)
+           toast.success(`已添加到卡池: ${item.name}`)
+        }
+    } else {
+        // Standard mode
+        if (item) {
+            handleAdd(item)
+        }
+    }
+}
+
+function handleDropItem(payload: { index: number, itemId?: string, item?: any }) {
+   if ('item' in payload) {
+       updateItem(payload.index, payload.item)
+       // Only toast on adding, not removing/moving out (which clears source)
+       // Actually moving out clears source, moving in sets target.
+       // We only care about the target update here.
+       // If clearing (item undefined), no toast needed or 'Removed'.
+       if (payload.item) {
+           // toast.success('填入成功') // Optional, maybe too noisy for drag & drop
+       }
+       return
+   }
+
+   if (payload.itemId) {
+       const dockItem = store.dockItems.value.find(i => i.id == payload.itemId || i.id == Number(payload.itemId))
+       if (dockItem) {
+         updateItem(payload.index, dockItem)
+         toast.success('填入成功')
+       }
+   }
+}
+
+// Layout Classes
+// Layout Classes
+const mainContainerClass = computed(() => {
+   if (isStreamerMode.value) {
+      // Streamer Mode: Locked Layout (Game UI feel)
+      return "flex flex-col md:flex-row w-full h-screen overflow-hidden items-stretch bg-gray-50 dark:bg-gray-900 fixed inset-0 z-40" 
+   }
+   return "flex flex-col items-center gap-6 w-full max-w-full px-4"
+})
+
+const canvasAreaClass = computed(() => {
+   if (isStreamerMode.value) {
+       return "flex-1 relative w-full h-full overflow-hidden bg-gray-50/50 dark:bg-gray-900/50"
+   }
+   return "w-full flex flex-col items-center gap-6"
+})
 
 function handleClear() {
     const index = currentSlotIndex.value
@@ -187,44 +256,233 @@ function handleVideoExport(settings: any) {
         <button @click="router.push('/')" class="btn-primary">返回首页</button>
     </div>
 
-    <div v-else class="flex flex-col items-center gap-6 w-full max-w-full px-4">
-       <!-- Header Area -->
-       <slot name="header"></slot>
+    <div v-else :class="mainContainerClass">
        
-       <!-- Grid Canvas (Wraps Grid & Controls) -->
-       <GridCanvas
-            :list="currentList"
-            :cols="Number(currentConfig?.cols) || 3"
-            :title="currentConfig?.templateName || currentTitle"
-            :customTitle="props.customTitle"
-            v-model:showCharacterName="showCharacterName"
-            :modeIsCustom="modeIsCustom"
-            v-model:fillerName="fillerName"
-            @update:customTitle="emit('update:customTitle', $event)"
-            @select-slot="handleSelectSlot"
-            @update-label="handleUpdateLabel"
-            @return-home="router.push('/')"
-       />
+       <div :class="canvasAreaClass">
+           
+           <!-- Streamer Mode: Zoom & Scroll Layout -->
+           <template v-if="isStreamerMode">
+               <!-- Zoom Controls -->
+               <div class="absolute bottom-6 left-6 z-30 flex items-center gap-2 bg-white/80 dark:bg-gray-800/80 backdrop-blur rounded-full px-4 py-2 shadow-lg border border-gray-200 dark:border-gray-700 transition-opacity hover:opacity-100 opacity-60">
+                    <button @click="canvasScale = Math.max(0.5, canvasScale - 0.1)" class="p-1 hover:text-primary transition-colors"><div i-carbon-subtract /></button>
+                    <span class="text-xs font-bold w-12 text-center tabular-nums">{{ Math.round(canvasScale * 100) }}%</span>
+                    <button @click="canvasScale = Math.min(2, canvasScale + 0.1)" class="p-1 hover:text-primary transition-colors"><div i-carbon-add /></button>
+                    <div class="w-px h-3 bg-gray-300 mx-1"></div>
+                    <button @click="canvasScale = 1" class="text-xs text-gray-500 hover:text-primary" title="重置">重置</button>
+               </div>
 
-       <!-- Actions Toolbar -->
-       <GridActionButtons 
-            :saving="saving"
-            @save="handleSave"
-            @export-video="isVideoModalOpen = true"
-            @create-new="router.push('/create')"
-       >
-            <template #extra-actions>
-                <slot name="extra-actions"></slot>
-            </template>
-       </GridActionButtons>
+               <!-- Scroll Container -->
+               <div class="w-full h-full overflow-auto flex flex-col items-center py-10">
+                    <!-- Scalable Wrapper -->
+                    <div 
+                        :style="{ transform: `scale(${canvasScale})`, transformOrigin: 'top center' }"
+                        class="transition-transform duration-200 ease-out origin-top"
+                    >
+                        <GridCanvas
+                             :list="currentList"
+                             :cols="Number(currentConfig?.cols) || 3"
+                             :title="currentConfig?.templateName || currentTitle"
+                             :customTitle="props.customTitle"
+                             v-model:showCharacterName="showCharacterName"
+                             :modeIsCustom="modeIsCustom"
+                             v-model:fillerName="fillerName"
+                             :is-streamer-mode="isStreamerMode"
+                             @update:customTitle="emit('update:customTitle', $event)"
+                             @select-slot="handleSelectSlot"
+                             @update-label="handleUpdateLabel"
+                             @return-home="router.push('/')"
+                             @drop-item="handleDropItem"
+                        />
+                    </div>
+               </div>
+           </template>
+
+           <!-- Standard Mode Layout -->
+           <template v-else>
+               <div class="w-full flex justify-center">
+                    <slot name="header"></slot>
+               </div>
+               
+               <GridCanvas
+                    :list="currentList"
+                    :cols="Number(currentConfig?.cols) || 3"
+                    :title="currentConfig?.templateName || currentTitle"
+                    :customTitle="props.customTitle"
+                    v-model:showCharacterName="showCharacterName"
+                    :modeIsCustom="modeIsCustom"
+                    v-model:fillerName="fillerName"
+                    :is-streamer-mode="isStreamerMode"
+                    @update:customTitle="emit('update:customTitle', $event)"
+                    @select-slot="handleSelectSlot"
+                    @update-label="handleUpdateLabel"
+                    @return-home="router.push('/')"
+                    @drop-item="handleDropItem"
+               />
+        
+               <!-- Standard Toolbar -->
+               <div class="mt-4 w-full flex justify-center">
+                    <GridActionButtons 
+                        :saving="saving"
+                        @save="handleSave"
+                        @export-video="isVideoModalOpen = true"
+                        @create-new="router.push('/create')"
+                    >
+                        <template #extra-actions>
+                             <!-- Toggle: Character Names -->
+                             <button 
+                               class="w-full mt-2 py-2 rounded-lg border-2 transition-all font-bold text-gray-400 border-gray-300 hover:border-primary hover:text-primary flex items-center justify-center gap-2"
+                               :class="{ 'bg-primary/5 border-primary text-primary': showCharacterName }"
+                               @click="showCharacterName = !showCharacterName"
+                             >
+                               <div :class="showCharacterName ? 'i-carbon-checkbox-checked' : 'i-carbon-checkbox'" class="text-xl" />
+                               <span>显示角色名字</span>
+                             </button>
+    
+                            <button 
+                                class="w-full mt-2 py-2 rounded-lg border-2 border-dashed border-gray-300 text-gray-400 font-bold hover:border-primary hover:text-primary transition-colors flex items-center justify-center gap-2"
+                                @click="isStreamerMode = true"
+                            >
+                                 <div class="i-carbon-game-console" />
+                                 <span>进入主播模式 (Beta)</span>
+                             </button>
+                            <slot name="extra-actions"></slot>
+                        </template>
+                    </GridActionButtons>
+               </div>
+           </template>
+           
+        <!-- Deleted old structure -->
+           
+       </div>
+           
+           <!-- V3: Responsive Toolbar (Streamer Mode Only) -->
+           <!-- Position: Fixed Bottom (Desktop) / Right (Mobile) -->
+           <!-- V3: Responsive Toolbar (Streamer Mode Only) -->
+           <!-- Position: Fixed Bottom (Desktop) / Right (Mobile) -->
+           <Transition
+                enter-active-class="transition-all duration-200 ease-out"
+                enter-from-class="opacity-0 translate-y-10 md:translate-y-10 translate-x-10 md:translate-x-0"
+                enter-to-class="opacity-100 translate-y-0 translate-x-0"
+                leave-active-class="transition-all duration-150 ease-in"
+                leave-from-class="opacity-100 translate-y-0 translate-x-0"
+                leave-to-class="opacity-0 translate-y-10 md:translate-y-10 translate-x-10 md:translate-x-0"
+           >
+           <div 
+             v-if="isStreamerMode && isToolbarOpen" 
+             class="fixed z-50"
+             :class="[
+               // Desktop Position: Bottom Center
+               'md:bottom-8 md:left-1/2 md:-translate-x-1/2 md:right-auto md:top-auto md:flex-row',
+               // Mobile Position: Right Center (Thumb Zone)
+               'top-1/2 -translate-y-1/2 right-3 bottom-auto left-auto flex-col',
+             ]"
+           >
+                <!-- Expanded Content -->
+                <div 
+                    class="pointer-events-auto bg-white/90 dark:bg-gray-800/90 backdrop-blur shadow-2xl rounded-2xl p-2 md:p-3 flex items-center gap-3 md:gap-4 border border-gray-200 dark:border-gray-700"
+                     :class="[
+                        'flex-col md:flex-row' // Mobile: Col, Desktop: Row
+                     ]"
+                >
+                    <!-- Group 1: History -->
+                    <div class="flex gap-2" :class="{ 'flex-col md:flex-row': true }">
+                        <button 
+                            class="p-2 rounded-xl hover:bg-gray-100 dark:hover:bg-gray-700 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+                            :disabled="!canUndo"
+                            @click="undo()"
+                            title="撤销"
+                        >
+                            <div class="i-carbon-undo text-xl" />
+                        </button>
+                        <button 
+                            class="p-2 rounded-xl hover:bg-gray-100 dark:hover:bg-gray-700 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+                            :disabled="!canRedo"
+                            @click="redo()"
+                            title="重做"
+                        >
+                            <div class="i-carbon-redo text-xl" />
+                        </button>
+                    </div>
+
+                    <div class="w-6 h-px bg-gray-200 dark:bg-gray-700 md:w-px md:h-6 shrink-0" />
+
+                    <!-- Group 2: View Controls -->
+                    <div class="flex gap-2" :class="{ 'flex-col md:flex-row': true }">
+                         <button 
+                            class="p-2 rounded-xl hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+                            :class="{ 'text-primary bg-primary/10': showCharacterName }"
+                            @click="showCharacterName = !showCharacterName"
+                            title="显示角色名"
+                        >
+                            <div class="i-carbon-text-font text-xl" />
+                        </button>
+                        <button 
+                             class="p-2 rounded-xl hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+                             @click="toggleFullscreen"
+                             :title="isFullscreen ? '退出全屏' : '全屏体验'"
+                             >
+                             <div :class="isFullscreen ? 'i-carbon-minimize' : 'i-carbon-maximize'" class="text-xl" />
+                        </button>
+                    </div>
+
+                    <div class="w-6 h-px bg-gray-200 dark:bg-gray-700 md:w-px md:h-6 shrink-0" />
+
+                    <!-- Group 3: File Actions -->
+                    <div class="flex gap-2" :class="{ 'flex-col md:flex-row': true }">
+                        <button 
+                            class="p-2 rounded-xl hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+                            @click="emit('open-gallery')"
+                            title="切换模板"
+                        >
+                            <div class="i-carbon-grid text-xl" />
+                        </button>
+                         <button 
+                            class="p-2 rounded-xl hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+                            @click="handleSave"
+                            title="保存"
+                        >
+                            <div class="i-carbon-save text-xl" />
+                        </button>
+                    </div>
+
+                    <div class="w-6 h-px bg-gray-200 dark:bg-gray-700 md:w-px md:h-6 shrink-0" />
+
+                    <!-- Hide / Exit -->
+                    <div class="flex gap-2" :class="{ 'flex-col md:flex-row': true }">
+                         <button 
+                            class="p-2 rounded-xl hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors text-gray-500"
+                            @click="isToolbarOpen = false"
+                            title="收起工具栏"
+                        >
+                            <div class="i-carbon-chevron-right md:hidden text-xl" /> <!-- Mobile Icon: Right Arrow to indicate 'push right' -->
+                            <div class="i-carbon-chevron-down hidden md:block text-xl" /> <!-- Desktop Icon: Down Arrow -->
+                        </button>
+                        <button 
+                            class="p-2 rounded-xl hover:bg-red-50 text-red-500 transition-colors"
+                            @click="isStreamerMode = false"
+                            title="退出模式"
+                        >
+                            <div class="i-carbon-logout text-xl" />
+                        </button>
+                    </div>
+                </div>
+            </div>
+           </Transition>
+
+
+       <!-- Dock (Streamer Mode Only) -->
+       <StreamerDock 
+            v-if="isStreamerMode"
+            @open-search="showSearch = true"
+       />
     </div>
 
     <!-- Modals -->
     <Transition>
       <Search
         v-if="showSearch"
-        class="fixed left-1/2 top-1/2 z-50 -translate-x-1/2 -translate-y-1/2 w-[90%] max-w-5xl h-[80vh] bg-white dark:bg-gray-900 rounded-2xl shadow-2xl overflow-hidden border border-gray-200 dark:border-gray-800"
-        @add="handleAdd"
+        :mode="isStreamerMode ? 'streamer' : 'single'"
+        @add="handleSearchAdd"
         @clear="handleClear"
         @close="showSearch = false"
       />
