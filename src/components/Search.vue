@@ -12,20 +12,7 @@ const props = defineProps<{
 
 const emit = defineEmits(['add', 'close', 'clear'])
 
-// Lock body scroll ONLY in Streamer Mode
-// In Normal Mode, we leave it alone to prevent layout jitter caused by scrollbar hiding/showing
-onMounted(() => { 
-  if (props.mode === 'streamer') {
-    document.body.style.overflow = 'hidden' 
-  }
-})
 
-onBeforeUnmount(() => { 
-  // Always clean up, just in case
-  if (props.mode === 'streamer') {
-    document.body.style.overflow = '' 
-  }
-})
 
 const input = ref<HTMLInputElement>()
 const keyword = ref('')
@@ -327,7 +314,7 @@ onMounted(() => {
 
 <template>
   <div 
-    class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm transition-all duration-200"
+    class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm transition-all duration-200 overflow-hidden"
     :class="{
       'md:pr-64': mode === 'streamer', // Shift center to left (Dock 56 + extra padding)
       'p-4 md:p-8': true
@@ -355,7 +342,7 @@ onMounted(() => {
                 <input
                 ref="input"
                 v-model="keyword"
-                class="w-full px-4 py-3 rounded-lg border-2 border-black bg-white text-lg text-black outline-none focus:border-primary"
+                class="w-full px-4 py-3 rounded-lg border-2 border-gray-300 bg-white text-lg text-black outline-none focus:border-primary"
                 placeholder="搜索角色..."
                 type="text"
                 @keydown.enter="handleSearch"
@@ -450,22 +437,22 @@ onMounted(() => {
         </div>
 
         <!-- Trending Section (Show when no keyword) -->
-        <div v-if="!keyword && activeTab === 'search'" class="mb-8 relative transform-gpu">
+        <div v-if="!keyword && activeTab === 'search'" class="mb-8 relative">
             <div class="flex items-center justify-between mb-4 px-1">
                 <div class="flex items-center gap-2">
                     <div class="i-carbon-fire text-primary text-lg animate-pulse" />
                     <h3 class="font-bold text-sm text-black">全站热门</h3>
                 </div>
                 <!-- Time Period Tabs -->
-                <div class="flex bg-gray-100 rounded-lg p-0.5">
+                <div class="flex bg-gray-100 rounded-lg p-1 gap-1">
                     <button 
                         v-for="p in ['week', '24h', 'all']" 
                         :key="p"
-                        class="px-3 py-1 text-xs font-bold rounded-md transition-all"
+                        class="px-3 py-1 text-xs font-bold rounded-md transition-all flex items-center justify-center min-w-[3em]"
                         :class="activePeriod === p ? 'bg-white text-primary shadow-sm' : 'text-gray-500 hover:text-gray-700'"
                         @click="activePeriod = p as any"
                     >
-                        {{ p === '24h' ? '日榜' : p === 'week' ? '本周' : '总榜' }}
+                        {{ p === '24h' ? '日榜' : p === 'week' ? '周榜' : '总榜' }}
                     </button>
                 </div>
             </div>
@@ -481,14 +468,14 @@ onMounted(() => {
                      <div
                         v-for="item in trendingList.slice(0, 3)"
                         :key="item.id"
-                        class="relative group cursor-pointer transform-gpu will-change-transform"
+                        class="relative group cursor-pointer"
                         @click="handleAdd({
                             id: item.id,
                             name: item.name,
                             images: { large: item.images?.large || item.image, medium: item.images?.medium || item.image, grid: item.images?.grid || item.image, small: item.images?.small || item.image, common: item.images?.common || item.image },
                         } as any, $event)"
                       >
-                         <div class="w-full aspect-[2/3] overflow-hidden rounded-xl bg-gray-100 relative shadow-md border-2 transform-gpu backface-hidden will-change-transform" 
+                         <div class="w-full aspect-[2/3] overflow-hidden rounded-xl bg-gray-100 relative shadow-md border-2" 
                               :class="trendingList.indexOf(item) === 0 ? 'border-yellow-400 ring-2 ring-yellow-200' : (trendingList.indexOf(item) === 1 ? 'border-gray-300' : 'border-orange-300')">
                             
                             <!-- Rank Badge -->
@@ -502,7 +489,7 @@ onMounted(() => {
                             
                             <img 
                                 :src="item.image" 
-                                class="w-full h-full object-cover object-top group-hover:scale-105 transition-transform duration-500 will-change-transform"
+                                class="w-full h-full object-cover object-top group-hover:scale-105 transition-transform duration-500"
                                 loading="lazy"
                                 referrerpolicy="no-referrer"
                             >
@@ -613,7 +600,7 @@ onMounted(() => {
             <label class="text-sm font-bold text-black">角色名字 (可选)</label>
             <input 
                 v-model="customName"
-                class="w-full px-4 py-3 rounded-lg border-2 border-black bg-white text-black outline-none focus:border-primary"
+                class="w-full px-4 py-3 rounded-lg border-2 border-gray-300 bg-white text-black outline-none focus:border-primary"
                 placeholder="给图片起个名字..."
                 type="text"
             >
@@ -622,7 +609,7 @@ onMounted(() => {
         <div class="flex flex-col gap-2">
           <label class="text-sm font-bold text-black">上传图片</label>
           <div 
-          class="border-2 border-dashed border-black rounded-lg p-8 flex flex-col items-center justify-center cursor-pointer hover:border-primary transition-colors relative"
+          class="border-2 border-dashed border-gray-300 rounded-lg p-8 flex flex-col items-center justify-center cursor-pointer hover:border-primary transition-colors relative"
           @click="triggerFileInput"
           @dragover.prevent
           @drop.prevent="handleDrop"
@@ -661,7 +648,7 @@ onMounted(() => {
         </div>
 
         <button 
-          class="w-full py-3 bg-primary hover:bg-primary-hover text-white rounded-lg font-bold transition-colors disabled:opacity-50 disabled:cursor-not-allowed mt-4"
+          class="btn w-full py-3 bg-primary hover:bg-primary-hover text-white rounded-lg font-bold transition-colors disabled:opacity-50 disabled:cursor-not-allowed mt-4"
           :disabled="!customImagePreview"
           @click="handleCustomAdd"
         >

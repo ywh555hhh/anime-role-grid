@@ -31,7 +31,7 @@ const showQQModal = ref(false)
       </a>
       <button 
         @click="showQQModal = true"
-        class="flex items-center gap-2 hover:text-primary transition-colors group"
+        class="flex items-center gap-2 hover:text-primary transition-colors group bg-transparent p-0 border-none outline-none hover:border-none"
       >
         <!-- Custom QQ Icon SVG -->
         <svg class="w-5 h-5 group-hover:scale-110 transition-transform" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg">

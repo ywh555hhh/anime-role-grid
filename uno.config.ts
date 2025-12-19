@@ -65,10 +65,13 @@ export default defineConfig({
         },
     },
     shortcuts: {
-        'btn-primary': 'bg-primary text-white hover:bg-primary-hover transition-colors rounded-btn px-4 py-2 flex items-center justify-center gap-2 font-bold shadow-md hover:shadow-lg',
-        'btn-outline-primary': 'bg-white text-primary border-2 border-primary hover:bg-primary-light transition-colors rounded-btn px-4 py-2 flex items-center justify-center gap-2 font-bold shadow-sm',
+        // Base button class: consolidates default styles + cleaner focus state (no double pink border)
+        'btn': 'border-none rounded-btn cursor-pointer transition-all duration-200 outline-none focus:ring-2 focus:ring-primary/50 disabled:opacity-50 disabled:cursor-not-allowed',
+
+        'btn-primary': 'btn bg-primary text-white hover:bg-primary-hover px-4 py-2 flex items-center justify-center gap-2 font-bold shadow-md hover:shadow-lg',
+        'btn-outline-primary': 'btn bg-white text-primary border-2 border-primary hover:bg-primary-light px-4 py-2 flex items-center justify-center gap-2 font-bold shadow-sm',
         'card-base': 'bg-white dark:bg-gray-800 rounded-std border border-border dark:border-border-dark shadow-sm',
-        'input-std': 'rounded-inp border border-black px-4 py-3 bg-white text-black outline-none focus:border-primary',
+        'input-std': 'rounded-inp border border-gray-300 px-4 py-3 bg-white text-black outline-none focus:border-primary',
         'icon-btn': 'p-1 rounded bg-gray-100 hover:bg-primary-light transition-colors text-gray-600 hover:text-primary',
     }
 })
