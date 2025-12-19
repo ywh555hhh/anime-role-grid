@@ -190,17 +190,19 @@ function onDropAdd(evt: any) {
         <div class="flex-grow w-full relative overflow-hidden bg-gray-50">
           
           <!-- Drop Zone Overlay (Streamer Mode) -->
-          <VueDraggable
-             v-if="isStreamerMode"
-             :modelValue="item.character ? [item.character] : []"
-             @update:modelValue="handleSlotDrop(index, $event)"
-             :group="{ name: 'grid', put: true, pull: true }"
-             class="absolute inset-0 z-20 w-full h-full flex items-stretch justify-stretch"
-             :class="{ 'pointer-events-auto': isStreamerMode, 'cursor-grab': isStreamerMode && item.character }"
-             ghost-class="ghost-preview"
-             :sort="false"
-             @add="onDropAdd($event)"
-          >
+             <VueDraggable
+                v-if="isStreamerMode"
+                :modelValue="item.character ? [item.character] : []"
+                @update:modelValue="handleSlotDrop(index, $event)"
+                :group="{ name: 'grid', put: true, pull: true }"
+                class="absolute inset-0 z-20 w-full h-full flex items-stretch justify-stretch"
+                :class="{ 'pointer-events-auto': isStreamerMode, 'cursor-grab': isStreamerMode && item.character }"
+                ghost-class="ghost-preview"
+                :sort="false"
+                @add="onDropAdd($event)"
+                @start="isDragging = true"
+                @end="isDragging = false"
+             >
              <template v-if="item.character">
                   <div 
                     :data-id="item.character.id" 

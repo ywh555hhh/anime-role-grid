@@ -11,12 +11,19 @@ const trashList = ref([])
 function onTrashAdd(evt: any) {
     trashList.value = [] // Auto-empty to keep it clean
     
-    // If dragged from Dock, we need to manually remove it because Dock uses pull:'clone'
-    const id = evt.item.dataset.id
-    if (id) {
-        const idx = dockItems.value.findIndex(i => i.id == id || i.id == Number(id))
-        if (idx !== -1) {
-             removeFromDock(idx)
+    // Logic: Only remove from Dock if the item CAME from the Dock.
+    // If it came from the Grid, the Grid's "pull: true" or "pull: move" (default for same group usually) 
+    // combined with the fact it was dropped here means it's gone from Grid.
+    // We just need to ensure we don't ALSO delete it from Dock if it happens to match an ID.
+    
+    // We check the source element ID. We will add id="dock-list" to the dock VueDraggable.
+    if (evt.from.id === 'dock-list') {
+        const id = evt.item.dataset.id
+        if (id) {
+            const idx = dockItems.value.findIndex(i => i.id == id || i.id == Number(id))
+            if (idx !== -1) {
+                 removeFromDock(idx)
+            }
         }
     }
 }
@@ -88,6 +95,7 @@ const dragOptions = {
          </div>
 
          <VueDraggable
+            id="dock-list"
             v-model="dockItems"
             v-bind="dragOptions"
             class="grid grid-rows-2 grid-flow-col auto-cols-max gap-2 p-2 h-full w-max min-w-full content-start items-start md:grid-rows-none md:grid-flow-row md:grid-cols-2 md:auto-rows-min md:w-full md:h-auto md:min-w-0"
@@ -163,12 +171,13 @@ const dragOptions = {
             v-model="trashList"
             :group="{ name: 'grid', put: true, pull: false }" 
             class="relative flex items-center justify-center w-10 h-10 md:w-full md:h-12"
+            id="dock-trash"
             ghost-class="hidden-ghost"
             @add="onTrashAdd"
         >
             <button 
-                class="absolute inset-0 flex items-center justify-center text-gray-400 hover:text-red-500 transition-all duration-200 w-full h-full border-2 border-dashed border-gray-300 rounded-xl hover:border-red-500 hover:bg-red-50"
-                :class="{ 'border-red-400 bg-red-50 text-red-500 scale-105 shadow-md': isDragging }"
+                class="absolute inset-0 flex items-center justify-center text-gray-400 hover:text-pink-500 transition-all duration-200 w-full h-full border-2 border-dashed border-gray-300 rounded-xl hover:border-pink-500 hover:bg-pink-50"
+                :class="{ 'border-pink-400 bg-pink-50 text-pink-500 scale-105 shadow-md': isDragging }"
                 @click="clearDock"
                 title="清空暂存区 / 拖入删除"
             >

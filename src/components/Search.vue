@@ -12,6 +12,21 @@ const props = defineProps<{
 
 const emit = defineEmits(['add', 'close', 'clear'])
 
+// Lock body scroll ONLY in Streamer Mode
+// In Normal Mode, we leave it alone to prevent layout jitter caused by scrollbar hiding/showing
+onMounted(() => { 
+  if (props.mode === 'streamer') {
+    document.body.style.overflow = 'hidden' 
+  }
+})
+
+onBeforeUnmount(() => { 
+  // Always clean up, just in case
+  if (props.mode === 'streamer') {
+    document.body.style.overflow = '' 
+  }
+})
+
 const input = ref<HTMLInputElement>()
 const keyword = ref('')
 const searchResult = shallowRef<BgmSearchResultItem[]>([])
@@ -361,7 +376,10 @@ onMounted(() => {
       提示：如果搜不到，请尝试输入<b>完整全名</b> (Bangumi 搜索较严格)。例如：`四宫`搜不到，就输入`四宫辉夜`。 
     </p>
     
-    <div class="flex-1 overflow-y-auto min-h-0">
+    <div 
+        class="flex-1 overflow-y-scroll overflow-x-hidden min-h-0 relative"
+        style="scrollbar-gutter: stable;"
+    >
       <!-- Tabs -->
       <div class="flex border-b-2 border-gray-200 mb-4 items-center">
         <button 
@@ -432,7 +450,7 @@ onMounted(() => {
         </div>
 
         <!-- Trending Section (Show when no keyword) -->
-        <div v-if="!keyword && activeTab === 'search'" class="mb-8">
+        <div v-if="!keyword && activeTab === 'search'" class="mb-8 relative transform-gpu">
             <div class="flex items-center justify-between mb-4 px-1">
                 <div class="flex items-center gap-2">
                     <div class="i-carbon-fire text-primary text-lg animate-pulse" />
@@ -463,14 +481,14 @@ onMounted(() => {
                      <div
                         v-for="item in trendingList.slice(0, 3)"
                         :key="item.id"
-                        class="relative group cursor-pointer"
+                        class="relative group cursor-pointer transform-gpu will-change-transform"
                         @click="handleAdd({
                             id: item.id,
                             name: item.name,
                             images: { large: item.images?.large || item.image, medium: item.images?.medium || item.image, grid: item.images?.grid || item.image, small: item.images?.small || item.image, common: item.images?.common || item.image },
                         } as any, $event)"
                       >
-                         <div class="w-full aspect-[2/3] overflow-hidden rounded-xl bg-gray-100 relative shadow-md border-2" 
+                         <div class="w-full aspect-[2/3] overflow-hidden rounded-xl bg-gray-100 relative shadow-md border-2 transform-gpu backface-hidden will-change-transform" 
                               :class="trendingList.indexOf(item) === 0 ? 'border-yellow-400 ring-2 ring-yellow-200' : (trendingList.indexOf(item) === 1 ? 'border-gray-300' : 'border-orange-300')">
                             
                             <!-- Rank Badge -->
@@ -484,7 +502,7 @@ onMounted(() => {
                             
                             <img 
                                 :src="item.image" 
-                                class="w-full h-full object-cover object-top group-hover:scale-105 transition-transform duration-500"
+                                class="w-full h-full object-cover object-top group-hover:scale-105 transition-transform duration-500 will-change-transform"
                                 loading="lazy"
                                 referrerpolicy="no-referrer"
                             >

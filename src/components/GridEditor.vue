@@ -133,7 +133,7 @@ function handleDropItem(payload: { index: number, itemId?: string, item?: any })
 const mainContainerClass = computed(() => {
    if (isStreamerMode.value) {
       // Streamer Mode: Locked Layout (Game UI feel)
-      return "flex flex-col md:flex-row w-full h-screen overflow-hidden items-stretch bg-gray-50 dark:bg-gray-900 fixed inset-0 z-40" 
+      return "flex flex-col md:flex-row w-full h-[100dvh] overflow-hidden items-stretch bg-gray-50 dark:bg-gray-900 fixed inset-0 z-40" 
    }
    return "flex flex-col items-center gap-6 w-full max-w-full px-4"
 })
@@ -274,7 +274,7 @@ function handleVideoExport(settings: any) {
                     leave-to-class="opacity-0 translate-y-10"
                >
                <!-- Wrapper for Lifecycle Transition & Positioning -->
-               <div v-show="isToolbarOpen" id="zoom-controls" class="absolute bottom-6 left-6 z-30">
+               <div v-show="isToolbarOpen" id="zoom-controls" class="absolute bottom-6 left-1/2 -translate-x-1/2 z-30">
                     <!-- Inner for Visuals & Hover Interaction -->
                     <div class="flex items-center gap-2 bg-white/80 dark:bg-gray-800/80 backdrop-blur rounded-full px-4 py-2 shadow-lg border border-gray-200 dark:border-gray-700 transition-opacity hover:opacity-100 opacity-60">
                         <button @click="canvasScale = Math.max(0.5, canvasScale - 0.1)" class="p-1 hover:text-primary transition-colors"><div i-carbon-subtract /></button>
@@ -390,20 +390,20 @@ function handleVideoExport(settings: any) {
            <!-- Optimized Positioning: Use Layout/Margin instead of Transform to avoid Transition conflicts -->
            <Transition
                 enter-active-class="transition-all duration-300 cubic-bezier(0.16, 1, 0.3, 1)"
-                enter-from-class="opacity-0 translate-x-10 md:translate-x-0 md:translate-y-10"
+                enter-from-class="opacity-0 translate-x-10 md:-translate-x-10"
                 enter-to-class="opacity-100 translate-x-0 translate-y-0"
                 leave-active-class="transition-all duration-200 ease-in"
                 leave-from-class="opacity-100 translate-x-0 translate-y-0"
-                leave-to-class="opacity-0 translate-x-10 md:translate-x-0 md:translate-y-10"
+                leave-to-class="opacity-0 translate-x-10 md:-translate-x-10"
            >
            <div 
              v-if="isStreamerMode && isToolbarOpen" 
              id="streamer-toolbar"
              class="fixed z-50 flex pointer-events-none"
              :class="[
-               // Desktop Position: Bottom Center (Using inset/margin)
-               'md:bottom-8 md:left-0 md:right-0 md:top-auto md:justify-center md:items-end md:w-full',
-               // Mobile Position: Right Center (Using flex column)
+               // Desktop Position: Left Center Vertical
+               'md:top-1/2 md:left-8 md:right-auto md:-translate-y-1/2 md:flex-col md:items-start',
+               // Mobile Position: Right Center Vertical (unchanged)
                'top-0 bottom-0 right-3 left-auto flex-col justify-center items-end',
              ]"
            >
@@ -411,11 +411,11 @@ function handleVideoExport(settings: any) {
                 <div 
                     class="pointer-events-auto bg-white/90 dark:bg-gray-800/90 backdrop-blur shadow-2xl rounded-2xl p-2 md:p-3 flex items-center gap-3 md:gap-4 border border-gray-200 dark:border-gray-700 shrink-0"
                      :class="[
-                        'flex-col md:flex-row' // Mobile: Col, Desktop: Row
+                        'flex-col' // Mobile: Col, Desktop: now also Col
                      ]"
                 >
                     <!-- Group 1: History -->
-                    <div class="flex gap-2" :class="{ 'flex-col md:flex-row': true }">
+                    <div class="flex gap-2 flex-col">
                         <button 
                             class="p-2 rounded-xl hover:bg-gray-100 dark:hover:bg-gray-700 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
                             :disabled="!canUndo"
@@ -434,17 +434,18 @@ function handleVideoExport(settings: any) {
                         </button>
                     </div>
 
-                    <div class="w-6 h-px bg-gray-200 dark:bg-gray-700 md:w-px md:h-6 shrink-0" />
+                    <div class="w-6 h-px bg-gray-200 dark:bg-gray-700 md:w-full md:h-px shrink-0" />
 
                     <!-- Group 2: View Controls -->
-                    <div class="flex gap-2" :class="{ 'flex-col md:flex-row': true }">
+                    <div class="flex gap-2 flex-col">
                          <button 
                             class="p-2 rounded-xl hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
                             :class="{ 'text-primary bg-primary/10': showCharacterName }"
                             @click="showCharacterName = !showCharacterName"
                             title="显示角色名"
                         >
-                            <div class="i-carbon-text-font text-xl" />
+                            <!-- Replaced i-carbon-text-font with Serif 'N' -->
+                            <span class="text-xl font-black font-serif leading-none">N</span>
                         </button>
                         <button 
                              class="p-2 rounded-xl hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
@@ -455,10 +456,10 @@ function handleVideoExport(settings: any) {
                         </button>
                     </div>
 
-                     <div class="w-6 h-px bg-gray-200 dark:bg-gray-700 md:w-px md:h-6 shrink-0" />
+                     <div class="w-6 h-px bg-gray-200 dark:bg-gray-700 md:w-full md:h-px shrink-0" />
  
                      <!-- Group 3: File Actions -->
-                     <div class="flex gap-2" :class="{ 'flex-col md:flex-row': true }">
+                     <div class="flex gap-2 flex-col">
                          <button 
                              class="p-2 rounded-xl hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
                              :class="{ 'text-primary bg-primary/10': isCanvasLocked }"
@@ -477,23 +478,24 @@ function handleVideoExport(settings: any) {
                           <button 
                              class="p-2 rounded-xl hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
                              @click="handleSave"
-                             title="保存"
+                             title="保存图片"
                          >
-                             <div class="i-carbon-save text-xl" />
+                             <!-- Replaced i-carbon-save with i-carbon-image -->
+                             <div class="i-carbon-image text-xl" />
                          </button>
                      </div>
 
-                    <div class="w-6 h-px bg-gray-200 dark:bg-gray-700 md:w-px md:h-6 shrink-0" />
+                    <div class="w-6 h-px bg-gray-200 dark:bg-gray-700 md:w-full md:h-px shrink-0" />
 
                     <!-- Hide / Exit -->
-                    <div class="flex gap-2" :class="{ 'flex-col md:flex-row': true }">
+                    <div class="flex gap-2 flex-col">
                          <button 
                             class="p-2 rounded-xl hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors text-gray-500"
                             @click="isToolbarOpen = false"
                             title="收起工具栏"
                         >
-                            <div class="i-carbon-chevron-right md:hidden text-xl" /> <!-- Mobile Icon: Right Arrow to indicate 'push right' -->
-                            <div class="i-carbon-chevron-down hidden md:block text-xl" /> <!-- Desktop Icon: Down Arrow -->
+                            <div class="i-carbon-chevron-right md:hidden text-xl" /> <!-- Mobile Icon: Right Arrow -->
+                            <div class="i-carbon-chevron-left hidden md:block text-xl" /> <!-- Desktop Icon: Left Arrow (push left) -->
                         </button>
                         <button 
                             class="p-2 rounded-xl hover:bg-red-50 text-red-500 transition-colors"
