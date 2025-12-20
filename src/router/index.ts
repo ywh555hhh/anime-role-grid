@@ -15,6 +15,11 @@ const routes = [
         path: '/t/:id',
         name: 'Template',
         component: () => import('~/pages/ViewTemplate.vue')
+    },
+    {
+        path: '/streamer',
+        name: 'StreamerMode',
+        component: () => import('~/pages/StreamerMode.vue')
     }
 ]
 
