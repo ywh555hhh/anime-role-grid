@@ -19,7 +19,7 @@ const props = defineProps<{
 const emit = defineEmits(['select-slot', 'update:customTitle', 'update-label', 'drop-item'])
 
 // Store access for global drag state
-const { isDragging } = useGridStore() 
+const { isDragging, resolveImage } = useGridStore() 
 
 
 const editingIndex = ref<number | null>(null)
@@ -68,8 +68,17 @@ function handleTitleInput(e: Event) {
   emit('update:customTitle', target.value)
 }
 
-function getImageUrl(url: string) {
+function getImageUrl(char?: GridItemCharacter | string) {
+  // Support both object resolution and legacy string (if passed directly)
+  let url = ''
+  if (typeof char === 'string') {
+      url = char
+  } else if (char) {
+      url = resolveImage(char) || ''
+  }
+
   if (!url) return ''
+  
   if (props.forExport) {
     // Use proxy for export to ensure CORS headers are correct
     return `https://wsrv.nl/?url=${encodeURIComponent(url)}&output=png`
@@ -209,7 +218,7 @@ function onDropAdd(evt: any) {
                     class="w-full h-full relative"
                   >
                       <img 
-                        :src="getImageUrl(item.character.image)" 
+                        :src="getImageUrl(item.character)" 
                         class="w-full h-full object-cover object-top pointer-events-none"
                       />
                   </div>
@@ -218,7 +227,7 @@ function onDropAdd(evt: any) {
 
           <img 
             v-if="!isStreamerMode && item.character"
-            :src="getImageUrl(item.character.image)" 
+            :src="getImageUrl(item.character)" 
             class="absolute inset-0 w-full h-full object-cover object-top"
             :loading="forExport ? 'eager' : 'lazy'"
             :crossorigin="forExport ? 'anonymous' : undefined"

@@ -53,7 +53,8 @@ export type BgmSearchResultItem = BgmCharacterSearchResultItem | BgmSubjectSearc
 export interface GridItemCharacter {
     id: number | string;
     name: string;
-    image: string;
+    image?: string; // Legacy Base64 or URL (Deprecated for Base64, use imageId)
+    imageId?: string; // Pointer to ImagePool (UUID)
     // V3 Analytics Data
     bangumiId?: number;
     category?: 'character' | 'subject' | 'person' | 'custom';

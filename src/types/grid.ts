@@ -8,7 +8,8 @@
 export interface GridCharacter {
     id: string | number
     name: string
-    image: string
+    image?: string // Legacy Base64 or URL (Deprecated for Base64, use imageId)
+    imageId?: string // Pointer to ImagePool (UUID)
     // Analytics / Source Data
     bangumiId?: number
     category?: 'character' | 'subject' | 'person' | 'custom'
@@ -88,3 +89,5 @@ export interface StatsResponse {
         count: number
     }>
 }
+
+export type GridItemCharacter = GridCharacter

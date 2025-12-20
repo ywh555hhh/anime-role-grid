@@ -41,11 +41,7 @@ export const api = {
     // --- External / Search ---
 
     async searchBangumi(keyword: string, type: string = 'character', year?: string, offset: number = 0): Promise<BgmSearchResultItem[]> {
-        // 1. Prepare Auth
-        const accessToken = import.meta.env.VITE_BANGUMI_ACCESS_TOKEN
-        if (!accessToken || accessToken === 'YOUR_REAL_BANGUMI_ACCESS_TOKEN') {
-            throw new Error('请在 .env 文件中配置正确的 Bangumi Access Token')
-        }
+        // 1. Prepare Auth (Moved to Server)
 
         // 2. Determine Mode & API Path Strategy
         const isPerson = type === 'person'
@@ -74,8 +70,7 @@ export const api = {
         const res = await fetch('/api/search', {
             method: 'POST',
             headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${accessToken}`
+                'Content-Type': 'application/json'
             },
             body: JSON.stringify({
                 keyword,

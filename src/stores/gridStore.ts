@@ -34,7 +34,12 @@ export const useGridStore = createGlobalState(() => {
         capacity: 20
     })
 
-    // --- Legacy Migration (v1 -> v2) ---
+    // --- Image Pool (Memory Optimization) ---
+    // Stores the actual Base64 data, indexed by UUID.
+    // Detached from history to prevent deep cloning of heavy strings.
+    const imagePool = useStorage<Record<string, string>>('anime-grid-image-pool-v1', {})
+
+    // --- Legacy Migration (v1/v2 -> v2.1) ---
     // Detects if user has old data but no new data, and migrates it.
     const legacyGrids = useStorage<Record<string, GridItem[]>>('anime-grid-data-v1', {})
     if (Object.keys(legacyGrids.value).length > 0 && Object.keys(savedGrids.value).length === 0) {
@@ -51,6 +56,16 @@ export const useGridStore = createGlobalState(() => {
 
     // --- Getters ---
 
+    function resolveImage(character?: GridItemCharacter): string | undefined {
+        if (!character) return undefined
+        // 1. Prefer ImageReference (Memory Optimized)
+        if (character.imageId) {
+            return imagePool.value[character.imageId] || character.image
+        }
+        // 2. Fallback to inline image (Legacy)
+        return character.image
+    }
+
     const currentList = computed({
         get: () => {
             const tid = currentTemplateId.value
@@ -65,7 +80,31 @@ export const useGridStore = createGlobalState(() => {
         }
     })
 
+
+
     // --- Actions ---
+
+    /**
+     * Helper to process image and strip it from the reactive object
+     */
+    function processImage(char: GridItemCharacter): GridItemCharacter {
+        if (char.image && char.image.startsWith('data:image')) {
+            // Is Base64, need to extract
+            // Reuse existing ID or generate new
+            const id = char.imageId || crypto.randomUUID()
+
+            // Save to Pool
+            imagePool.value[id] = char.image
+
+            // Return lightweight object
+            return {
+                ...char,
+                imageId: id,
+                image: undefined // Strip heavy data
+            }
+        }
+        return char
+    }
 
     /**
      * Initialize and Load a Template
@@ -110,7 +149,7 @@ export const useGridStore = createGlobalState(() => {
                     }
                 } catch (e: any) {
                     console.error('Failed to load custom template', e)
-                    error.value = e.message || '加载自定义模版失败'
+                    error.value = e instanceof Error ? e.message : '加载自定义模版失败'
                 }
             }
         } catch (e: any) {
@@ -124,10 +163,14 @@ export const useGridStore = createGlobalState(() => {
     /**
      * Update a specific slot
      */
+
     function updateItem(index: number, character: GridItemCharacter | undefined) {
         const list = [...currentList.value]
         if (list[index]) {
-            list[index] = { ...list[index], character }
+            // Memory Optimization: Process image before saving to state
+            const optimizedChar = character ? processImage(character) : undefined
+
+            list[index] = { ...list[index], character: optimizedChar }
             currentList.value = list
         }
         // Auto-save to cloud could happen here debounced
@@ -202,12 +245,16 @@ export const useGridStore = createGlobalState(() => {
         }
     }
 
+
+
     // --- Dock Actions ---
     function addToDock(character: GridItemCharacter) {
-        // Prevent duplicates by ID
-        if (!dockItems.value.find(i => i.id === character.id)) {
-            // Clone to ensure no reactivity overlap if same object used elsewhere
-            dockItems.value.push({ ...character })
+        // Prevent duplicates by ID (or ImageID)
+        const existing = dockItems.value.find(i => i.id === character.id)
+        if (!existing) {
+            // Memory Optimization: Process image before adding to Dock
+            const optimizedChar = processImage(character)
+            dockItems.value.push({ ...optimizedChar })
         }
     }
 
@@ -257,6 +304,9 @@ export const useGridStore = createGlobalState(() => {
         addToDock,
         removeFromDock,
         clearDock,
+        resolveImage, // Public Helper
+
+
         undo,
         redo
     }

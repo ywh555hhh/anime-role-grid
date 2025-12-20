@@ -33,8 +33,11 @@ function getDeviceType(userAgent: string | null): string {
  * Generate privacy-preserving hash from IP
  * Uses SHA-256 with a static salt
  */
-async function generateUserHash(ip: string): Promise<string> {
-    const SALT = 'anime-grid-privacy-salt-v1'; // Simple salt
+async function generateUserHash(ip: string, env: any): Promise<string> {
+    if (!env || !env.PRIVACY_SALT) {
+        throw new Error('FATAL: PRIVACY_SALT is not configured. refusing to save data.');
+    }
+    const SALT = env.PRIVACY_SALT;
     const msgBuffer = new TextEncoder().encode(ip + SALT);
     const hashBuffer = await crypto.subtle.digest('SHA-256', msgBuffer);
     const hashArray = Array.from(new Uint8Array(hashBuffer));
@@ -58,7 +61,7 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
         const referer = request.headers.get('Referer');
 
         // 2. Compute Privacy Data
-        const userHash = await generateUserHash(ip);
+        const userHash = await generateUserHash(ip, env);
         const deviceType = getDeviceType(userAgent);
 
         // 3. Generate ID

@@ -29,7 +29,14 @@ describe('API Service', () => {
         expect(result[0]?.name).toBe('Naruto')
 
         // Verify fetch arguments (Proxy Check)
-        expect(global.fetch).toHaveBeenCalledWith('/api/search', expect.objectContaining({
+        const callArgs = (global.fetch as any).mock.calls[0];
+        expect(callArgs[0]).toBe('/api/search');
+
+        // Assert Authorization header is NOT sent from client
+        const headers = callArgs[1].headers;
+        expect(headers).not.toHaveProperty('Authorization');
+
+        expect(callArgs[1]).toEqual(expect.objectContaining({
             method: 'POST',
             body: expect.stringContaining('"keyword":"Naruto"'),
         }))

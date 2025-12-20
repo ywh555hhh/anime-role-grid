@@ -4,7 +4,7 @@ import { VueDraggable } from 'vue-draggable-plus'
 import { useGridStore } from '~/stores/gridStore'
 
 const gridStore = useGridStore()
-const { dockItems, removeFromDock, clearDock, isToolbarOpen, isDragging } = gridStore
+const { dockItems, removeFromDock, clearDock, isToolbarOpen, isDragging, resolveImage } = gridStore
 
 // Trash Logic: Accept drops to delete
 const trashList = ref([]) 
@@ -114,7 +114,7 @@ const dragOptions = {
                 <!-- Image -->
                 <div class="w-16 h-16 md:w-24 md:h-24 rounded-lg overflow-hidden border-2 border-white shadow-md relative bg-gray-100">
                     <img 
-                        :src="item.image" 
+                        :src="resolveImage(item)" 
                         draggable="false"
                         class="w-full h-full object-cover object-top pointer-events-none select-none" 
                     />

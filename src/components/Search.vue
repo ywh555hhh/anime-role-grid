@@ -78,6 +78,9 @@ watchDebounced(
   () => {
     if (keyword.value) {
       handleSearch()
+    } else {
+      // FIX: Clear results if keyword is empty (User cleared input)
+      searchResult.value = []
     }
   },
   { debounce: 800, maxWait: 2000 },
@@ -334,7 +337,8 @@ onMounted(() => {
         </button>
 
       <div class="flex flex-col gap-4 p-6 h-full">
-        <div class="relative shrink-0 flex items-center gap-3 pr-8">
+        <!-- Fix 1: Add pr-12 to prevent overlap with absolute Close Button -->
+        <div class="relative shrink-0 flex items-center gap-3 pr-12 md:pr-16">
             <!-- Small Logo -->
             <img src="/logo.png" class="w-8 h-8 object-contain" />
             
@@ -342,22 +346,21 @@ onMounted(() => {
                 <input
                 ref="input"
                 v-model="keyword"
-                class="w-full px-4 py-3 rounded-lg border-2 border-gray-300 bg-white text-lg text-black outline-none focus:border-primary"
+                class="w-full px-4 py-3 rounded-lg border-2 border-gray-300 bg-white text-lg text-black outline-none focus:border-primary transition-colors"
                 placeholder="搜索角色..."
                 type="text"
                 @keydown.enter="handleSearch"
                 >
+                <!-- Search Icon / Spinner -->
                 <div 
                 class="absolute right-3 top-1/2 -translate-y-1/2 text-xl p-2 cursor-pointer hover:bg-gray-100 rounded-full transition-colors"
                 @click="handleSearch"
                 >
-                <div v-if="loading" i-carbon-circle-dash class="animate-spin text-primary" />
-                <div v-else i-carbon-search class="text-black" />
+                <div i-carbon-search class="text-black" />
                 </div>
             </div>
         </div>
     
-
 
     <p class="text-xs text-black px-1 ml-11 font-medium">
       提示：如果搜不到，请尝试输入<b>完整全名</b> (Bangumi 搜索较严格)。例如：`四宫`搜不到，就输入`四宫辉夜`。 
@@ -369,6 +372,7 @@ onMounted(() => {
     >
       <!-- Tabs -->
       <div class="flex border-b-2 border-gray-200 mb-4 items-center">
+        <!-- ... (Tabs unchanged) ... -->
         <button 
           class="flex-1 py-2 text-sm font-bold transition-colors relative"
           :class="activeTab === 'search' ? 'text-primary' : 'text-black hover:text-primary'"
@@ -386,7 +390,6 @@ onMounted(() => {
           <div v-if="activeTab === 'custom'" class="absolute bottom-0 left-0 right-0 h-0.5 bg-primary" />
         </button>
         
-        <!-- Clear Button -->
         <button 
           class="flex-1 py-2 text-sm font-bold text-gray-500 hover:text-red-500 transition-colors flex items-center justify-center gap-1"
           @click="emit('clear')"
@@ -399,7 +402,7 @@ onMounted(() => {
       <!-- Search Tab Content -->
       <div v-if="activeTab === 'search'">
         
-        <!-- Filters -->
+        <!-- Filters (unchanged) -->
         <div class="flex flex-col gap-2 mb-4 px-1">
           <div class="flex flex-wrap items-center justify-center gap-2">
              <button
@@ -436,14 +439,14 @@ onMounted(() => {
           </div>
         </div>
 
-        <!-- Trending Section (Show when no keyword) -->
+        <!-- Trending Section (unchanged) -->
         <div v-if="!keyword && activeTab === 'search'" class="mb-8 relative">
-            <div class="flex items-center justify-between mb-4 px-1">
+             <!-- ... (Trending content unchanged) ... -->
+             <div class="flex items-center justify-between mb-4 px-1">
                 <div class="flex items-center gap-2">
                     <div class="i-carbon-fire text-primary text-lg animate-pulse" />
                     <h3 class="font-bold text-sm text-black">全站热门</h3>
                 </div>
-                <!-- Time Period Tabs -->
                 <div class="flex bg-gray-100 rounded-lg p-1 gap-1">
                     <button 
                         v-for="p in ['week', '24h', 'all']" 
@@ -462,8 +465,7 @@ onMounted(() => {
             </div>
 
             <div v-else-if="trendingList.length > 0" class="flex flex-col gap-6">
-                 
-                 <!-- Tier 1: Top 3 (Big Cards) -->
+                 <!-- ... (Trending Cards unchanged) ... -->
                  <div class="grid grid-cols-3 gap-3">
                      <div
                         v-for="item in trendingList.slice(0, 3)"
@@ -477,8 +479,6 @@ onMounted(() => {
                       >
                          <div class="w-full aspect-[2/3] overflow-hidden rounded-xl bg-gray-100 relative shadow-md border-2" 
                               :class="trendingList.indexOf(item) === 0 ? 'border-yellow-400 ring-2 ring-yellow-200' : (trendingList.indexOf(item) === 1 ? 'border-gray-300' : 'border-orange-300')">
-                            
-                            <!-- Rank Badge -->
                             <div 
                                class="absolute top-0 left-0 z-10 px-2 py-1 text-xs font-black text-white rounded-br-xl shadow-sm flex items-center gap-1"
                                :class="trendingList.indexOf(item) === 0 ? 'bg-gradient-to-r from-yellow-400 to-yellow-600' : (trendingList.indexOf(item) === 1 ? 'bg-gradient-to-r from-gray-300 to-gray-500' : 'bg-gradient-to-r from-orange-300 to-orange-500')"
@@ -486,15 +486,12 @@ onMounted(() => {
                                 <div v-if="trendingList.indexOf(item) === 0" class="i-carbon-trophy" />
                                 <span>NO.{{ trendingList.indexOf(item) + 1 }}</span>
                             </div>
-                            
                             <img 
                                 :src="item.image" 
                                 class="w-full h-full object-cover object-top group-hover:scale-105 transition-transform duration-500"
                                 loading="lazy"
                                 referrerpolicy="no-referrer"
                             >
-                            
-                            <!-- Name Overlay -->
                             <div class="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/90 via-black/50 to-transparent p-2 pt-8">
                                 <p class="text-white text-sm font-bold truncate text-center">{{ item.name }}</p>
                             </div>
@@ -502,7 +499,6 @@ onMounted(() => {
                       </div>
                  </div>
 
-                 <!-- Tier 2: The Rest (4-63) - Unified Grid -->
                  <div v-if="trendingList.length > 3">
                     <h4 class="text-xs font-bold text-gray-500 ml-1 mb-2">更多热门 (4-{{ trendingList.length }})</h4>
                     <div class="grid grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3">
@@ -524,7 +520,6 @@ onMounted(() => {
                                     loading="lazy"
                                     referrerpolicy="no-referrer"
                                 >
-                                <!-- Simple Name Overlay for small cards -->
                                 <div class="absolute bottom-0 left-0 right-0 bg-black/60 p-1">
                                     <p class="text-white text-[10px] font-bold truncate text-center">{{ item.name }}</p>
                                 </div>
@@ -539,12 +534,17 @@ onMounted(() => {
                  <div class="i-carbon-chart-line text-4xl text-gray-200" />
                  <p class="text-gray-400 text-xs">暂无数据，快去创造趋势！</p>
             </div>
-            
-             <!-- Divider -->
             <div class="h-px bg-gray-100 my-6" />
         </div>
 
-        <div v-if="searchResult.length" class="columns-2 md:columns-3 lg:columns-4 gap-4 pb-4 space-y-4">
+        <!-- Fix 2: Explicit loading State (Main Area) -->
+        <div v-if="loading && keyword" class="flex flex-col items-center justify-center py-12 gap-3">
+             <div i-carbon-circle-dash class="text-4xl text-primary animate-spin" />
+             <p class="text-gray-400 text-sm font-medium">搜索中...</p>
+        </div>
+
+        <!-- Search Results -->
+        <div v-else-if="searchResult.length" class="columns-2 md:columns-3 lg:columns-4 gap-4 pb-4 space-y-4">
           <div
             v-for="item in searchResult"
             :key="item.id"
@@ -572,7 +572,7 @@ onMounted(() => {
         </div>
         
         <!-- Load More Button -->
-        <div v-if="searchResult.length && hasMore" class="flex justify-center pb-6">
+        <div v-if="searchResult.length && hasMore && !loading" class="flex justify-center pb-6">
           <button 
             class="px-6 py-2 bg-gray-100 hover:bg-gray-200 rounded-full text-sm font-bold text-black transition-colors flex items-center gap-2"
             :disabled="loading"
@@ -587,13 +587,15 @@ onMounted(() => {
           <div i-carbon-warning-filled class="text-4xl mb-2" />
           <p>{{ errorMessage }}</p>
         </div>
-        <div v-else-if="keyword && !loading" class="flex flex-col items-center justify-center h-64 text-black">
+        
+        <!-- Fix 3: Ensure this only shows if NOT loading and NO results -->
+        <div v-else-if="keyword && !searchResult.length && !loading" class="flex flex-col items-center justify-center h-64 text-black">
           <div i-carbon-search class="text-4xl mb-2" />
           <p>未找到相关角色</p>
         </div>
       </div>
 
-      <!-- Custom Upload Tab Content -->
+      <!-- Custom Upload Tab Content (unchanged) -->
       <div v-else class="p-4 flex flex-col gap-4">
         
         <div class="flex flex-col gap-2">

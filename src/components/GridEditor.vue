@@ -48,7 +48,8 @@ const {
   isToolbarOpen, // NEW: Synced with Dock
   addToDock,
   undo, redo, canUndo, canRedo, // NEW
-  isCanvasLocked // NEW
+  isCanvasLocked, // NEW
+  resolveImage
 } = store
 
 // Full Screen Logic
@@ -201,8 +202,20 @@ async function handleSave() {
     // Template Name (Subtitle) - Should NOT use customTitle
     const templateName = currentConfig.value?.templateName || currentTitle.value
 
+    // Resolve images from pool for export
+    const resolvedList = currentList.value.map(item => {
+        if (!item.character) return item;
+        return {
+            ...item,
+            character: {
+                ...item.character,
+                image: resolveImage(item.character)
+            }
+        }
+    })
+
     generatedImage.value = await exportGridAsImage(
-        currentList.value, 
+        resolvedList, 
         currentTemplateId.value, 
         props.customTitle || '', 
         'anime-grid', 
@@ -239,7 +252,18 @@ const { isModalOpen: isVideoModalOpen, isSuccessModalOpen, isExporting, progress
 function handleVideoExport(settings: any) {
    // Use store config
    const items = currentConfig.value?.items || currentList.value.map(i => i.label)
-   generateVideo(currentList.value, items, { ...settings, showName: showCharacterName.value })
+   // Resolve images for video export
+   const resolvedList = currentList.value.map(item => {
+        if (!item.character) return item;
+        return {
+            ...item,
+            character: {
+                ...item.character,
+                image: resolveImage(item.character)
+            }
+        }
+    })
+   generateVideo(resolvedList, items, { ...settings, showName: showCharacterName.value })
 }
 
 

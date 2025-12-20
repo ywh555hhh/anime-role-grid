@@ -31,7 +31,7 @@ export class CanvasGenerator {
         this.ctx = ctx
     }
 
-    private getImageUrl(url: string): string {
+    private getImageUrl(url?: string): string {
         if (!url) return ''
         if (url.startsWith('blob:') || url.startsWith('data:')) {
             return url
