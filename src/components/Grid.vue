@@ -60,6 +60,8 @@ function saveLabel(index: number) {
 const gridCols = computed(() => props.cols || 5)
 
 function handleSelect(index: number) {
+  // If we are currently editing the label for THIS slot, do not trigger selection
+  if (editingIndex.value === index) return
   emit('select-slot', index)
 }
 
@@ -180,13 +182,13 @@ function onDropAdd(evt: any) {
         width: '100%',
         maxWidth: `${gridCols * 120}px`,
         boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)',
-        transition: 'all 0.3s ease'
+        transition: 'width 0.3s ease, transform 0.3s ease'
       }"
     >
       <div
         v-for="(item, index) in list"
         :key="index"
-        class="relative border-r-2 border-b-2 border-black cursor-pointer group box-border flex flex-col transition-colors duration-200"
+        class="relative border-r-2 border-b-2 border-black cursor-pointer group box-border flex flex-col transition-colors duration-200 min-w-0"
         :class="{ 
             'ring-4 ring-primary/50 ring-inset bg-primary/5': isStreamerMode && isDragging,
             'hover:bg-primary/10': isStreamerMode && isDragging 
@@ -249,14 +251,14 @@ function onDropAdd(evt: any) {
 
         <!-- Label Area (Bottom) -->
         <div 
-          class="h-[20px] md:h-[25px] flex-shrink-0 flex items-center justify-center text-center bg-white border-t-2 border-black overflow-hidden px-1 relative"
+          class="h-[20px] md:h-[25px] flex-shrink-0 flex items-center justify-center text-center bg-white border-t-2 border-black overflow-hidden px-1 relative w-full min-w-0"
           @click.stop="handleLabelClick(index)"
         >
           <input
             v-if="editingIndex === index && (!forExport || editable)"
             ref="labelInput"
             v-model="editingLabel"
-            class="w-full h-full text-center text-[10px] md:text-sm font-bold text-black bg-white outline-none p-0 border-none"
+            class="absolute inset-0 block min-w-0 w-full h-full text-center text-[10px] md:text-sm font-bold text-black bg-white outline-none p-0 border-none"
             @blur="saveLabel(index)"
             @keydown.enter="saveLabel(index)"
             @click.stop
