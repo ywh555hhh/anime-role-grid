@@ -22,7 +22,7 @@ function goHome() {
 </script>
 
 <template>
-  <div v-if="show" class="bg-white text-primary shadow-sm relative z-[100] border-b border-pink-100">
+  <div v-if="show" class="bg-white text-primary shadow-sm fixed top-0 left-0 right-0 z-[100] border-b border-pink-100">
     <div class="container mx-auto px-4 py-3 flex items-start gap-4">
       <div class="i-carbon-warning-filled text-xl mt-0.5 shrink-0" />
       <div class="flex-1 text-sm md:text-base leading-relaxed">
