@@ -1,6 +1,7 @@
 <script setup lang="ts">
 // App.vue is just a router shell now
 import GlobalAnnouncement from './components/GlobalAnnouncement.vue'
+import ModalDispatcher from './components/ModalDispatcher.vue' // NEW
 import { Toaster } from 'vue-sonner' // NEW
 import { useGridStore } from '~/stores/gridStore'
 import { watch } from 'vue'
@@ -20,5 +21,6 @@ watch(isStreamerMode, (val) => {
 <template>
   <GlobalAnnouncement />
   <Toaster position="top-center" richColors />
+  <ModalDispatcher />
   <router-view />
 </template>

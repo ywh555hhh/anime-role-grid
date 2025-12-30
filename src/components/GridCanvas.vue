@@ -7,6 +7,7 @@ defineProps<{
   cols: number
   title?: string
   customTitle?: string
+  defaultTitle?: string
   showCharacterName: boolean
   modeIsCustom?: boolean
   fillerName?: string
@@ -51,6 +52,7 @@ const emit = defineEmits<{
         :cols="cols"
         :title="title" 
         :customTitle="customTitle"
+        :defaultTitle="defaultTitle"
         @update:customTitle="emit('update:customTitle', $event)"
         @select-slot="emit('select-slot', $event)"
         @update-label="emit('update-label', $event)"

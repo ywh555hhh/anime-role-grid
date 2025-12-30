@@ -47,8 +47,29 @@ export const useGridStore = createGlobalState(() => {
         savedGrids.value = { ...legacyGrids.value }
     }
 
-    // Current Metadata
-    const currentTitle = ref('')
+    // --- Persistence for Titles ---
+    // Stores custom MAIN titles indexed by template ID (e.g. "My Anime Grid")
+    const userDefinedTitles = useStorage<Record<string, string>>('anime-grid-user-titles-v1', {})
+
+    // The current main title (User editable)
+    const currentTitle = computed({
+        get: () => {
+            const tid = currentTemplateId.value
+            return userDefinedTitles.value[tid] || ''
+        },
+        set: (val: string) => {
+            userDefinedTitles.value[currentTemplateId.value] = val
+        }
+    })
+
+    // The current template name (Read-only for users, fixed per template)
+    const currentTemplateName = computed(() => {
+        const tid = currentTemplateId.value
+        const official = TEMPLATES.find(t => t.id === tid)
+        if (official) return official.name
+        // For custom templates, we store the template's own name in currentConfig
+        return currentConfig.value?.templateName || '自定义模板'
+    })
     const currentConfig = ref<any>(null)
     const isCustomMode = ref(false)
     const isLoading = ref(false)
@@ -121,8 +142,12 @@ export const useGridStore = createGlobalState(() => {
 
             if (official) {
                 isCustomMode.value = false
-                currentTitle.value = official.name
-                currentConfig.value = { cols: official.cols, items: official.items }
+                currentConfig.value = {
+                    cols: official.cols,
+                    items: official.items,
+                    templateName: official.name, // Keep official name in config too
+                    defaultTitle: official.defaultTitle
+                }
 
                 // Merge with defaults if list is empty or partial
                 const stored = savedGrids.value[id] || []
@@ -140,7 +165,6 @@ export const useGridStore = createGlobalState(() => {
                 isCustomMode.value = true
                 try {
                     const template = await api.getTemplate(id)
-                    currentTitle.value = template.title
                     currentConfig.value = template.config
 
                     // Init empty grid if needed
@@ -276,6 +300,7 @@ export const useGridStore = createGlobalState(() => {
         // State
         currentTemplateId,
         currentTitle,
+        currentTemplateName, // NEW
         currentConfig,
         isCustomMode,
         isLoading,
