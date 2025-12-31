@@ -73,3 +73,46 @@ button {
   touch-action: none !important;
   /* Disables touch scrolling too */
 }
+
+/* Custom Scrollbar Styling (Smart & Natural) */
+.scrollbar-thin {
+  scrollbar-width: thin;
+  /* Firefox */
+  scrollbar-color: #e5e7eb transparent;
+  /* Firefox */
+}
+
+.dark .scrollbar-thin {
+  scrollbar-color: #4b5563 transparent;
+}
+
+/* Webkit (Chrome, Edge, Safari) */
+.scrollbar-thin::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+.scrollbar-thin::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.scrollbar-thin::-webkit-scrollbar-thumb {
+  background-color: #d1d5db;
+  /* Lighter gray for better blend */
+  border-radius: 20px;
+  border: 2px solid transparent;
+  /* Creates padding effect if background-clip used, but here simpler */
+}
+
+.scrollbar-thin:hover::-webkit-scrollbar-thumb {
+  background-color: #9ca3af;
+  /* Darker on hover */
+}
+
+.dark .scrollbar-thin::-webkit-scrollbar-thumb {
+  background-color: #4b5563;
+}
+
+.dark .scrollbar-thin:hover::-webkit-scrollbar-thumb {
+  background-color: #6b7280;
+}

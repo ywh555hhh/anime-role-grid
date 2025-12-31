@@ -34,7 +34,7 @@ const emit = defineEmits(['close'])
         </button>
 
         <!-- Scrollable Content -->
-        <div class="overflow-y-auto flex-1 p-6 flex flex-col gap-6 scrollbar-hide">
+        <div class="overflow-y-auto flex-1 p-6 flex flex-col gap-6 scrollbar-thin">
           
           <!-- Sticker Area -->
           <div class="w-full flex items-center justify-center shrink-0 pt-4">

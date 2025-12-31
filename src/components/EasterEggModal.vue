@@ -36,15 +36,16 @@ function handleAction() {
       
       <!-- Modal Content -->
       <div 
-        class="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl w-full max-w-sm overflow-hidden flex flex-col animate-bounce-in relative"
+        class="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl w-full max-w-sm overflow-hidden flex flex-col animate-bounce-in relative max-h-[85vh]"
         @click.stop
       >
          <!-- Decorative Background Pattern -->
          <div class="absolute top-0 left-0 w-full h-24 bg-gradient-to-br from-purple-500 to-pink-500 opacity-20 pointer-events-none" />
          
-         <div class="p-8 flex flex-col items-center text-center relative z-10">
+         <!-- Scrollable Area -->
+         <div class="overflow-y-auto scrollbar-thin p-8 flex flex-col items-center text-center relative z-10">
             <!-- Icon -->
-            <div class="w-16 h-16 rounded-full bg-gradient-to-br from-purple-100 to-pink-100 flex items-center justify-center mb-6 shadow-inner">
+            <div class="w-16 h-16 rounded-full bg-gradient-to-br from-purple-100 to-pink-100 flex items-center justify-center mb-6 shadow-inner shrink-0">
                 <div class="text-3xl animate-pulse">✨</div>
             </div>
 
@@ -59,7 +60,7 @@ function handleAction() {
             </p>
 
             <!-- Actions -->
-            <div class="flex flex-col gap-3 w-full">
+            <div class="flex flex-col gap-3 w-full mt-auto">
                 <button 
                     @click="handleAction"
                     class="w-full btn-primary py-3 rounded-xl shadow-lg shadow-purple-200 dark:shadow-none flex items-center justify-center gap-2 group"

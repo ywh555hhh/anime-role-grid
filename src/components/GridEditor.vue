@@ -19,7 +19,7 @@ import { useModalStore, MODAL_PRIORITY } from '~/stores/modalStore' // NEW
 import { matchEasterEgg } from '~/logic/easterEggs' // NEW
 import EasterEggModal from '~/components/EasterEggModal.vue' // NEW
 
-const props = defineProps<{
+defineProps<{
   error?: string
 }>()
 
@@ -58,7 +58,7 @@ const { isFullscreen, toggle: toggleFullscreen } = useFullscreen()
 
 // Local State
 const showSearch = ref(false)
-const showShareModal = ref(false) // Still kept for fallback if needed, or removed? let's remove usage but keep ref to avoid breaking template if I miss one
+
 const showJoinGroupModal = ref(false)
 const showCharacterName = ref(false)
 const currentSlotIndex = ref<number | null>(null)

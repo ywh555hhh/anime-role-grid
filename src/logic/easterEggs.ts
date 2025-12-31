@@ -1,58 +1,23 @@
 
 import type { GridItem } from '~/types'
+import EASTER_EGGS_JSON from '~/logic/constants/easterEggs.json'
 
 export interface EasterEggConfig {
     id: string
-    keywords: string[] // 匹配 keywords (包括 label 和 character name)
+    keywords: string[]
     title: string
     message: string
     actionLabel?: string
     actionLink?: string
-    priority?: number // 在彩蛋内部的优先级
+    priority?: number
 }
 
-// --- Configuration ---
-// 这是一个配置表，未来可以无限扩展
-const EASTER_EGGS: EasterEggConfig[] = [
-    {
-        id: 'mygo',
-        keywords: [
-            'MyGO', 'mygo',
-            '高松灯', '高松燈', '高松Tomori',
-            '千早爱音', '千早愛音',
-            '长崎素世', '長崎素世',
-            '椎名立希',
-            '要乐奈', '要樂奈',
-            '丰川祥子', '豊川祥子',
-            '若叶睦', '若葉睦',
-            '初华', '初華', '三角初华', '三角初華',
-            '喵梦', '八幡海铃', '八幡海鈴', '海铃', '海鈴'
-        ],
-        title: '原来你也看 MyGO!!!!!',
-        message: '“迷茫也没关系，迷路也没关系，只要能前进的话……” \n看来我们有着共同的音乐品味！如果有兴趣，欢迎关注我的 B 站账号，一起交流 MyGO 心得！',
-        actionLabel: '前往关注 (Ave Mujica 待机中)',
-        actionLink: 'https://space.bilibili.com/36078469'
-    },
-    {
-        id: 'mujica',
-        keywords: [
-            'Ave Mujica', 'Mujica',
-            '丰川祥子', '豊川祥子',
-            '若叶睦', '若葉睦',
-            '初华', '初華', '三角初华', '三角初華',
-            '喵梦',
-            '八幡海铃', '八幡海鈴', '海铃', '海鈴'
-        ],
-        title: '欢迎来到 Ave Mujica 的世界',
-        message: '“在这个扭曲的世界里，让我们一起共舞吧。” \n你也期待着她们的出道吗？关注我，获取最新相关动态！',
-        actionLabel: '关注开发者',
-        actionLink: 'https://space.bilibili.com/36078469'
-    },
-    // Future eggs...
-]
+// Cast JSON to Typed Array
+const EASTER_EGGS: EasterEggConfig[] = EASTER_EGGS_JSON as EasterEggConfig[]
 
 /**
  * 检查并返回匹配的彩蛋配置
+ * 支持多重匹配合成
  * @param gridItems 当前格子的列表
  */
 export function matchEasterEgg(gridItems: GridItem[]): EasterEggConfig | null {
@@ -61,21 +26,53 @@ export function matchEasterEgg(gridItems: GridItem[]): EasterEggConfig | null {
         const texts = []
         if (item.label) texts.push(item.label)
         if (item.character?.name) texts.push(item.character.name)
-        // Check for specific subject/anime names if available in future
         return texts
-    }).join('').replace(/\s+/g, '').toLowerCase() // Join tight and remove all spaces
+    }).join('').replace(/\s+/g, '').toLowerCase()
 
-    console.log('[EasterEgg] Scanning text:', allText)
+    const matches: EasterEggConfig[] = []
 
-    // 查找第一个匹配的彩蛋
-    // 逻辑：只要有一个 keyword 命中即可
     for (const egg of EASTER_EGGS) {
-        // Keywords should also be space-normalized if needed, but assuming config is clean
         const hit = egg.keywords.some(k => allText.includes(k.replace(/\s+/g, '').toLowerCase()))
         if (hit) {
-            return egg
+            matches.push(egg)
         }
     }
 
-    return null
+    if (matches.length === 0) {
+        return null
+    }
+
+    if (matches.length === 1) {
+        return matches[0] || null
+    }
+
+    // --- Composite Logic (Multiple Matches) ---
+    // 开发者也特别特别爱看这些！
+    const titles = matches.map(m => {
+        if (m.id === 'mygo') return 'MyGO'
+        if (m.id === 'mujica') return 'Mujica'
+        if (m.id === 'gbc') return 'GBC'
+        if (m.id === 'bocchi') return '孤独摇滚'
+        if (m.id === 'bandori') return '邦邦'
+        if (m.id === 'kaguya') return '辉夜'
+        if (m.id === 'makeine') return '败犬女主'
+        if (m.id === 'oshinoko') return '我推的孩子'
+        if (m.id === 'oregairu') return '春物'
+        if (m.id === 'mushoku') return '无职转生'
+        return m.title
+    })
+
+    // De-duplicate names
+    const uniqueNames = [...new Set(titles)]
+    const worksStr = uniqueNames.join('、')
+
+    return {
+        id: 'composite_' + matches.map(m => m.id).join('_'),
+        keywords: [],
+        title: '开发者也特别特别爱看这些！',
+        message: `检测到你同时喜欢 ${worksStr} ... \n哇！看来我们的口味高度一致！\n快来关注我的 B 站账号，一起交流吧！`,
+        actionLabel: '关注开发者 @我推的祥子丶',
+        actionLink: 'https://space.bilibili.com/36078469',
+        priority: 999
+    }
 }

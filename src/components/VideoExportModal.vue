@@ -72,7 +72,7 @@ const showSuccessTips = computed(() => {
 
 
       <!-- Body -->
-      <div class="p-6 flex flex-col gap-6 overflow-y-auto flex-1 min-h-0">
+      <div class="p-6 flex flex-col gap-6 overflow-y-auto flex-1 min-h-0 scrollbar-thin">
         
         <!-- Progress View (When Loading) -->
         <div v-if="loading" class="flex flex-col items-center justify-center py-8 gap-4">

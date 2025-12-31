@@ -75,7 +75,7 @@ function select(id: string) {
         @click.stop
       >
         <!-- Sidebar (Category Level 1) -->
-        <div class="w-full md:w-40 bg-gray-50 dark:bg-gray-800 p-2 flex flex-row md:flex-col gap-1 overflow-x-auto md:overflow-y-auto border-b md:border-b-0 md:border-r border-gray-200 dark:border-gray-700 shrink-0">
+        <div class="w-full md:w-40 bg-gray-50 dark:bg-gray-800 p-2 flex flex-row md:flex-col gap-1 overflow-x-auto md:overflow-y-auto border-b md:border-b-0 md:border-r border-gray-200 dark:border-gray-700 shrink-0 scrollbar-thin">
           <div class="text-xs font-bold text-gray-400 mb-2 mt-2 hidden md:block px-3 uppercase tracking-wider">核心分类</div>
           <button
             v-for="cat in categories"
@@ -121,7 +121,7 @@ function select(id: string) {
           </div>
 
           <!-- Grid Area -->
-          <div class="flex-1 p-6 overflow-y-auto">
+          <div class="flex-1 p-6 overflow-y-auto scrollbar-thin">
             <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
               <button
                 v-for="template in filteredTemplates"

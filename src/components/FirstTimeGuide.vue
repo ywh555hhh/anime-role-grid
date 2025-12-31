@@ -40,7 +40,7 @@ import { changelogs } from '~/logic/constants/changelog' // Extracted
         </button>
 
         <!-- Scrollable Content -->
-        <div class="overflow-y-auto flex-1 p-5 flex flex-col gap-4 scrollbar-hide">
+        <div class="overflow-y-auto flex-1 p-5 flex flex-col gap-4 scrollbar-thin">
           
           <!-- Compact Header -->
           <div class="text-center shrink-0 mt-2">

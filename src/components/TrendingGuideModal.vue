@@ -72,7 +72,7 @@ function handleMore() {
         </div>
 
         <!-- Options -->
-        <div class="w-full flex-1 flex flex-col gap-3 mb-6 overflow-y-auto min-h-0 pr-1">
+        <div class="w-full flex-1 flex flex-col gap-3 mb-6 overflow-y-auto min-h-0 pr-1 scrollbar-thin">
           <button
             v-for="opt in TRENDING_OPTIONS"
             :key="opt.id"

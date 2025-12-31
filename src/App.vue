@@ -1,14 +1,21 @@
 <script setup lang="ts">
 // App.vue is just a router shell now
 import GlobalAnnouncement from './components/GlobalAnnouncement.vue'
-import ModalDispatcher from './components/ModalDispatcher.vue' // NEW
-import { Toaster } from 'vue-sonner' // NEW
+import ModalDispatcher from './components/ModalDispatcher.vue'
+import { Toaster } from 'vue-sonner'
 import { useGridStore } from '~/stores/gridStore'
-import { watch } from 'vue'
+import { useModalStore } from '~/stores/modalStore'
+import { watch, computed } from 'vue'
 
-const { isStreamerMode } = useGridStore()
+const gridStore = useGridStore()
+const modalStore = useModalStore
 
-watch(isStreamerMode, (val) => {
+// Unified Scroll Lock Logic
+const shouldLockScroll = computed(() => {
+    return gridStore.isStreamerMode.value || !!modalStore.activeModalId.value
+})
+
+watch(shouldLockScroll, (val) => {
   if (val) {
     document.documentElement.classList.add('noscroll')
   } else {

@@ -40,7 +40,7 @@ const emit = defineEmits(['close'])
            </button>
         </div>
 
-        <div class="p-4 overflow-y-auto flex-1 min-h-0">
+        <div class="p-4 overflow-y-auto flex-1 min-h-0 scrollbar-thin">
            <CommunityGroupLinks class="!border-0 !shadow-none !p-0 !bg-transparent" />
         </div>
         
