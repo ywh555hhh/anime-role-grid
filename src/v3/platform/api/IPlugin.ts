@@ -4,23 +4,54 @@
  */
 import type { IView, ISource, IDock } from '../contracts';
 import type { SystemManager } from '../managers/SystemManager';
-import type { IRegistry } from '../../core/ecs/types';
+import type { ISystem, IRegistry } from '../../core/ecs/types';
+import type { IPreset } from '../../core/types/preset';
+
+// Define the shape of the overlay manager exposed to plugins
+export interface IPluginOverlayManager {
+    open(component: any, props?: any, options?: any): Promise<any>;
+    alert(msg: string): Promise<void>;
+    confirm(msg: string): Promise<boolean>;
+    close(id: string): void;
+}
+
+/**
+ * The Sandbox Context passed to plugins during activation.
+ * Plugins MUST use this to register their contributions.
+ */
+import type { IDisposable } from '../contracts';
+
+export interface ICommandService {
+    execute<T = any>(id: string, payload?: any): Promise<T>;
+    register(
+        id: string,
+        handler: (payload: any) => Promise<any> | any,
+        metadata?: { title?: string; category?: string }
+    ): IDisposable;
+}
 
 /**
  * The Sandbox Context passed to plugins during activation.
  * Plugins MUST use this to register their contributions.
  */
 export interface IPluginContext {
-    /** Access to the System Manager for registering ECS Systems */
-    systems: SystemManager;
+    readonly systems: {
+        register(system: ISystem): void;
+        unregister(id: string): void;
+    };
 
-    /** Access to the Registry (ReadOnly suggested, but ReadWrite needed for init) */
-    registry: IRegistry;
+    readonly registry: IRegistry;
 
-    // Contribution APIs
+    // Command Bus (The Intent Layer)
+    readonly commands: ICommandService;
+
+    // UI Registries
     registerView(view: IView): void;
     registerSource(source: ISource): void;
     registerDock(dock: IDock): void;
+
+    // Overlay Manager
+    readonly overlays: IPluginOverlayManager;
 }
 
 /**
@@ -40,6 +71,12 @@ export interface IPlugin {
         description?: string;
         author?: string;
     };
+
+    /** 
+     * Provided Presets 
+     * The system will automatically register these on plugin load.
+     */
+    readonly presets?: IPreset[];
 
     /**
      * Activation Hook.

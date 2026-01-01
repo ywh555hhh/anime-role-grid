@@ -34,11 +34,9 @@
 src/v3/
 ├── core/               # [内核] 严禁业务逻辑入侵
 │   ├── ecs/            # Registry, Types, Command
+│   ├── systems/        # [逻辑] 核心系统实现 (Layout, Interaction)
 │   ├── standard/       # 核心组件定义 (Transform, Visual, Meta)
 │   └── utils/
-├── systems/            # [逻辑] 核心系统实现
-│   ├── layout/         # 排版系统
-│   └── interaction/    # 拖拽系统
 ├── platform/           # [平台] 插件宿主环境
 │   ├── api/            # 暴露给插件的 API (Sandbox)
 │   └── managers/       # SystemManager, PluginManager

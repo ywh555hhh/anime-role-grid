@@ -1,40 +1,55 @@
 <script setup lang="ts">
 import { useWorkbench } from '../../../platform/workbench/useWorkbench';
+import V1Header from '../components/V1Header.vue';
+import V1Toolbar from '../components/V1Toolbar.vue';
+import V1Footer from '../components/V1Footer.vue';
+import { overlays } from '../../../platform/services/OverlayManager';
+import PresetGalleryOverlay from '../../overlays/PresetGalleryOverlay.vue';
 
 const { activeView, setMode } = useWorkbench();
+
+// Placeholder Actions
+const handleSave = () => { overlays.alert('保存功能开发中 (Phase 4)'); };
+const handleExport = () => { overlays.alert('视频导出功能开发中 (Phase 4)'); };
+const handleCreate = () => { overlays.alert('自定义出题功能 (Custom Mode) 待开发'); }; // Separated from Gallery
+const handleReset = () => { overlays.confirm('确定要重置当前画布吗？').then(ok => { if(ok) overlays.alert('重置逻辑待接入 (ECS Clear Command)'); }) };
+
+// Temporary: Expose Gallery via a global hotkey or a new Dev button?
+// Or better: clicking the "Template Name" in StandardGridView should open Gallery.
+// But StandardGridView is a view, it shouldn't know about the overlay directly ideally.
+// Let's add a temporary debug button or instruction.
 </script>
 
 <template>
-  <div class="flex flex-col h-full bg-gray-50 overflow-y-auto">
-    <!-- 1. Hero / Info Section -->
-    <section class="p-6 bg-white shadow-sm z-10">
-      <h1 class="text-2xl font-bold text-gray-800">Normal Mode</h1>
-      <p class="text-gray-500 mt-2 text-sm">
-        手机用户友好模式。点击下方格子直接上传。
-      </p>
-      <div class="mt-4 flex gap-2">
-         <button @click="setMode('STREAMER')" class="px-3 py-1 bg-purple-100 text-purple-600 rounded text-xs font-bold hover:bg-purple-200">
-            Switch to Streamer Mode
-         </button>
-      </div>
+  <!-- Main Container: bg-white for seamless look, remove gray gaps -->
+  <div class="flex flex-col h-full bg-white overflow-y-auto">
+    <!-- 1. Header -->
+    <V1Header />
+
+    <!-- 2. Main Canvas -->
+    <!-- Use flex-auto to ensure it grows to fit content (Sticky Footer pattern) -->
+    <!-- Removed p-2 md:p-4 to allow full bleed if needed, but StandardGrid has its own padding -->
+    <!-- Actually StandardGrid matches V1 which has white background. -->
+    <main class="flex-auto flex flex-col"> 
+        <component v-if="activeView" :is="activeView.component" />
+        <div v-else class="flex-1 flex items-center justify-center text-gray-400">
+            No Active View
+        </div>
+    </main>
+
+    <!-- 3. Toolbar -->
+    <!-- Removing visible borders to create seamless flow, relying on spacing or subtle shadow -->
+    <section class="bg-white shrink-0">
+        <V1Toolbar 
+            @save="handleSave"
+            @export-video="handleExport"
+            @create-new="handleCreate"
+            @reset="handleReset"
+        />
     </section>
 
-    <!-- 2. Main Canvas Area -->
-    <div class="flex-1 min-h-[500px] p-4">
-        <div class="h-full bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden relative">
-            <component v-if="activeView" :is="activeView.component" />
-        </div>
-    </div>
-
-    <!-- 3. Bottom Toolbar -->
-    <div class="p-4 bg-white border-t border-gray-100 flex gap-2 justify-center pb-8 safe-area-pb">
-        <button class="flex-1 py-3 bg-primary text-white font-bold rounded-xl shadow-lg active:scale-95 transition-transform">
-            生成图片
-        </button>
-        <button class="px-6 py-3 bg-gray-100 text-gray-600 font-bold rounded-xl active:scale-95 transition-transform">
-            重置
-        </button>
-    </div>
+    <!-- 4. Footer -->
+    <V1Footer />
   </div>
 </template>
 

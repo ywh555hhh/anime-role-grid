@@ -27,7 +27,11 @@ export const ChaosPlugin: IPlugin = {
 
         (chaosSystem as any).onSnap = (snapCtx: any) => {
             if (Math.random() > 0.7) {
-                console.warn('⚡ SNAP REJECTED BY CHAOS GODS!');
+                // console.warn('⚡ SNAP REJECTED BY CHAOS GODS!');
+                ctx.commands.execute('ui.toast', {
+                    message: '⚡ SNAP REJECTED BY CHAOS GODS!',
+                    type: 'warning'
+                });
                 return false; // Block it
             }
             return true;

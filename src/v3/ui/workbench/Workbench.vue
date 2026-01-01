@@ -3,6 +3,7 @@ import { useWorkbench } from '../../platform/workbench/useWorkbench';
 import NormalLayout from './layouts/NormalLayout.vue';
 import StreamerLayout from './layouts/StreamerLayout.vue';
 import ActivityBar from './ActivityBar.vue';
+import OverlayHost from '../overlays/OverlayHost.vue';
 
 const { mode } = useWorkbench();
 </script>
@@ -10,7 +11,7 @@ const { mode } = useWorkbench();
 <template>
   <div class="w-screen h-screen overflow-hidden flex flex-col md:flex-row bg-[#FDFDFD]">
       <!-- Global Navigation (View/Dock Switcher) -->
-      <ActivityBar />
+      <ActivityBar v-if="mode !== 'NORMAL'" />
 
       <!-- Main Layout Area -->
       <div class="flex-1 relative h-full overflow-hidden">
@@ -21,6 +22,9 @@ const { mode } = useWorkbench();
             </KeepAlive>
         </Transition>
       </div>
+
+      <!-- Add Overlay Layer -->
+      <OverlayHost />
   </div>
 </template>
 

@@ -1,5 +1,10 @@
 import type { Component } from 'vue';
-import type { Registry } from '../core/ecs/Registry';
+import type { Registry } from '../core/ecs/registry';
+
+// Common Disposable Interface (VS Code Pattern)
+export interface IDisposable {
+    dispose(): void;
+}
 
 /**
  * --- 1. The View Protocol (Middle Screen) ---

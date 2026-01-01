@@ -123,6 +123,41 @@ export interface CoreComponentMap {
         type: 'image' | 'color' | 'text';
         visible: boolean;
         styleVariant?: string;
+        label?: string; // e.g. Character Name on grid
+    };
+
+    /**
+     * Grid Global State (Singleton-ish)
+     * Stores layout-wide settings like Title, Cols, etc.
+     */
+    'GridState': {
+        title: string;
+        cols: number;
+        customTitle?: string;
+    };
+
+    /**
+     * System Command
+     * Used to trigger one-off actions in Systems.
+     */
+    'Command': {
+        type: string; // e.g. 'GENERATE_GRID'
+        payload: any;
+        processed?: boolean;
+    };
+
+    /**
+     * [Slot Layout Component]
+     * Specific to Grid System for locating slots.
+     */
+    'Layout': {
+        x: number;
+        y: number;
+        w: number;
+        h: number;
+        order: number;
+        parent: string;
+        type: string;
     };
 
     /**
