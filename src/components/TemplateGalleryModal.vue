@@ -94,10 +94,13 @@ function select(id: string) {
           <!-- Header: Title + SubLabels (Category Level 2) -->
           <div class="p-6 pb-2 border-b border-gray-100 dark:border-gray-800">
              <div class="flex items-center justify-between mb-4">
-                <h2 class="text-2xl font-bold text-gray-900 dark:text-white flex items-center gap-2">
-                  <div i-carbon-grid class="text-primary" />
-                  <span>{{ CATEGORY_MAP[activeCategory] }}</span>
-                </h2>
+                <div>
+                    <div class="text-xs font-bold text-gray-400 mb-1">切换模板</div>
+                    <h2 class="text-2xl font-bold text-gray-900 dark:text-white flex items-center gap-2">
+                    <div i-carbon-grid class="text-primary" />
+                    <span>{{ CATEGORY_MAP[activeCategory] }}</span>
+                    </h2>
+                </div>
                 <button 
                   class="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
                   @click="emit('close')"

@@ -6,6 +6,7 @@ import GuideModal from '~/components/GuideModal.vue'
 import FirstTimeGuide from '~/components/FirstTimeGuide.vue'
 import TrendingGuideModal from '~/components/TrendingGuideModal.vue'
 import TemplateGalleryModal from '~/components/TemplateGalleryModal.vue'
+import JoinGroupModal from '~/components/JoinGroupModal.vue'
 import GridEditor from '~/components/GridEditor.vue'
 
 import { useGridStore } from '~/stores/gridStore'
@@ -67,13 +68,18 @@ const currentTemplateName = computed(() => {
 })
 
 
-function handleManualGuideOpen() {
-  // Manually open Guide (Force show)
-  // Use higher priority or just GUIDE? User action = INTERACTION.
-  modalStore.openModal(FirstTimeGuide, {
+function handleManualJoinGroup() {
+  modalStore.openModal(JoinGroupModal, {
       show: true,
       onClose: () => modalStore.closeModal()
   }, MODAL_PRIORITY.INTERACTION)
+}
+
+function handleOpenChangelog() {
+    modalStore.openModal(FirstTimeGuide, {
+        show: true,
+        onClose: () => modalStore.closeModal()
+    }, MODAL_PRIORITY.INTERACTION)
 }
 
 function selectTemplate(id: string) {
@@ -147,7 +153,17 @@ function handleResetTags() {
                         </button>
 
                         <button 
-                        @click="handleManualGuideOpen"
+                        @click="handleOpenChangelog"
+                        class="text-xs font-bold text-gray-600 hover:text-primary flex items-center gap-1.5 transition-colors group"
+                        >
+                        <div class="icon-btn group-hover:bg-primary-light">
+                            <div class="i-carbon-time text-sm" />
+                        </div>
+                        <span>更新日志</span>
+                        </button>
+
+                        <button 
+                        @click="handleManualJoinGroup"
                         class="text-xs font-bold text-gray-600 hover:text-primary flex items-center gap-1.5 transition-colors group"
                         >
                         <div class="icon-btn group-hover:bg-primary-light">

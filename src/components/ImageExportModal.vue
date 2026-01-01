@@ -52,7 +52,7 @@ function close() {
                    <div class="text-6xl">🎉</div>
                 </div>
               </div>
-               <h3 class="text-2xl font-bold mb-2 text-gray-900" style="font-family: 'Noto Serif SC', serif;">图片生成成功！</h3>
+               <h3 class="text-2xl font-bold mb-2 text-gray-900" style="font-family: 'Noto Serif SC', serif;">图片导出预览</h3>
                <p class="text-gray-600 font-medium leading-relaxed mb-4">
                 已尝试保存到相册。<br/>
                 <span class="text-sm text-gray-400">如果未自动保存，请长按上方图片手动保存哦~</span>

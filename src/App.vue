@@ -2,6 +2,7 @@
 // App.vue is just a router shell now
 import GlobalAnnouncement from './components/GlobalAnnouncement.vue'
 import ModalDispatcher from './components/ModalDispatcher.vue'
+
 import { Toaster } from 'vue-sonner'
 import { useGridStore } from '~/stores/gridStore'
 import { useModalStore } from '~/stores/modalStore'
