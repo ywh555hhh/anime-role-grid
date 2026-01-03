@@ -49,7 +49,7 @@ function goHome() {
       </transition>
 
       <!-- 2. Main Header (V1 Style) -->
-      <header class="bg-white shadow-sm p-6 shrink-0 relative z-10">
+      <header class="bg-white p-6 shrink-0 relative z-10">
           <div class="flex flex-col items-center justify-center gap-4">
             <!-- Logo + Title -->
             <div class="flex flex-col items-center gap-3 md:flex-row md:gap-4 md:items-end">
@@ -66,9 +66,7 @@ function goHome() {
             <!-- Separator Line -->
             <div class="bg-primary rounded-full w-full max-w-sm h-[4px] mt-2 opacity-80" />
             
-            <p class="text-gray-500 text-sm mt-1">
-                手机用户友好模式。点击下方格子直接上传。
-            </p>
+            <!-- Mobile text removed -->
           </div>
       </header>
   </div>

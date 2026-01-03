@@ -1,56 +1,28 @@
-import { defineComponent, h } from 'vue';
 import type { IPlugin, IPluginContext } from '../../platform/api/IPlugin';
 import type { IPreset } from '../../core/types/preset';
 import StandardGridView from './StandardGridView.vue';
 import { StandardGridSystem } from './StandardGridSystem';
+import { getEcsRegistry, getCommandService } from '../../platform/loader';
+import { presetService } from '../../platform/services/PresetService';
+import PresetGalleryOverlay from '../../ui/overlays/PresetGalleryOverlay.vue';
 
-// --- V1 Presets (Migrated) ---
-const presets: IPreset[] = [
-    {
-        id: 'standard.classic',
-        name: '经典 (3x3)',
-        description: '最基础的九宫格，适合大多数场景。',
-        category: 'character',
-        tags: ['基础', '热门'],
-        targetViewId: 'builtin.views.grid',
-        data: {
-            config: {
-                cols: 3,
-                title: '我的二次元成分表',
-                // V1 Template: Classic
-            }
-        }
-    },
-    {
-        id: 'standard.oshi',
-        name: '真爱/Oshi (4x4)',
-        description: '专为单推人设计，属性更细分。',
-        category: 'character',
-        tags: ['属性'],
-        targetViewId: 'builtin.views.grid',
-        data: {
-            config: {
-                cols: 4,
-                title: '我的 Oshi 果然有问题'
-                // We will add 'items' (labels) support later in System
-            }
-        }
-    },
-    {
-        id: 'standard.toku',
-        name: '特摄综合 (4x3)',
-        description: '假面骑士/奥特曼入坑必填。',
-        category: 'work',
-        tags: ['特摄'],
-        targetViewId: 'builtin.views.grid',
-        data: {
-            config: {
-                cols: 4,
-                title: '我的特摄喜好果然有问题'
-            }
+import v1Templates from '../../assets/presets/v1-templates.json';
+
+// --- V1 Presets (Migrated from JSON) ---
+const presets: IPreset[] = v1Templates.map((t: any) => ({
+    id: `standard.${t.id}`,
+    name: t.name,
+    description: t.description || t.name,
+    category: t.category,
+    tags: t.tags,
+    targetViewId: 'builtin.views.grid',
+    data: {
+        config: {
+            ...t.config,
+            presetId: `standard.${t.id}`
         }
     }
-];
+}));
 
 export const StandardGridPlugin: IPlugin = {
     id: 'builtin.grid',
@@ -59,53 +31,72 @@ export const StandardGridPlugin: IPlugin = {
         name: 'Standard Grid',
         description: 'The classic V1 Grid experience.'
     },
+    contributions: {
+        toolbar: [
+            {
+                id: 'btn_switch',
+                icon: 'i-carbon-template',
+                label: '切换模板',
+                command: 'grid.switchTemplate'
+            },
+            {
+                id: 'btn_names',
+                icon: 'i-carbon-text-font',
+                label: '显示名字',
+                command: 'grid.toggleNames'
+            },
+            {
+                id: 'btn_reset',
+                icon: 'i-carbon-restart',
+                label: '重置文字',
+                command: 'grid.resetLabels'
+            }
+        ]
+    },
     presets: presets,
     activate(ctx: IPluginContext) {
         console.log('[StandardGrid] Activating...');
 
+        const registry = getEcsRegistry();
+        const commands = getCommandService();
+
         // 1. Register View
         ctx.registerView({
             id: 'builtin.views.grid',
-            component: StandardGridView
+            name: 'Standard Grid',
+            icon: 'grid_view',
+            capabilities: { zoom: true, export: true, culling: false },
+            component: StandardGridView,
+
+            // [Verification] V3.1 Interface Hardening
+            onSuspend() {
+                console.log('[StandardGrid] Suspended (State Saved)');
+            },
+            onResume() {
+                console.log('[StandardGrid] Resumed (State Restored)');
+            }
         });
 
         // 2. Register System
         ctx.systems.register(new StandardGridSystem());
 
-        // 3. Bootstrap Default Grid (if empty)
-        const slots = ctx.registry.query(['Layout', 'Visual']);
-        if (slots.size === 0) {
-            console.log('[StandardGrid] Bootstrapping default grid (9 slots)...');
-            const registry = ctx.registry;
+        // 3. Register Commands (Toolbar Actions)
+        commands.register('grid.switchTemplate', () => {
+            ctx.overlays.open(PresetGalleryOverlay);
+        });
 
-            // Create 9 slots
-            for (let i = 0; i < 9; i++) {
-                const eid = registry.createEntity();
+        commands.register('grid.toggleNames', () => {
+            registry.add({ components: { 'Command': { type: 'TOGGLE_NAMES', payload: {} } } });
+        });
 
-                registry.addComponent(eid, 'Layout', {
-                    x: (i % 3),
-                    y: Math.floor(i / 3),
-                    w: 1,
-                    h: 1,
-                    order: i,
-                    parent: 'root',
-                    type: 'slot'
-                });
+        commands.register('grid.resetLabels', () => {
+            const current = presetService.currentPreset.value;
+            // Extract items from preset data.config or fallback to empty
+            const items = current?.data?.config?.items || [];
 
-                registry.addComponent(eid, 'Visual', {
-                    src: '',
-                    visible: true,
-                    label: '',
-                    type: 'image'
-                });
-
-                registry.addComponent(eid, 'Meta', {
-                    id: `slot_${i}`,
-                    name: `Slot ${i}`,
-                    createdTime: Date.now()
-                });
-            }
-        }
+            console.log('[StandardGrid] Resetting labels to preset defaults:', items);
+            registry.add({ components: { 'Command': { type: 'RESET_LABELS', payload: { items } } } });
+        });
     },
 
     deactivate(ctx: IPluginContext) {

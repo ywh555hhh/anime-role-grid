@@ -1,23 +1,33 @@
 <script setup lang="ts">
+import { computed } from 'vue';
 import { useWorkbench } from '../../../platform/workbench/useWorkbench';
+import { getCommandService } from '../../../platform/loader';
 import V1Header from '../components/V1Header.vue';
 import V1Toolbar from '../components/V1Toolbar.vue';
 import V1Footer from '../components/V1Footer.vue';
 import { overlays } from '../../../platform/services/OverlayManager';
-import PresetGalleryOverlay from '../../overlays/PresetGalleryOverlay.vue';
+import { StandardGridPlugin } from '../../../plugins/grid-standard';
 
-const { activeView, setMode } = useWorkbench();
+const { activeView } = useWorkbench();
+
+// Dynamic Actions from Plugin
+const toolbarActions = computed(() => {
+    // Logic: If active view is Grid, show Grid actions.
+    if (activeView.value?.id === 'builtin.views.grid') {
+        return StandardGridPlugin.contributions?.toolbar || [];
+    }
+    return [];
+});
+
+const handleAction = (cmdId: string) => {
+    getCommandService().execute(cmdId);
+};
 
 // Placeholder Actions
-const handleSave = () => { overlays.alert('保存功能开发中 (Phase 4)'); };
-const handleExport = () => { overlays.alert('视频导出功能开发中 (Phase 4)'); };
-const handleCreate = () => { overlays.alert('自定义出题功能 (Custom Mode) 待开发'); }; // Separated from Gallery
+const handleSave = () => { getCommandService().execute('grid:export'); };
+const handleExport = () => { getCommandService().execute('grid:export-dom'); };
+const handleCreate = () => { overlays.alert('自定义出题功能 (Custom Mode) 待开发'); }; 
 const handleReset = () => { overlays.confirm('确定要重置当前画布吗？').then(ok => { if(ok) overlays.alert('重置逻辑待接入 (ECS Clear Command)'); }) };
-
-// Temporary: Expose Gallery via a global hotkey or a new Dev button?
-// Or better: clicking the "Template Name" in StandardGridView should open Gallery.
-// But StandardGridView is a view, it shouldn't know about the overlay directly ideally.
-// Let's add a temporary debug button or instruction.
 </script>
 
 <template>
@@ -41,8 +51,10 @@ const handleReset = () => { overlays.confirm('确定要重置当前画布吗？'
     <!-- Removing visible borders to create seamless flow, relying on spacing or subtle shadow -->
     <section class="bg-white shrink-0">
         <V1Toolbar 
+            :actions="toolbarActions"
+            @action="handleAction"
             @save="handleSave"
-            @export-video="handleExport"
+            @export-dom="handleExport"
             @create-new="handleCreate"
             @reset="handleReset"
         />

@@ -2,7 +2,6 @@ import { defineComponent, h } from 'vue';
 import type { IPlugin } from '../../platform/api/IPlugin';
 import { loadPlugin } from '../../platform/loader';
 import { ZenPlugin } from '../demo/zen';
-import { ChaosPlugin } from '../demo/chaos';
 import { StandardGridPlugin } from '../grid-standard';
 
 /**
@@ -42,7 +41,8 @@ export async function activateBuiltinPlugins() {
                     setup() {
                         return () => h('div', { class: 'p-4 text-gray-400' }, 'Assets moving to Plugin...');
                     }
-                })
+                }),
+                dispose() { }
             });
         },
         deactivate() { }

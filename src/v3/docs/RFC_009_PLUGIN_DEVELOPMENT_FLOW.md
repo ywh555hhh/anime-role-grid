@@ -108,7 +108,39 @@ const handleMakeGold = () => {
 
 ---
 
-## Phase 3: 界面挂载 (View & UI)
+## Phase 3.5: 声明式贡献 (Manifest Contributions)
+
+**痛点**: "我想在工具栏加个按钮，怎么做？"
+**位置**: `src/v3/plugins/my-plugin/index.ts`
+
+不要在 UI 代码里硬编码按钮，通过 `contributions` 告诉系统。
+
+```typescript
+// index.ts
+export const MyPlugin: IPlugin = {
+    // ...
+    contributions: {
+        toolbar: [
+            {
+                id: 'btn_magic',
+                icon: 'i-carbon-magic-wand',
+                label: '魔法',
+                command: 'my.magic_cmd' // 对应下方 register 的 ID
+            }
+        ]
+    },
+    
+    activate(ctx) {
+        // 注册对应的命令
+        ctx.commands.register('my.magic_cmd', () => { /* ... */ });
+    }
+}
+```
+
+---
+
+## Phase 4: 插件组装 (Assembly)
+
 
 **痛点**: "我的 UI 怎么显示出来？"
 **位置**: `src/v3/plugins/my-plugin/MyView.vue` 或 `overlays`

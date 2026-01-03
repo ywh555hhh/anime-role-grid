@@ -8,19 +8,36 @@ import { Registry } from '../core/ecs/registry';
 import type { IPlugin, IPluginContext } from './api/IPlugin';
 import type { IView, ISource, IDock } from './contracts';
 
-// Singleton Instances (Lazy init pattern could be better, but this is simple)
+// 1. Core Singletons
 const registryInstance = WorkbenchRegistry.getInstance();
 const ecsRegistry = new Registry(); // The Global ECS Data Store
 const systemManager = new SystemManager(ecsRegistry);
 
-// New: Command Service
+// 2. Services
 import { CommandService } from './services/CommandService';
 const commandService = new CommandService();
 
+import { overlays } from './services/OverlayManager';
+
 // Register Standard Commands
 commandService.register('ui.alert', (msg) => overlays.alert(msg));
-commandService.register('ui.toast', (msg) => overlays.toast(msg)); // Assuming toast exists or allow generic
+commandService.register('ui.toast', (msg) => overlays.toast(msg));
 
+import { PersistenceService } from './services/PersistenceService';
+const persistenceService = new PersistenceService();
+
+import { AssetService } from './services/AssetService';
+const assetService = new AssetService();
+
+// 3. Builtin Sources
+import { BangumiSource } from '../plugins/builtin/BangumiSource';
+import { LocalSource } from '../plugins/builtin/LocalSource';
+assetService.registerSource(new BangumiSource());
+assetService.registerSource(new LocalSource());
+
+import { presetService } from './services/PresetService';
+
+// 4. Exports
 export function getSystemManager() {
     return systemManager;
 }
@@ -33,27 +50,37 @@ export function getCommandService() {
     return commandService;
 }
 
+export function getPersistenceService() {
+    return persistenceService;
+}
+
+export function getAssetService() {
+    return assetService;
+}
+
 /**
  * Loads a plugin into the environment
  */
-import { overlays } from './services/OverlayManager';
-
-// ...
-
 export async function loadPlugin(plugin: IPlugin) {
     console.log(`[Loader] Loading plugin: ${plugin.id} (${plugin.version})...`);
+
+    // Register Presets (if any)
+    presetService.registerFromPlugin(plugin);
 
     const context: IPluginContext = {
         systems: systemManager,
         registry: ecsRegistry,
-        commands: commandService, // Inject Command Service
-        overlays: overlays, // Inject Singleton
+        commands: commandService,
+        overlays: overlays,
+        assets: assetService,
 
         registerView(view: IView) {
             registryInstance.registerView(view);
             console.log(`  + View: ${view.id}`);
         },
         registerSource(source: ISource) {
+            // Register to AssetService (for Picker) AND WorkbenchRegistry (for System?)
+            assetService.registerSource(source);
             registryInstance.registerSource(source);
             console.log(`  + Source: ${source.id}`);
         },

@@ -1,0 +1,52 @@
+﻿src/v3/core/ecs/command.ts(6,10): error TS6133: 'shallowReactive' is declared but its value is never read.
+src/v3/core/ecs/command.ts(11,14): error TS2420: Class 'HistoryStack' incorrectly implements interface 'IHistoryStack'.
+  Property 'push' is missing in type 'HistoryStack' but required in type 'IHistoryStack'.
+src/v3/core/ecs/command.ts(163,17): error TS2532: Object is possibly 'undefined'.
+src/v3/core/systems/dock.ts(6,37): error TS6133: 'createBatchCommand' is declared but its value is never read.
+src/v3/core/systems/events.ts(5,15): error TS6196: 'EntityId' is declared but never used.
+src/v3/core/systems/layout.ts(22,27): error TS6133: 'gridId' is declared but its value is never read.
+src/v3/core/systems/layout.ts(22,45): error TS6133: 'registry' is declared but its value is never read.
+src/v3/platform/managers/SystemManager.ts(79,13): error TS18048: 'system' is possibly 'undefined'.
+src/v3/plugins/builtin/index.ts(5,1): error TS6133: 'ChaosPlugin' is declared but its value is never read.
+src/v3/plugins/builtin/index.ts(37,30): error TS2345: Argument of type '{ id: string; title: string; location: "left"; component: DefineComponent<{}, () => VNode<RendererNode, RendererElement, { [key: string]: any; }>, any, ComputedOptions, ... 15 more ..., any>; }' is not assignable to parameter of type 'IDock'.
+  Property 'dispose' is missing in type '{ id: string; title: string; location: "left"; component: DefineComponent<{}, () => VNode<RendererNode, RendererElement, { [key: string]: any; }>, any, ComputedOptions, ... 15 more ..., any>; }' but required in type 'IDock'.
+src/v3/plugins/builtin/systems/index.ts(1,15): error TS2307: Cannot find module './StandardGridSystem' or its corresponding type declarations.
+src/v3/plugins/builtin/views/index.ts(1,30): error TS2307: Cannot find module './StandardGridView.vue' or its corresponding type declarations.
+src/v3/plugins/demo/chaos.ts(18,18): error TS6133: 'registry' is declared but its value is never read.
+src/v3/plugins/demo/chaos.ts(28,40): error TS6133: 'snapCtx' is declared but its value is never read.
+src/v3/plugins/demo/zen.ts(31,26): error TS2345: Argument of type '{ id: string; title: string; location: "right"; component: DefineComponent<{}, () => VNode<RendererNode, RendererElement, { [key: string]: any; }>, any, ComputedOptions, ... 15 more ..., any>; }' is not assignable to parameter of type 'IDock'.
+  Property 'dispose' is missing in type '{ id: string; title: string; location: "right"; component: DefineComponent<{}, () => VNode<RendererNode, RendererElement, { [key: string]: any; }>, any, ComputedOptions, ... 15 more ..., any>; }' but required in type 'IDock'.
+src/v3/plugins/grid-standard/StandardGridSystem.ts(7,10): error TS6133: 'registry' is declared but its value is never read.
+src/v3/plugins/grid-standard/StandardGridSystem.ts(11,13): error TS6133: 'delta' is declared but its value is never read.
+src/v3/plugins/grid-standard/StandardGridSystem.ts(11,28): error TS6133: 'time' is declared but its value is never read.
+src/v3/tests/core/registry.test.ts(5,32): error TS6133: 'vi' is declared but its value is never read.
+src/v3/tests/systems/assets/imagePool.test.ts(80,15): error TS6133: 'uuid' is declared but its value is never read.
+src/v3/tests/systems/assets/imagePool.test.ts(84,29): error TS18048: 'setCall' is possibly 'undefined'.
+src/v3/ui/composables/useDrag.ts(11,1): error TS6133: 'EventBus' is declared but its value is never read.
+src/v3/ui/composables/useDrag.ts(12,1): error TS6133: 'LAYERS' is declared but its value is never read.
+src/v3/ui/composables/useDrag.ts(33,11): error TS6133: 'mainGridId' is declared but its value is never read.
+src/v3/ui/composables/useDrag.ts(146,40): error TS18048: 'st.width' is possibly 'undefined'.
+src/v3/ui/composables/useDrag.ts(147,40): error TS18048: 'st.height' is possibly 'undefined'.
+src/v3/ui/composables/useDrag.ts(254,33): error TS2345: Argument of type 'ICommand | undefined' is not assignable to parameter of type 'ICommand'.
+  Type 'undefined' is not assignable to type 'ICommand'.
+src/v3/ui/debug/EntityDebugger.vue(4,1): error TS6133: 'GridBoard' is declared but its value is never read.
+src/v3/ui/debug/EntityDebugger.vue(4,23): error TS2307: Cannot find module '../components/GridBoard.vue' or its corresponding type declarations.
+src/v3/ui/debug/EntityDebugger.vue(5,1): error TS6133: 'useGrid' is declared but its value is never read.
+src/v3/ui/debug/EntityDebugger.vue(14,24): error TS2307: Cannot find module '../components/EntityCard.vue' or its corresponding type declarations.
+src/v3/ui/debug/EntityDebugger.vue(15,22): error TS2307: Cannot find module '../components/SlotItem.vue' or its corresponding type declarations.
+src/v3/ui/debug/EntityDebugger.vue(136,13): error TS2322: Type 'string' is not assignable to type 'EntityId'.
+  Type 'string' is not assignable to type '{ readonly __brand: "EntityId"; }'.
+src/v3/ui/debug/EntityDebugger.vue(153,10): error TS6133: 'getLocString' is declared but its value is never read.
+src/v3/ui/overlays/ImportDialog.vue(47,46): error TS6133: 'name' is declared but its value is never read.
+src/v3/ui/overlays/ImportDialog.vue(91,57): error TS2339: Property 'common' does not exist on type '{ small: string; grid: string; large: string; medium: string; } | { small: string; grid: string; large: string; medium: string; common: string; } | { small: string; grid: string; large: string; medium: string; }'.
+  Property 'common' does not exist on type '{ small: string; grid: string; large: string; medium: string; }'.
+src/v3/ui/overlays/ImportDialog.vue(91,116): error TS2551: Property 'image' does not exist on type 'BgmSearchResultItem'. Did you mean 'images'?
+  Property 'image' does not exist on type 'BgmCharacterSearchResultItem'.
+src/v3/ui/overlays/PresetGalleryOverlay.vue(10,7): error TS6133: 'activeView' is declared but its value is never read.
+src/v3/ui/overlays/SearchOverlay.vue(2,15): error TS6133: 'watch' is declared but its value is never read.
+src/v3/ui/overlays/SearchOverlay.vue(4,24): error TS6133: 'SearchError' is declared but its value is never read.
+src/v3/ui/renderer/EntityCard.vue(12,19): error TS6133: 'state' is declared but its value is never read.
+src/v3/ui/renderer/EntityCard.vue(47,47): error TS2345: Argument of type '() => string | undefined' is not assignable to parameter of type 'MaybeRef<string | undefined>'.
+src/v3/ui/renderer/GridBoard.vue(11,19): error TS6133: 'state' is declared but its value is never read.
+src/v3/ui/viewport/EntityRenderer.vue(5,25): error TS6196: 'ComponentData' is declared but never used.
+src/v3/ui/viewport/MainViewport.vue(10,9): error TS6133: 'registry' is declared but its value is never read.

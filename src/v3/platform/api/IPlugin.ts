@@ -3,9 +3,9 @@
  * The Universal Plugin Interface.
  */
 import type { IView, ISource, IDock } from '../contracts';
-import type { SystemManager } from '../managers/SystemManager';
 import type { ISystem, IRegistry } from '../../core/ecs/types';
 import type { IPreset } from '../../core/types/preset';
+import type { IAssetService } from './assets';
 
 // Define the shape of the overlay manager exposed to plugins
 export interface IPluginOverlayManager {
@@ -52,6 +52,20 @@ export interface IPluginContext {
 
     // Overlay Manager
     readonly overlays: IPluginOverlayManager;
+
+    // Asset Service
+    readonly assets: IAssetService;
+}
+
+/**
+ * toolbar action definition
+ */
+export interface IToolbarContribution {
+    id: string;
+    icon: string; // e.g. 'i-carbon-template'
+    label: string;
+    command: string; // Command ID to execute
+    // Future: visibleWhen, enableWhen
 }
 
 /**
@@ -70,6 +84,14 @@ export interface IPlugin {
         name: string;
         description?: string;
         author?: string;
+    };
+
+    /**
+     * Declarative Contributions
+     * UI elements that the plugin contributes to the Shell.
+     */
+    readonly contributions?: {
+        toolbar?: IToolbarContribution[];
     };
 
     /** 

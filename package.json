@@ -17,6 +17,7 @@
     "driver.js": "^1.4.0",
     "drizzle-orm": "^0.45.1",
     "idb-keyval": "^6.2.2",
+    "modern-screenshot": "^4.6.7",
     "mp4-muxer": "^5.2.2",
     "pinia": "^3.0.4",
     "qrcode": "^1.5.4",

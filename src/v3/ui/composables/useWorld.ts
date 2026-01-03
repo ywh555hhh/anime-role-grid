@@ -2,12 +2,12 @@
  * src/v3/ui/composables/useWorld.ts
  * Integration Layer: Vue <-> ECS
  */
-import { Registry } from '../../core/ecs/registry';
+import { getEcsRegistry } from '../../platform/loader';
 import { HistoryStack } from '../../core/ecs/command';
 
 // Singleton Instances
 // We instantiate them once so the state persists across component remounts
-const registry = new Registry();
+const registry = getEcsRegistry();
 const history = new HistoryStack(registry);
 
 export function useWorld() {

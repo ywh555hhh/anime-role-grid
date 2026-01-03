@@ -8,8 +8,7 @@ import type {
     WorldState,
     EntityId,
     ComponentType,
-    ComponentData,
-    CoreComponentMap
+    ComponentData
 } from './types';
 import { generateEntityId } from '../utils/id';
 
@@ -39,33 +38,49 @@ export class Registry implements IRegistry {
         });
     }
 
-    // Query Cache: Key -> Set of EntityIds
-    private readonly queryCache = new Map<string, Set<EntityId>>();
+    // Query Cache Removed (Reactivity Fix: Caching broke dependency tracking)
+    // private readonly queryCache = new Map<string, Set<EntityId>>();
 
     /**
-     * Helper to generate cache key for query
+     * Query entities with specific components
+     * DIRECT COMPUTATION (Maintains Vue Reactivity)
      */
-    private getQueryKey(types: ComponentType[]): string {
-        // Sort to ensure ['A', 'B'] same as ['B', 'A']
-        return [...types].sort().join('|');
-    }
+    query(types: ComponentType[]): Set<EntityId> {
+        if (types.length === 0) return new Set();
 
-    /**
-     * Invalidate relevant queries when a component is changed
-     */
-    private invalidateQueries(type: ComponentType) {
-        // Naive strategy: Clear any query that involves this type.
-        // Optimization: In a real ECS, we might update the set incrementally.
-        // For V3, clearing keys containing the type is safer/easier.
-        for (const key of this.queryCache.keys()) {
-            if (key.includes(type)) { // Simple check, might have false positives if type names overlap substring, but we use '|' separator
-                // To be precise:
-                const parts = key.split('|');
-                if (parts.includes(type)) {
-                    this.queryCache.delete(key);
+        // 1. Get Set for first type
+        const firstType = types[0] as ComponentType;
+        const firstSet = this.state.indices.get(firstType);
+
+        if (!firstSet || firstSet.size === 0) {
+            return new Set();
+        }
+
+        if (types.length === 1) {
+            // Return a new Set to allow safe iteration/modification by caller without affecting index
+            // But critically, by accessing 'firstSet', we register dependency.
+            return new Set(firstSet);
+        }
+
+        // 2. Intersection for others
+        const result = new Set(firstSet);
+        for (let i = 1; i < types.length; i++) {
+            const nextType = types[i] as ComponentType;
+            const nextSet = this.state.indices.get(nextType);
+
+            // If any required component index is missing/empty, intersection is empty
+            if (!nextSet || nextSet.size === 0) {
+                return new Set();
+            }
+
+            for (const id of result) {
+                if (!nextSet.has(id)) {
+                    result.delete(id);
                 }
             }
         }
+
+        return result;
     }
 
     /**
@@ -118,8 +133,8 @@ export class Registry implements IRegistry {
         }
         this.state.indices.get(type)!.add(entityId);
 
-        // 4. Invalidate Query Cache
-        this.invalidateQueries(type);
+        // 4. Invalidate Query Cache (Removed)
+        // this.invalidateQueries(type);
     }
 
     /**
@@ -141,8 +156,8 @@ export class Registry implements IRegistry {
             index.delete(entityId);
         }
 
-        // 3. Invalidate Query Cache
-        this.invalidateQueries(type);
+        // 3. Invalidate Query Cache (Removed)
+        // this.invalidateQueries(type);
     }
 
     // ... getComponent, batch ...
@@ -173,57 +188,19 @@ export class Registry implements IRegistry {
         return this.state;
     }
 
+    // Duplicate query method removed
+
     /**
-     * Query entities with specific components (Phase 1 Bonus)
-     * NOW WITH CACHING!
+     * Helper to create entity with components
      */
-    query(types: ComponentType[]): Set<EntityId> {
-        if (types.length === 0) return new Set();
-
-        const key = this.getQueryKey(types);
-        if (this.queryCache.has(key)) {
-            return this.queryCache.get(key)!;
-        }
-
-        // 1. Get Set for first type
-        const firstType = types[0];
-        const firstSet = this.state.indices.get(firstType);
-
-        if (!firstSet || firstSet.size === 0) {
-            // Cache empty result
-            const empty = new Set<EntityId>();
-            this.queryCache.set(key, empty);
-            return empty;
-        }
-
-        if (types.length === 1) {
-            // For single type, just return the index itself? No, we need snapshot.
-            const result = new Set(firstSet);
-            this.queryCache.set(key, result);
-            return result;
-        }
-
-        // 2. Intersection for others
-        const result = new Set(firstSet);
-        for (let i = 1; i < types.length; i++) {
-            const nextType = types[i];
-            const nextSet = this.state.indices.get(nextType);
-            if (!nextSet) {
-                const empty = new Set<EntityId>();
-                this.queryCache.set(key, empty);
-                return empty;
-            }
-
-            for (const id of result) {
-                if (!nextSet.has(id)) {
-                    result.delete(id);
-                }
+    add(entityDef: { id?: string; components: Partial<Record<ComponentType, any>> }): EntityId {
+        const id = this.createEntity(entityDef.id);
+        if (entityDef.components) {
+            for (const [type, data] of Object.entries(entityDef.components)) {
+                this.addComponent(id, type as ComponentType, data);
             }
         }
-
-        // 3. Save to Cache
-        this.queryCache.set(key, result);
-        return result;
+        return id;
     }
 
     // ... serialize/deserialize ... (omitted for brevity in replacement search if not targeted, but I'm replacing createEntity to query end)
@@ -268,6 +245,7 @@ export class Registry implements IRegistry {
             (map as Map<any, any>).clear();
         }
         this.state.indices.clear();
+        // this.queryCache.clear(); // CRITICAL: Clear cache to prevent ghost entities
 
         // 2. Load Entities
         if (Array.isArray(data.entities)) {

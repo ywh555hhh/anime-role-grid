@@ -109,4 +109,45 @@ export class SystemManager {
         }
         return true; // Approved
     }
+
+    // --- Game Loop ---
+    private isRunning = false;
+    private lastTime = 0;
+    private animFrameId: number | null = null;
+
+    startLoop() {
+        if (this.isRunning) return;
+        this.isRunning = true;
+        this.lastTime = performance.now();
+        console.log('[SystemManager] Starting Game Loop...');
+        this.loop(this.lastTime);
+    }
+
+    stopLoop() {
+        this.isRunning = false;
+        if (this.animFrameId !== null) {
+            cancelAnimationFrame(this.animFrameId);
+        }
+    }
+
+    private loop = (time: number) => {
+        if (!this.isRunning) return;
+
+        const delta = time - this.lastTime;
+        this.lastTime = time;
+
+        // Execute all systems
+        for (const system of this.systems) {
+            const sys = system as any;
+            if (typeof sys.execute === 'function') {
+                try {
+                    sys.execute(delta, time, this.registry);
+                } catch (e) {
+                    console.error(`[SystemManager] Error in ${system.id}:`, e);
+                }
+            }
+        }
+
+        this.animFrameId = requestAnimationFrame(this.loop);
+    }
 }

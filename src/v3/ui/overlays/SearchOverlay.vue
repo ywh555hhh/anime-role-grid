@@ -1,7 +1,7 @@
 <script setup lang="ts">
-import { ref, watch } from 'vue';
+import { ref } from 'vue';
 import { useDebounceFn } from '@vueuse/core';
-import { useBgmSearch, SearchError } from '../../../logic/search'; // Reuse logic
+import { useBgmSearch } from '../../../logic/search'; // Reuse logic
 import type { BgmCharacterSearchResultItem, BgmSubjectSearchResultItem } from '~/types';
 
 const props = defineProps<{
@@ -37,7 +37,7 @@ const doSearch = async () => {
             currentType.value as any, 
             undefined // year
         );
-        results.value = data;
+        results.value = data.items;
     } catch (e: any) {
         errorMsg.value = e.message;
         results.value = [];
@@ -54,8 +54,8 @@ const selectItem = (item: any) => {
     // Standardize result structure for V3 Registry
     const result = {
         name: item.name,
-        // BGM API returns 'images.grid' or 'images.medium'
-        image: item.images?.grid || item.images?.medium || item.images?.large || item.images?.small || '',
+        // Prioritize Higher Resolution: Large > Common > Medium > Grid
+        image: item.images?.large || item.images?.common || item.images?.medium || item.images?.grid || item.images?.small || '',
         meta: {
             id: item.id,
             origin: 'bangumi',

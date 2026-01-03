@@ -134,6 +134,8 @@ export interface CoreComponentMap {
         title: string;
         cols: number;
         customTitle?: string;
+        presetId?: string;
+        showNames?: boolean;
     };
 
     /**
@@ -266,6 +268,16 @@ export interface IRegistry {
 
     // 导出状态 (快照)
     getSnapshot(): WorldState;
+
+    /**
+     * Query entities with specific components
+     */
+    query(types: ComponentType[]): Set<EntityId>;
+
+    /**
+     * Helper to create entity with components
+     */
+    add(entityDef: { id?: string; components: Partial<Record<ComponentType, any>> }): EntityId;
 }
 
 

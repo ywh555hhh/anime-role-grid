@@ -2,15 +2,19 @@
 // V1 Toolbar Component
 // Replicates src/components/GridActionButtons.vue
 
+import type { IToolbarContribution } from '../../../platform/api/IPlugin';
+
 defineProps<{
-  saving?: boolean
+  saving?: boolean;
+  actions?: IToolbarContribution[];
 }>();
 
 const emit = defineEmits<{
   (e: 'save'): void
-  (e: 'export-video'): void
+  (e: 'export-dom'): void
   (e: 'create-new'): void
   (e: 'reset'): void
+  (e: 'action', commandId: string): void
 }>();
 </script>
 
@@ -27,17 +31,30 @@ const emit = defineEmits<{
           <span>{{ saving ? '生成中...' : '保存高清图片' }}</span>
         </button>
 
+        <!-- Dynamic Grid Controls (Plugin Contributions) -->
+        <div v-if="actions && actions.length > 0" class="flex flex-wrap w-full gap-2">
+            <button 
+                v-for="action in actions"
+                :key="action.id"
+                class="flex-1 min-w-[30%] py-2 px-2 border border-gray-200 bg-gray-50 text-gray-700 font-bold rounded-lg hover:bg-gray-100 transition-colors flex items-center justify-center gap-1 active:scale-95 text-xs md:text-sm whitespace-nowrap"
+                @click="emit('action', action.command)"
+            >
+                <div :class="[action.icon, 'text-base md:text-lg']" />
+                <span>{{ action.label }}</span>
+            </button>
+        </div>
+
         <!-- Secondary Actions -->
         <div class="flex w-full gap-3">
              <button 
-              class="flex-1 py-2 px-4 border border-primary text-primary font-bold rounded-lg hover:bg-primary hover:text-white transition-colors flex items-center justify-center gap-2 active:scale-95"
-              @click="emit('export-video')"
+              class="flex-1 py-2 px-4 border border-primary text-primary font-bold rounded-lg hover:bg-primary hover:text-white transition-colors flex items-center justify-center gap-2 active:scale-95 text-sm md:text-base whitespace-nowrap"
+              @click="emit('export-dom')"
             >
-              <div class="i-carbon-video-filled" />
-              <span>导出视频</span>
+              <div class="i-carbon-camera" />
+              <span>所见即所得</span>
             </button>
             <button 
-              class="flex-1 py-2 px-4 border border-primary text-primary font-bold rounded-lg hover:bg-primary hover:text-white transition-colors flex items-center justify-center gap-2 active:scale-95"
+              class="flex-1 py-2 px-4 border border-primary text-primary font-bold rounded-lg hover:bg-primary hover:text-white transition-colors flex items-center justify-center gap-2 active:scale-95 text-sm md:text-base whitespace-nowrap"
               @click="emit('create-new')"
             >
               <div class="i-carbon-add-alt" />

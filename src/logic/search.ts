@@ -19,7 +19,7 @@ export async function useBgmSearch(
     year?: string
 ) {
     if (!keyword)
-        return []
+        return { items: [], total: 0 }
 
     // 检查凭证是否存在
     if (!accessToken || !userAgent || accessToken === 'YOUR_REAL_BANGUMI_ACCESS_TOKEN') {
@@ -116,7 +116,10 @@ export async function useBgmSearch(
             })
         }
 
-        return items
+        return {
+            items,
+            total: (result.total || 0) as number
+        }
     } catch (error: any) {
         if (error instanceof SearchError) {
             throw error
