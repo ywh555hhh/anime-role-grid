@@ -12,4 +12,9 @@ app.use(createPinia()) // Pinia for State
 app.use(router)
 // app.use(i18n) // V2 i18n support
 
-app.mount('#app')
+import { bootstrapV3 } from './v3/platform/bootstrap'
+
+// Initialize V3 Persistence (Migrate -> Project -> Load)
+bootstrapV3().then(() => {
+    app.mount('#app')
+})

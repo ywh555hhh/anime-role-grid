@@ -1,13 +1,20 @@
 import { reactive, ref } from 'vue';
 import type { IPreset } from '../../core/types/preset';
 import type { IPlugin } from '../../platform/api/IPlugin';
-import { getEcsRegistry, getPersistenceService } from '../../platform/loader';
+import { getEcsRegistry } from '../../platform/loader';
+import { projectService, ProjectService } from './ProjectService';
 
 class PresetService {
     // Reactive storage for UI
     private presets = reactive<IPreset[]>([]);
     public currentPreset = ref<IPreset | null>(null);
-    private currentProjectId = 'default';
+
+    // Dependencies
+    private projectService: ProjectService;
+
+    constructor() {
+        this.projectService = projectService;
+    }
 
     /**
      * Register a single preset or a list
@@ -41,107 +48,41 @@ class PresetService {
     }
 
     /**
-     * The Core "Load" Logic
-     * 1. Save Current State
-     * 2. Try Load Saved Persistence
-     * 3. Fallback to Fresh Generation
+     * Apply a preset (Switch Project)
+     * Delegates to ProjectService to maintain "One Project Per Template" behavior (for now)
      */
-    async restoreSession(workbench: any) {
-        const persistence = getPersistenceService();
-        const registry = getEcsRegistry();
-        const lastId = persistence.getLastActiveId();
-
-        console.log('[PresetService] Restoring session:', lastId);
-
-        const target = this.presets.find(p => p.id === lastId);
-        if (target) {
-            // Restore context
-            this.currentProjectId = target.id;
-            this.currentPreset.value = target;
-            workbench.switchView(target.targetViewId);
-
-            // Load Data
-            await this.loadPresetData(target, registry, persistence);
-        } else {
-            console.warn(`[PresetService] Last active preset '${lastId}' not found. Falling back to default.`);
-            // Fallback: Try to find ANY preset or just leave empty
-            const first = this.presets[0];
-            if (first) {
-                this.currentProjectId = first.id;
-                this.currentPreset.value = first;
-                workbench.switchView(first.targetViewId);
-                await this.loadPresetData(first, registry, persistence);
-            }
-        }
-    }
-
-    private async loadPresetData(preset: IPreset, registry: any, persistence: any) {
-        // 2. Try Load Saved State
-        let loaded = persistence.load(preset.id, registry);
-
-        // 2.1 Validate Loaded State (Strict Integrity Check)
-        if (loaded) {
-            const stateId = Array.from(registry.query(['GridState']))[0];
-            const state = stateId ? registry.getComponent(stateId, 'GridState') : null;
-
-            // Strict Validation: Must have State, Must have ID, Must Match.
-            if (!state || !state.presetId || state.presetId !== preset.id) {
-                console.warn(`[PresetService] Integrity Check Failed for ${preset.id}.`);
-                loaded = false;
-            } else {
-                // Deep Content Validation (Cols check)
-                const expectedCols = preset.data.config?.cols;
-                if (expectedCols && state.cols !== expectedCols) {
-                    console.warn(`[PresetService] Structure Mismatch! Expected cols=${expectedCols}, found ${state.cols}. Discarding.`);
-                    loaded = false;
-                } else {
-                    console.log(`[PresetService] Integrity Check Passed. Restored state for ${preset.id}`);
-                    return;
-                }
-            }
-        }
-
-        // 3. Fallback: Generate Fresh Grid
-        console.log(`[PresetService] No saved state/corrupted. Generating fresh grid.`);
-
-        // Clear Registry
-        const snapshot = registry.getSnapshot();
-        const allEntities = Array.from(snapshot.entities);
-        for (const eid of allEntities) {
-            registry.destroyEntity(eid);
-        }
-
-        if (preset.data.config) {
-            const cmdId = registry.createEntity();
-            registry.addComponent(cmdId, 'Command', {
-                type: 'GENERATE_GRID',
-                payload: preset.data.config
-            });
-        }
-    }
-
-    /**
-     * The Core "Load" Logic
-     */
-    async applyPreset(preset: IPreset, workbench: any) {
+    async applyPreset(preset: IPreset, _workbench: any) {
         console.log(`[PresetService] Applying preset: ${preset.name} (${preset.id})`);
-        const registry = getEcsRegistry();
-        const persistence = getPersistenceService();
 
-        // 1. Save current state
-        if (this.currentProjectId) {
-            persistence.save(this.currentProjectId, registry);
+        // 1. Save current project before switching
+        await this.projectService.saveCurrentProject();
+
+        // 2. Check if project exists for this preset
+        const exists = await this.projectService.persistence.loadProject(preset.id);
+
+        if (exists) {
+            // Load existing state
+            await this.projectService.loadProject(preset.id);
+        } else {
+            // Create new project from preset
+            // We force the ID to match preset.id to simulate "Save Slot" behavior
+            await this.projectService.createProject(preset.name, preset.id, preset.id);
+
+            // Hydrate with Preset Config (Columns, Title, etc.)
+            // The ProjectService created an empty ECS. We need to inject the GenerateGrid command.
+            const registry = getEcsRegistry();
+            if (preset.data.config) {
+                const cmdId = registry.createEntity();
+                registry.addComponent(cmdId, 'Command', {
+                    type: 'GENERATE_GRID',
+                    payload: preset.data.config
+                });
+                // Save the initial state immediately
+                await this.projectService.saveCurrentProject();
+            }
         }
 
-        // Update Context
-        this.currentProjectId = preset.id;
         this.currentPreset.value = preset;
-
-        // Switch View (Synchronous for now)
-        workbench.switchView(preset.targetViewId);
-
-        // 2. Load Data
-        await this.loadPresetData(preset, registry, persistence);
     }
 }
 

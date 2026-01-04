@@ -23,6 +23,7 @@ import { overlays } from './services/OverlayManager';
 commandService.register('ui.alert', (msg) => overlays.alert(msg));
 commandService.register('ui.toast', (msg) => overlays.toast(msg));
 
+// [DEPRECATED] Legacy Persistence Service (Kept for export compatibility until full migration)
 import { PersistenceService } from './services/PersistenceService';
 const persistenceService = new PersistenceService();
 
