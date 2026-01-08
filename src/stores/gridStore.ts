@@ -165,12 +165,19 @@ export const useGridStore = createGlobalState(() => {
                 isCustomMode.value = true
                 try {
                     const template = await api.getTemplate(id)
-                    currentConfig.value = template.config
-
-                    // Init empty grid if needed
-                    if (!savedGrids.value[id] || savedGrids.value[id].length === 0) {
-                        savedGrids.value[id] = template.config.items.map(label => ({ label }))
+                    currentConfig.value = {
+                        ...template.config,
+                        defaultTitle: template.title
                     }
+
+                    // Merge strategy: Always rely on Server Config for "Labels" (Structure),
+                    // but preserve Local Storage for "Characters" (Answers).
+                    const existing = savedGrids.value[id] || []
+
+                    savedGrids.value[id] = template.config.items.map((label, idx) => ({
+                        label: label,
+                        character: existing[idx]?.character
+                    }))
                 } catch (e: any) {
                     console.error('Failed to load custom template', e)
                     error.value = e instanceof Error ? e.message : '加载自定义模版失败'

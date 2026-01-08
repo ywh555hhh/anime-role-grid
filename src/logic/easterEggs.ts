@@ -70,7 +70,7 @@ export function matchEasterEgg(gridItems: GridItem[]): EasterEggConfig | null {
         id: 'composite_' + matches.map(m => m.id).join('_'),
         keywords: [],
         title: '开发者也特别特别爱看这些！',
-        message: `检测到你同时喜欢 ${worksStr} ... \n哇！看来我们的口味高度一致！\n快来关注我的 B 站账号，一起交流吧！`,
+        message: `欸！你也喜欢 ${worksStr} 嘛？站长我也很喜欢哦！而且我最近在做“少女乐队榜单Top30”，欢迎来B站关注我的这个企划！`,
         actionLabel: '关注开发者 @我推的祥子丶',
         actionLink: 'https://space.bilibili.com/36078469',
         priority: 999

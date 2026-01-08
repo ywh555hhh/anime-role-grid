@@ -16,18 +16,7 @@ const routes = [
         name: 'Template',
         component: () => import('~/pages/ViewTemplate.vue')
     },
-    // V3 Workbench Route
-    {
-        path: '/v3',
-        name: 'V3Workbench',
-        component: () => import('~/v3/ui/workbench/Workbench.vue'),
-        beforeEnter: async () => {
-            // 1. Load Output Plugins (Views/Docks)
-            // Note: Data is already loaded by bootstrapV3() in main.ts
-            const { activateBuiltinPlugins } = await import('~/v3/plugins/builtin/index')
-            await activateBuiltinPlugins()
-        }
-    }
+    // V3 Route Removed
 ]
 
 const router = createRouter({

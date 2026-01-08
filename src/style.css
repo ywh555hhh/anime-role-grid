@@ -32,8 +32,8 @@ body {
   /* Fixed Height */
   width: 100vw;
   /* Fixed Width */
-  overflow: hidden;
-  /* Prevent Global Scroll */
+  overflow-x: hidden;
+  /* Prevent horizontal scroll, allow vertical */
 }
 
 h1 {
