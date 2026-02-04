@@ -15,7 +15,7 @@ import { TEMPLATES } from '~/logic/templates'
 // Store
 const store = useGridStore()
 const modalStore = useModalStore // NEW
-const { loadTemplate, currentTitle, currentTemplateId, isStreamerMode } = store
+const { loadTemplate, currentTemplateId, isStreamerMode } = store
 
 // Init Logic (First Time Guide)
 // Logic moved to onMounted and uses modalStore
