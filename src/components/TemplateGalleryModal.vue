@@ -1,6 +1,7 @@
 <script setup lang="ts">
-import { ref, computed, watch } from 'vue'
+import { ref, computed, watch, onMounted } from 'vue'
 import { TEMPLATES, type TemplateCategory } from '~/logic/templates'
+import { api } from '~/services/api'
 
 defineProps<{
   show: boolean
@@ -9,10 +10,11 @@ defineProps<{
 
 const emit = defineEmits(['close', 'select'])
 
-const activeCategory = ref<TemplateCategory>('character')
+const activeCategory = ref<TemplateCategory | 'all'>('all')
 const activeSubLabel = ref<string>('全部')
 
-const CATEGORY_MAP: Record<TemplateCategory, string> = {
+const CATEGORY_MAP: Record<TemplateCategory | 'all', string> = {
+  all: '全部', // NEW
   character: '角色',
   work: '作品',
   relation: '关系/CP',
@@ -22,7 +24,8 @@ const CATEGORY_MAP: Record<TemplateCategory, string> = {
 }
 
 const categories = computed(() => {
-  return Object.keys(CATEGORY_MAP) as TemplateCategory[]
+  // Ensure 'all' comes first
+  return ['all', 'character', 'work', 'relation', 'fun', 'nsfw', 'custom'] as (TemplateCategory | 'all')[]
 })
 
 // Reset sub-label when specific category changes
@@ -32,6 +35,9 @@ watch(activeCategory, () => {
 
 // Get templates for current category
 const categoryTemplates = computed(() => {
+  if (activeCategory.value === 'all') {
+      return [...TEMPLATES] // Return raw list, sorting happens in filteredTemplates
+  }
   return TEMPLATES.filter(t => t.category === activeCategory.value)
 })
 
@@ -46,14 +52,56 @@ const subLabels = computed(() => {
 
 // Final filtered list
 const filteredTemplates = computed(() => {
-  if (activeSubLabel.value === '全部') return categoryTemplates.value
-  return categoryTemplates.value.filter(t => t.label === activeSubLabel.value)
+  let list = categoryTemplates.value
+  if (activeSubLabel.value !== '全部') {
+    list = list.filter(t => t.label === activeSubLabel.value)
+  }
+
+  // --- Sorting Logic ---
+  return list.sort((a, b) => {
+    // 0. Priority: HOT (If All Category)
+    // If we are in 'all' mode, HOT items come first.
+    // If not in 'all' mode, we usually heavily rely on manual order or Pinned.
+    // Let's make HOT priority universal? Or just for All?
+    // User requested "Convenient to pick hottest".
+    if (activeCategory.value === 'all') {
+        if (a.hot && !b.hot) return -1
+        if (!a.hot && b.hot) return 1
+    }
+
+    // 1. Pinned (New Templates)
+    const PINNED = ['anime_2026_jan', 'char_2026_jan', 'cup_size', 'xp_3x3']
+    // We want found items to be first. 
+    // If a is in list (idx >= 0) and b is not -> a first
+    // Actually using includes is easier for boolean sort
+    const aIsPinned = PINNED.includes(a.id)
+    const bIsPinned = PINNED.includes(b.id)
+
+    if (aIsPinned && !bIsPinned) return -1
+    if (!aIsPinned && bIsPinned) return 1
+    
+    // If both pinned, preserve PINNED array order?
+    // indexOf returns 0, 1, 2... 
+    // We want lower index first.
+    if (aIsPinned && bIsPinned) {
+         return PINNED.indexOf(a.id) - PINNED.indexOf(b.id)
+    }
+
+    return 0
+  })
 })
 
-function select(id: string) {
-  emit('select', id)
-  emit('close')
-}
+const trendingMap = ref<Record<string, number>>({})
+
+onMounted(async () => {
+    // Fetch stats silently
+    const stats = await api.getTrendingTemplates()
+    const map: Record<string, number> = {}
+    stats.forEach(s => map[s.id] = s.count)
+    trendingMap.value = map
+})
+
+// function select removed
 </script>
 
 <template>
@@ -131,7 +179,7 @@ function select(id: string) {
                 :key="template.id"
                 class="group relative flex flex-col items-start p-4 rounded-xl border-2 transition-all hover:-translate-y-1 hover:shadow-lg text-left bg-white dark:bg-gray-800"
                 :class="currentId === template.id ? 'border-primary bg-primary-light/30 dark:bg-pink-900/20' : 'border-gray-100 dark:border-gray-700 hover:border-primary'"
-                @click="select(template.id)"
+                @click="$emit('select', template.id)"
               >
                 <div class="flex items-center justify-between w-full mb-2">
                   <div class="flex items-center gap-2">

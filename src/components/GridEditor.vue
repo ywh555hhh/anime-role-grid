@@ -18,6 +18,7 @@ import { useFullscreen } from '@vueuse/core'
 import { useModalStore, MODAL_PRIORITY } from '~/stores/modalStore' // NEW
 import { matchEasterEgg } from '~/logic/easterEggs' // NEW
 import EasterEggModal from '~/components/EasterEggModal.vue' // NEW
+import { tryShowTrending } from '~/logic/trendingTrigger' // NEW
 
 defineProps<{
   error?: string
@@ -207,28 +208,46 @@ async function handleSave() {
         imageSrc: generatedImage.value,
         canShare: canShare,
         onShare: handleShare,
-        modelValue: true, // Needed if component uses v-model? But Dispatcher passes true.
-        // Actually ImageExportModal has v-model="showShareModal" (boolean).
-        // Dispatcher passes 'modelValue' prop as true.
-        // And listens to 'update:modelValue' to close.
-        // We need to ensure we don't conflict. 
-        // In Dispatcher.vue: :modelValue="true" @update:modelValue="(val) => !val && handleClose()"
-        // So we don't need to pass extra props here.
+        modelValue: true, 
+        // Hook into close event to trigger Trending
+        'onUpdate:modelValue': (val: boolean) => {
+             if (!val) {
+                 modalStore.closeModal()
+                 tryShowTrending()
+             }
+        }
      }, MODAL_PRIORITY.INTERACTION)
 
-    // B. Check & Push Easter Egg
-    // Debug: Check text content
+    // B. Check & Push Easter Egg (Priority: PROMOTION 100)
+    // If Easter Egg matches, it will preempt Trending (Guide-10 = 290)??
+    // Wait. Easter Egg is PROMOTION (100). Trending is 290.
+    // So Trending (290) >> Easter Egg (100).
+    // Trending will SHOW first.
+    // Easter Egg will be queued.
+    // BUT Easter Egg is more "surprise".
+    // User flow: Export -> Close -> (Trending OR Easter Egg).
+    // If both trigger:
+    // 1. Trending (290) shows.
+    // 2. User closes Trending.
+    // 3. Easter Egg (100) shows.
+    // This seems fine? "Here is what's popular" -> Close -> "BTW here is an easter egg".
+    // Or maybe Easter Egg should be higher?
+    // Let's keep Easter Egg as is (PROMOTION). 
+    // Actually, originally Easter Egg was intended to show immediately after export?
+    // If we want Easter Egg to show first, we need higher priority.
+    // But currently Trending is 290 (Guide-10). Easter Egg is 100.
+    // So Trending wins.
+    // If user wants "Trend" then "Egg", it's fine.
+    
     const egg = matchEasterEgg(currentList.value)
     if (egg) {
         console.log('[EasterEgg] Matched:', egg.id)
-        toast.success(`🎉 检测到 ${egg.title} 彩蛋！请在关闭分享窗口后查看~`, { duration: 5000 }) // Inform user
+        toast.success(`🎉 检测到 ${egg.title} 彩蛋！请在关闭分享窗口后查看~`, { duration: 5000 }) 
         modalStore.openModal(EasterEggModal, {
             show: true,
             config: egg,
             onClose: () => modalStore.closeModal()
         }, MODAL_PRIORITY.PROMOTION)
-    } else {
-        console.log('[EasterEgg] No match found.')
     }
 
   } catch (e: any) {

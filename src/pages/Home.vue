@@ -4,7 +4,6 @@ import Header from '~/components/Header.vue'
 import Footer from '~/components/Footer.vue'
 import GuideModal from '~/components/GuideModal.vue'
 import FirstTimeGuide from '~/components/FirstTimeGuide.vue'
-import TrendingGuideModal from '~/components/TrendingGuideModal.vue'
 import TemplateGalleryModal from '~/components/TemplateGalleryModal.vue'
 import JoinGroupModal from '~/components/JoinGroupModal.vue'
 import GridEditor from '~/components/GridEditor.vue'
@@ -21,10 +20,11 @@ const { loadTemplate, currentTitle, currentTemplateId, isStreamerMode } = store
 // Init Logic (First Time Guide)
 // Logic moved to onMounted and uses modalStore
 
+import { tryShowTrending } from '~/logic/trendingTrigger'
+
+// Init Logic
 onMounted(() => {
-  // Initialize with current or default
   const initialID = currentTemplateId.value || 'classic'
-  
   if (initialID === 'custom' || !TEMPLATES.some(t => t.id === initialID)) {
       store.loadTemplate('classic')
   } else {
@@ -33,32 +33,25 @@ onMounted(() => {
 
   // --- Auto-Show Guides (Queue) ---
   if (typeof window !== 'undefined') {
-    const today = new Date().toDateString()
-    const lastShownDate = localStorage.getItem('lastGuideDate')
-
-    if (lastShownDate !== today) {
-        // 1. First Time Guide (Higher Priority in Guide chain)
-        modalStore.openModal(FirstTimeGuide, {
-            show: true, // Component expects 'show' prop?
-            // Actually FirstTimeGuide usually has v-model or check.
-            // Let's check FirstTimeGuide props. 
-            // It has :show="showFirstTimeGuide" @close="...".
-            // We pass onClose handler.
-            onClose: () => modalStore.closeModal()
-        }, MODAL_PRIORITY.GUIDE)
-
-        // 2. Trending Guide (Slightly lower priority, shows after Guide closes)
-        // We want it to show *after*. Queue logic handles this automatically!
-        // Just push it now. 
-        modalStore.openModal(TrendingGuideModal, {
-            show: true,
-            onClose: () => modalStore.closeModal(),
-            onSelect: handleTrendingSelect,
-            onOpenGallery: handleOpenGallery
-        }, MODAL_PRIORITY.GUIDE - 10) // 290
-
-        localStorage.setItem('lastGuideDate', today)
-    }
+        const today = new Date().toDateString()
+        const lastGuideDate = localStorage.getItem('lastGuideDate')
+        
+        if (lastGuideDate !== today) {
+             // 1. First Time Guide (Daily)
+             modalStore.openModal(FirstTimeGuide, {
+                onClose: () => {
+                   modalStore.closeModal()
+                   // Chain: Try Trending after Guide
+                   tryShowTrending()
+                }
+            }, MODAL_PRIORITY.GUIDE)
+            localStorage.setItem('lastGuideDate', today)
+        } else {
+            // Not daily reset, but maybe 1h cooldown passed?
+            // "Daily auto popup 1. Guide 2. Template"
+            // If Guide skipped, try Trending immediately
+            tryShowTrending()
+        }
   }
 })
 
@@ -87,23 +80,18 @@ function selectTemplate(id: string) {
   modalStore.closeModal() // Close Gallery
 }
 
-async function handleTrendingSelect(payload: { id: string, title: string }) {
-  await loadTemplate(payload.id)
-  currentTitle.value = payload.title
-  modalStore.closeModal() // Close Trending
-}
+// function selectTemplate removed due to duplication
 
 function handleOpenGallery() {
-  // Close whatever (e.g. Trending) and show Gallery
-  // Actually we can just push Gallery. If Trending is open (290), 
-  // and we push Gallery (INTERACTION 500), it will preempt (swap).
-  // Perfect!
-  modalStore.openModal(TemplateGalleryModal, {
-      show: true,
-      currentId: currentTemplateId.value,
-      onClose: () => modalStore.closeModal(),
-      onSelect: selectTemplate
-  }, MODAL_PRIORITY.INTERACTION)
+  // Trigger specific logic: Click Switch Template -> Try Trending -> Fallback to Real Gallery
+  tryShowTrending(() => {
+      modalStore.openModal(TemplateGalleryModal, {
+          show: true,
+          currentId: currentTemplateId.value,
+          onClose: () => modalStore.closeModal(),
+          onSelect: selectTemplate
+      }, MODAL_PRIORITY.INTERACTION)
+  })
 }
 
 function handleShowGuide() {

@@ -12,8 +12,18 @@ export interface Changelog {
 
 export const changelogs: Changelog[] = [
     {
-        date: '2025.12.15',
+        date: '2026.02.05',
         isOpen: true,
+        items: [
+            { tag: 'NEW', type: 'new', content: '<b>4 款人气模版</b>：我推的Cup / Bro懂我的XP / 2026 1月新番 震撼上线！' },
+            { tag: 'NEW', type: 'new', content: '<b>模版库大升级</b>：新增「全部」分类与智能热度排序，找模版更快了。' },
+            { tag: 'UP', type: 'up', content: '<b>智能推荐静默</b>：流行趋势弹窗新增 1小时冷静期，不打扰是我的温柔。' },
+            { tag: 'OPT', type: 'opt', content: '<b>交互优化</b>：导出图片成功后会自动弹出精彩推荐 (CD中除外)。' }
+        ]
+    },
+    {
+        date: '2025.12.15',
+        isOpen: false,
         items: [
             { tag: 'NEW', type: 'new', content: '<b>我出题 你来填</b>：独创“制表”模式！制作你的专属模版，邀请好友来填坑！' },
             { tag: 'NEW', type: 'new', content: '<b>热门角色速递</b>：不知道填谁？搜索页新增热门趋势，看看最近谁最火！' },

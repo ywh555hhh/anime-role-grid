@@ -114,6 +114,18 @@ export const api = {
         return data.results || []
     },
 
+    async getTrendingTemplates(): Promise<{ id: string, count: number }[]> {
+        try {
+            const res = await fetch('/api/trending-templates')
+            if (!res.ok) return []
+            const data = await res.json()
+            return data.results || []
+        } catch (e) {
+            console.warn('Failed to fetch trending templates', e)
+            return []
+        }
+    },
+
     async getTemplateStats(templateId: string, period: '24h' | 'week' | 'all' = 'all') {
         const res = await fetch(`/api/stats/${templateId}?period=${period}`)
         if (!res.ok) throw new Error(`Failed to load stats: ${res.status} ${res.statusText}`)

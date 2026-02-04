@@ -827,6 +827,63 @@ export const TEMPLATES: Template[] = [
             '毕业意难平', '中之人更喜欢', '最想联动', 'Gachi恋'
         ]
     },
+    // --- Label: 2026 1月新番 (Jan 2026) ---
+    {
+        id: 'anime_2026_jan',
+        name: '2026 新番喜好 (3x5)',
+        category: 'work',
+        label: '动画',
+        cols: 5,
+        hot: true,
+        defaultTitle: '我的 2026 1 月新番推荐',
+        items: [
+            '神作', '最佳剧情', '最佳打斗', '最佳恋爱', '最佳异世界',
+            '最佳OP', '最佳ED', '最佳配乐', '最佳CP', '最佳CP',
+            '最大黑马', '最逆天', '最无聊', '最过誉', '最被低估'
+        ]
+    },
+    {
+        id: 'char_2026_jan',
+        name: ' 2026 角色喜好 (2x4)',
+        category: 'character',
+        label: '番剧角色',
+        cols: 4,
+        hot: true,
+        defaultTitle: '2026 1月新番角色评价',
+        items: [
+            // Good Tags
+            'MVP', '我的超人', '颜值担当', '最佳人设',
+            // Bad Tags
+            '逆天', '小丑', '颜值诈骗', '人设崩塌'
+        ]
+    },
+
+    // --- Label: Fun / NSFW ---
+    {
+        id: 'cup_size',
+        name: 'Cup',
+        category: 'fun',
+        label: '趣味',
+        cols: 5,
+        hot: true,
+        defaultTitle: '我推的 Cup',
+        items: ['A', 'B', 'C', 'D', 'E']
+    },
+    {
+        id: 'xp_3x3',
+        name: 'XP (3x3)',
+        category: 'fun',
+        label: '趣味',
+        cols: 3,
+        hot: true,
+        defaultTitle: 'Bro 懂我的 XP',
+        items: [
+            'XP 1', 'XP 2', 'XP 3',
+            'XP 4', 'XP 5', 'XP 6',
+            'XP 7', 'XP 8', 'XP 9'
+        ]
+    },
+
     // =================================================================
     // NEW TEMPLATES (2025 Added)
     // =================================================================

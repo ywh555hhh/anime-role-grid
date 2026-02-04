@@ -9,22 +9,28 @@ const emit = defineEmits(['close', 'select', 'open-gallery'])
 
 const TRENDING_OPTIONS = [
   {
-    id: 'anime_2025',
-    title: '我的2025年度动画果然有问题',
-    description: '年度动画综合评选',
+    id: 'xp_3x3',
+    title: 'Bro 懂我的 XP',
+    description: '好 兄 弟',
+    icon: 'i-carbon-user-favorite',
+  },
+  {
+    id: 'cup_size',
+    title: '我推的 Cup',
+    description: 'A? B? C? D? E?',
+    icon: 'i-carbon-favorite',
+  },
+  {
+    id: 'anime_2026_jan',
+    title: '2026 1月新番推荐',
+    description: '新的一年新的老婆',
     icon: 'i-carbon-play-filled',
   },
   {
-    id: 'game_2025',
-    title: '我的2025年度游戏果然有问题',
-    description: '年度游戏综合评选',
-    icon: 'i-carbon-game-console',
-  },
-  {
-    id: 'classic',
-    title: '我的动漫角色喜好果然有问题',
-    description: '经典角色喜好六边形',
-    icon: 'i-carbon-user-favorite',
+    id: 'char_2026_jan',
+    title: '1月新番角色锐评',
+    description: '老公老婆在哪里',
+    icon: 'i-carbon-user-speaker',
   }
 ]
 
