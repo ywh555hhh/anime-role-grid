@@ -5,6 +5,7 @@ import Footer from '~/components/Footer.vue'
 import GuideModal from '~/components/GuideModal.vue'
 import FirstTimeGuide from '~/components/FirstTimeGuide.vue'
 import TemplateGalleryModal from '~/components/TemplateGalleryModal.vue'
+import TrendingGuideModal from '~/components/TrendingGuideModal.vue'
 import JoinGroupModal from '~/components/JoinGroupModal.vue'
 import GridEditor from '~/components/GridEditor.vue'
 
@@ -68,10 +69,19 @@ function handleManualJoinGroup() {
   }, MODAL_PRIORITY.INTERACTION)
 }
 
-function handleOpenChangelog() {
-    modalStore.openModal(FirstTimeGuide, {
+function handleOpenTrending() {
+    // 直接打开热门推荐，不需要冷却
+    modalStore.openModal(TrendingGuideModal, {
         show: true,
-        onClose: () => modalStore.closeModal()
+        onClose: () => modalStore.closeModal(),
+        onSelect: (payload: { id: string, title: string }) => {
+            loadTemplate(payload.id)
+            modalStore.closeModal()
+        },
+        onOpenGallery: () => {
+            modalStore.closeModal()
+            handleOpenGallery()
+        }
     }, MODAL_PRIORITY.INTERACTION)
 }
 
@@ -140,14 +150,14 @@ function handleResetTags() {
                         <span>食用指南</span>
                         </button>
 
-                        <button 
-                        @click="handleOpenChangelog"
+                        <button
+                        @click="handleOpenTrending"
                         class="text-xs font-bold text-gray-600 hover:text-primary flex items-center gap-1.5 transition-colors group"
                         >
                         <div class="icon-btn group-hover:bg-primary-light">
-                            <div class="i-carbon-time text-sm" />
+                            <div class="i-carbon-fire text-sm" />
                         </div>
-                        <span>更新日志</span>
+                        <span>大家都在填</span>
                         </button>
 
                         <button 
