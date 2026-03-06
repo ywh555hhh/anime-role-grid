@@ -6,19 +6,37 @@ import Footer from '~/components/Footer.vue'
 import GridEditor from '~/components/GridEditor.vue'
 import GuideModal from '~/components/GuideModal.vue'
 import FirstTimeGuide from '~/components/FirstTimeGuide.vue'
-import TemplateStats from '~/components/TemplateStats.vue' // Switched component
+import TemplateStats from '~/components/TemplateStats.vue'
+import TemplateGalleryModal from '~/components/TemplateGalleryModal.vue'
 
 import { useGridStore } from '~/stores/gridStore'
+import { useModalStore, MODAL_PRIORITY } from '~/stores/modalStore'
+import { tryShowTrending } from '~/logic/trendingTrigger'
 
 
 const route = useRoute()
 const id = route.params.id as string
 const store = useGridStore()
 const { loadTemplate, currentTitle, currentConfig, currentList } = store
+const modalStore = useModalStore
 
 const error = ref('')
 const showGuideModal = ref(false)
 const showFirstTimeGuide = ref(false)
+
+function handleOpenGallery() {
+    tryShowTrending(() => {
+        modalStore.openModal(TemplateGalleryModal, {
+            show: true,
+            currentId: id,
+            onClose: () => modalStore.closeModal(),
+            onSelect: (templateId: string) => {
+                loadTemplate(templateId)
+                modalStore.closeModal()
+            }
+        }, MODAL_PRIORITY.INTERACTION)
+    })
+}
 
 function handleResetTags() {
   if (!confirm('确定要重置当前模板的所有标签文字吗？(图片不会被清除)')) return
@@ -57,8 +75,9 @@ onUnmounted(() => {
     <Header />
     
     <div class="container mx-auto flex flex-col items-center gap-6 px-4 max-w-full">
-         <GridEditor 
+         <GridEditor
             :error="error"
+            @open-gallery="handleOpenGallery"
         >
             <template #extra-actions>
                  <!-- Voting Tip -->
@@ -101,11 +120,13 @@ onUnmounted(() => {
                         <div class="flex items-center gap-2">
                         <img src="/logo.png" class="w-5 h-5 object-contain" />
                         <label class="text-sm text-black font-bold">当前模板:</label>
-                        <div
-                            class="flex items-center justify-center gap-2 bg-gray-50 border-2 border-gray-200 px-4 py-1.5 rounded-md text-sm font-bold min-w-[160px] text-gray-500 cursor-not-allowed"
+                        <button
+                            @click="handleOpenGallery"
+                            class="flex items-center justify-center gap-2 bg-white border-2 border-black px-4 py-1.5 rounded-md text-sm font-bold min-w-[160px] transition-colors hover:border-primary hover:text-primary"
                         >
                             <span>{{ currentTitle }}</span>
-                        </div>
+                            <div i-carbon-chevron-right class="text-xs" />
+                        </button>
                         </div>
                         
                         <button 
