@@ -45,28 +45,28 @@ const BILIBILI_LINK = 'https://space.bilibili.com/36078469'
         <div class="p-4 overflow-y-auto flex-1 min-h-0 scrollbar-thin">
            <!-- Hot Templates -->
            <div class="mb-4">
-             <div class="text-xs font-bold text-gray-400 mb-2">🔥 热门模板</div>
+             <div class="text-xs font-bold text-gray-400 mb-2">热门模板</div>
              <div class="grid grid-cols-3 gap-2">
                <button
                  @click="emit('close')"
                  class="p-3 rounded-xl border-2 border-gray-100 dark:border-gray-700 hover:border-primary bg-white dark:bg-gray-800 text-center transition-all hover:shadow-md flex flex-col items-center gap-1"
                >
-                 <div class="i-carbon-book text-2xl text-gray-600 dark:text-gray-300" />
-                 <div class="text-xs font-bold text-gray-700 dark:text-gray-200">经典</div>
+                 <div class="i-carbon-user-avatar text-2xl text-gray-600 dark:text-gray-300" />
+                 <div class="text-[10px] font-bold text-gray-700 dark:text-gray-200 leading-tight">我的动漫人物<br>喜好果然有问题</div>
                </button>
                <button
                  @click="emit('close')"
                  class="p-3 rounded-xl border-2 border-gray-100 dark:border-gray-700 hover:border-primary bg-white dark:bg-gray-800 text-center transition-all hover:shadow-md flex flex-col items-center gap-1"
                >
-                 <div class="i-carbon-diamond text-2xl text-blue-500" />
-                 <div class="text-xs font-bold text-gray-700 dark:text-gray-200">9漫画</div>
+                 <div class="i-carbon-book text-2xl text-blue-500" />
+                 <div class="text-[10px] font-bold text-gray-700 dark:text-gray-200 leading-tight">构成我人生的<br>9 部漫画</div>
                </button>
                <button
                  @click="emit('close')"
                  class="p-3 rounded-xl border-2 border-gray-100 dark:border-gray-700 hover:border-primary bg-white dark:bg-gray-800 text-center transition-all hover:shadow-md flex flex-col items-center gap-1"
                >
-                 <div class="i-carbon-sparkle text-2xl text-yellow-500" />
-                 <div class="text-xs font-bold text-gray-700 dark:text-gray-200">XP</div>
+                 <div class="i-carbon-list text-2xl text-yellow-500" />
+                 <div class="text-[10px] font-bold text-gray-700 dark:text-gray-200 leading-tight">Bro 懂我的<br>XP</div>
                </button>
              </div>
            </div>
