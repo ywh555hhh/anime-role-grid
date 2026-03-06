@@ -13,9 +13,14 @@ const emit = defineEmits<{
 }>()
 
 const router = useRouter()
+const GROUP_LINK = 'https://qm.qq.com/q/Jkf6Vgmyw8'
 
 function close() {
     emit('update:modelValue', false)
+}
+
+function joinGroup() {
+    window.open(GROUP_LINK, '_blank')
 }
 </script>
 
@@ -58,37 +63,48 @@ function close() {
                 <span class="text-sm text-gray-400">如果未自动保存，请长按上方图片手动保存哦~</span>
                </p>
                
-               <!-- Promo Text (Moved Up) -->
-               <p class="text-xs text-primary font-bold mb-4 bg-primary-light py-2 rounded-lg">
-                   觉得好玩？关注开发者获取更多二次元模版！
-               </p>
+               <!-- Promo: Join Group -->
+               <div class="bg-gradient-to-r from-primary-light to-pink-50 dark:from-pink-900/30 dark:to-gray-800 rounded-xl p-4 mb-4 text-left">
+                 <div class="flex items-start gap-3">
+                   <div class="text-2xl">🎉</div>
+                   <div class="flex-1">
+                     <div class="font-bold text-sm text-gray-900 dark:text-white mb-1">做完啦！快来分享到群里吧~</div>
+                     <div class="text-xs text-gray-500 dark:text-gray-400 mb-2">和大家一起讨论你的格子</div>
+                     <button
+                       @click="joinGroup"
+                       class="w-full py-2 bg-primary text-white rounded-lg text-sm font-bold hover:bg-primary/90 transition-colors flex items-center justify-center gap-1"
+                     >
+                       <div class="i-carbon-chat" />
+                       加入【我推的ACNG】交流群
+                     </button>
+                   </div>
+                 </div>
+               </div>
                
                <div class="flex flex-col gap-3 w-full">
-                 
-                 <!-- 1. Bilibili (Primary Focus) -->
-                 <a 
-                    href="https://space.bilibili.com/36078469"
-                    target="_blank"
-                    class="w-full btn-primary text-sm flex items-center justify-center gap-2"
+
+                 <!-- 1. Join Group -->
+                 <button
+                   @click="joinGroup"
+                   class="w-full btn-primary text-sm flex items-center justify-center gap-2"
                  >
-                    <!-- Bilibili Icon -->
-                    <svg class="w-5 h-5" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" fill="currentColor"><path d="M777.514667 131.669333a53.333333 53.333333 0 0 0-48.426667 26.965334l-50.816 87.168a483.2 483.2 0 0 0-166.4-29.226667c-58.453333 0-114.346667 10.197333-167.082667 29.354667l-50.176-87.296a53.333333 53.333333 0 0 0-93.610666 52.138666L246.229333 289.834667c-112.554667 64.938667-189.696 182.997333-197.888 320.128-0.554667 9.173333-0.853333 18.261333-0.853333 27.264 0 6.058667 0.170667 12.16 0.469333 18.218666 6.058667 134.4 81.365333 249.514667 189.610667 312.362667a476.330667 476.330667 0 0 0 549.973333 0.256c108.416-62.805333 183.936-177.877333 190.122667-312.576 0.298667-6.058667 0.426-12.202667 0.426-18.261333 0-8.96-0.341333-17.962667-0.938667-27.050667-8.192-137.216-85.333333-255.488-197.930666-320.384l45.226666-78.122666a53.333333 53.333333 0 0 0-46.933333-80.042667zM337.024 624.128c-30.848 0-55.850667-27.605333-55.850667-61.696s25.002667-61.696 55.850667-61.696c30.848 0 55.850667 27.605333 55.850666 61.696s-25.002667 61.696-55.850666 61.696z m352.085333 0c-30.848 0-55.850667-27.605333-55.850666-61.696s25.002667-61.696 55.850666-61.696c30.848 0 55.850667 27.605333 55.850667 61.696s-25.002667 61.696-55.850667 61.696z" /></svg>
-                    <span>关注开发者 @我推的祥子丶</span>
-                 </a>
-    
+                   <div class="i-carbon-chat" />
+                   <span>加入交流群一起讨论</span>
+                 </button>
+
                  <!-- 2. Make Your Own -->
-                 <button 
-                    @click="router.push('/create')" 
-                    class="w-full btn-primary text-sm"
+                 <button
+                    @click="router.push('/create')"
+                    class="w-full btn-outline-primary text-sm"
                  >
                    <div i-carbon-edit />
                    <span>我也要制表</span>
                  </button>
-    
+
                  <!-- 3. Share System -->
-                 <button 
-                   @click="emit('share')" 
-                   class="w-full btn-outline-primary"
+                 <button
+                   @click="emit('share')"
+                   class="w-full btn-outline-gray"
                  >
                    <div v-if="canShare" i-carbon-share />
                    <span>{{ canShare ? '调用系统分享' : '复制图片分享' }}</span>
