@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ref, shallowRef, onMounted, onBeforeUnmount, watch, nextTick } from 'vue'
-import { useMagicKeys, watchDebounced } from '@vueuse/core'
+import { useMagicKeys, watchDebounced, useStorage } from '@vueuse/core'
 import { api } from '~/services/api'
 import type { BgmSearchResultItem } from '~/types'
 import Cropper from 'cropperjs'
@@ -49,7 +49,8 @@ onMounted(() => {
 })
 
 const activeTab = ref<'search' | 'custom'>('search')
-const searchType = ref<'character' | 'anime' | 'manga' | 'novel' | 'game' | 'music' | 'real' | 'person'>('character')
+// UX优化: 记住用户上次选择的搜索类型，避免每次都要重新点击
+const searchType = useStorage<'character' | 'anime' | 'manga' | 'novel' | 'game' | 'music' | 'real' | 'person'>('anime-grid-search-type', 'character')
 const searchYear = ref('')
 
 // Custom upload form states
