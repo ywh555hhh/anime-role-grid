@@ -9,6 +9,7 @@ defineProps<{
   customTitle?: string
   defaultTitle?: string
   showCharacterName: boolean
+  showLabel?: boolean
   modeIsCustom?: boolean
   fillerName?: string
   isStreamerMode?: boolean
@@ -17,6 +18,7 @@ defineProps<{
 const emit = defineEmits<{
   (e: 'update:customTitle', value: string): void
   (e: 'update:showCharacterName', value: boolean): void
+  (e: 'update:showLabel', value: boolean): void
   (e: 'update:fillerName', value: string): void
   (e: 'select-slot', index: number): void
   (e: 'update-label', payload: { index: number, label: string }): void
@@ -46,11 +48,11 @@ const emit = defineEmits<{
          </button>
      </div>
 
-    <Grid 
+    <Grid
         id="grid-capture-target"
-        :list="list" 
+        :list="list"
         :cols="cols"
-        :title="title" 
+        :title="title"
         :customTitle="customTitle"
         :defaultTitle="defaultTitle"
         @update:customTitle="emit('update:customTitle', $event)"
@@ -58,6 +60,7 @@ const emit = defineEmits<{
         @update-label="emit('update-label', $event)"
         @drop-item="emit('drop-item', $event)"
         :show-character-name="showCharacterName"
+        :show-label="showLabel"
         :is-streamer-mode="isStreamerMode"
     />
     

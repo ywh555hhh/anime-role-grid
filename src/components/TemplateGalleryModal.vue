@@ -1,7 +1,30 @@
 <script setup lang="ts">
 import { ref, computed, watch, onMounted } from 'vue'
-import { TEMPLATES, type TemplateCategory } from '~/logic/templates'
+import { TEMPLATES, type TemplateCategory, type TemplateBadge } from '~/logic/templates'
 import { api } from '~/services/api'
+
+// 角标配置
+const BADGE_CONFIG: Record<TemplateBadge, { emoji: string, label: string, class: string }> = {
+    hot: { emoji: '🔥', label: '热门', class: 'bg-red-100 text-red-600 border-red-200' },
+    new: { emoji: '🆕', label: '新模板', class: 'bg-green-100 text-green-600 border-green-200' },
+    recommend: { emoji: '⭐', label: '推荐', class: 'bg-yellow-100 text-yellow-600 border-yellow-200' },
+    classic: { emoji: '🏆', label: '经典', class: 'bg-amber-100 text-amber-600 border-amber-200' },
+    limited: { emoji: '🎁', label: '限定', class: 'bg-purple-100 text-purple-600 border-purple-200' },
+    pure: { emoji: '💎', label: '纯粹', class: 'bg-blue-100 text-blue-600 border-blue-200' },
+}
+
+// 复制链接功能
+const copiedId = ref<string | null>(null)
+
+function copyLink(id: string) {
+    const url = `${window.location.origin}/t/${id}`
+    navigator.clipboard.writeText(url).then(() => {
+        copiedId.value = id
+        setTimeout(() => {
+            copiedId.value = null
+        }, 2000)
+    })
+}
 
 defineProps<{
   show: boolean
@@ -184,8 +207,17 @@ onMounted(async () => {
                 <div class="flex items-center justify-between w-full mb-2">
                   <div class="flex items-center gap-2">
                      <span class="text-base font-bold text-gray-900 dark:text-white">{{ template.name.split('(')[0] }}</span>
-                     <div 
-                       v-if="template.hot"
+                     <!-- 新角标系统 -->
+                     <div
+                       v-if="template.badge"
+                       :class="`px-1.5 py-0.5 rounded text-[10px] font-bold border flex items-center gap-0.5 ${BADGE_CONFIG[template.badge]?.class || 'bg-gray-100 text-gray-600 border-gray-200'}`"
+                       :title="BADGE_CONFIG[template.badge]?.label || ''"
+                     >
+                       {{ BADGE_CONFIG[template.badge]?.emoji || '' }}
+                     </div>
+                     <!-- 兼容旧 hot 字段 -->
+                     <div
+                       v-else-if="template.hot"
                        class="px-1.5 py-0.5 rounded bg-red-100 text-red-600 text-[10px] font-bold border border-red-200 flex items-center gap-0.5"
                      >
                        🔥
@@ -206,6 +238,18 @@ onMounted(async () => {
                    <span class="text-[10px] px-1.5 py-0.5 rounded bg-gray-50 text-gray-400 border border-gray-100">
                       {{ template.label }}
                    </span>
+                </div>
+
+                <!-- 复制链接按钮 -->
+                <div class="mt-3 flex items-center justify-between w-full">
+                    <button
+                        @click.stop="copyLink(template.id)"
+                        class="text-xs flex items-center gap-1 px-2 py-1 rounded bg-gray-50 hover:bg-primary/10 text-gray-500 hover:text-primary transition-colors border border-gray-200 hover:border-primary"
+                    >
+                        <div v-if="copiedId === template.id" class="i-carbon-checkmark text-green-500" />
+                        <div v-else class="i-carbon-link" />
+                        {{ copiedId === template.id ? '已复制' : '复制链接' }}
+                    </button>
                 </div>
 
                 <div 

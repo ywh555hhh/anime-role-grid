@@ -9,6 +9,7 @@ interface VideoSettings {
     includeEmpty: boolean
     format: 'mp4' | 'webm'
     showName?: boolean
+    showLabel?: boolean
 }
 
 // Feature Detection
@@ -73,8 +74,9 @@ export function useVideoExport() {
             const maxCardH = height * 0.8
 
             const baseCardW = 1080 * 0.8
-            // Adjust aspect ratio based on showName (120/187 vs 120/212)
-            const aspectRatio = settings.showName ? (120 / 212) : THEME.layout.cellAspectRatio
+            // Adjust aspect ratio based on showName and showLabel
+            const showLabel_ = settings.showLabel !== false
+            const aspectRatio = settings.showName ? (120 / 212) : (showLabel_ ? THEME.layout.cellAspectRatio : (120 / 187))
             const baseCardH = baseCardW / aspectRatio
 
             const scaleW = maxCardW / baseCardW
@@ -136,7 +138,7 @@ export function useVideoExport() {
                 // Calculate dimensions based on WIDTH to ensure usage of 25/120 ratio
                 // LabelH / W = 25 / 120 = 0.208333...
                 const labelHeightToWidthRatio = 25 / 120
-                const labelH = cardW * labelHeightToWidthRatio
+                const labelH = showLabel_ ? (cardW * labelHeightToWidthRatio) : 0
                 const nameH = settings.showName ? labelH : 0
 
                 const imgH = cardH - labelH - nameH
@@ -260,39 +262,41 @@ export function useVideoExport() {
                     }
 
                     // 4. Label Area
-                    const labelCenterY = cursorY + labelH / 2
+                    if (showLabel_) {
+                        const labelCenterY = cursorY + labelH / 2
 
-                    ctx!.save()
-                    ctx!.beginPath() // Clip to Label Area (approx) - though label doesn't have strict rect, let's clip to safe width
-                    // We can clip to the card width at that Y level
-                    ctx!.rect(imgAreaX, cursorY, cardW, labelH)
-                    ctx!.clip()
+                        ctx!.save()
+                        ctx!.beginPath() // Clip to Label Area (approx) - though label doesn't have strict rect, let's clip to safe width
+                        // We can clip to the card width at that Y level
+                        ctx!.rect(imgAreaX, cursorY, cardW, labelH)
+                        ctx!.clip()
 
-                    ctx!.fillStyle = THEME.colors.text
-                    let fontSize = labelFontSize
-                    ctx!.font = `bold ${fontSize}px ${THEME.typography.fontFamily}`
-
-                    // Auto-scale text to fit
-                    const maxTextW = cardW * 0.9
-
-                    let labelText = ''
-                    if (settings.showName) {
-                        // NEW Behavior: Bottom is User Label (e.g. Category/Comment), Name is in Middle
-                        labelText = item.label || ' '
-                    } else {
-                        // CLASSIC Behavior: Bottom is Character Name (to preserve old experience)
-                        // Since Top is Category, Bottom should be Name.
-                        labelText = item.character?.name || ' '
-                    }
-
-                    while (ctx!.measureText(labelText).width > maxTextW && fontSize > 10) {
-                        fontSize -= 2 * scale // Reduce by 2 scaled pixels
+                        ctx!.fillStyle = THEME.colors.text
+                        let fontSize = labelFontSize
                         ctx!.font = `bold ${fontSize}px ${THEME.typography.fontFamily}`
-                    }
 
-                    ctx!.textBaseline = 'middle'
-                    ctx!.fillText(labelText, x + width / 2, labelCenterY)
-                    ctx!.restore()
+                        // Auto-scale text to fit
+                        const maxTextW = cardW * 0.9
+
+                        let labelText = ''
+                        if (settings.showName) {
+                            // NEW Behavior: Bottom is User Label (e.g. Category/Comment), Name is in Middle
+                            labelText = item.label || ' '
+                        } else {
+                            // CLASSIC Behavior: Bottom is Character Name (to preserve old experience)
+                            // Since Top is Category, Bottom should be Name.
+                            labelText = item.character?.name || ' '
+                        }
+
+                        while (ctx!.measureText(labelText).width > maxTextW && fontSize > 10) {
+                            fontSize -= 2 * scale // Reduce by 2 scaled pixels
+                            ctx!.font = `bold ${fontSize}px ${THEME.typography.fontFamily}`
+                        }
+
+                        ctx!.textBaseline = 'middle'
+                        ctx!.fillText(labelText, x + width / 2, labelCenterY)
+                        ctx!.restore()
+                    }
 
                     // 5. Branding Watermark (Pink + Black)
                     // Visual Breathing Room

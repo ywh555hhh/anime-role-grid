@@ -14,6 +14,7 @@ interface DrawOptions {
     templateId: string
     customTitle: string
     showName?: boolean
+    showLabel?: boolean
     templateConfig?: { cols: number, creator?: string, filler?: string }
     qrCodeUrl?: string
     variant?: 'standard' | 'challenge'
@@ -126,6 +127,9 @@ export class CanvasGenerator {
 
         const rows = Math.ceil(list.length / cols)
         const gridWidth = cols * CELL_WIDTH
+
+        // 原始逻辑：showName = true 时会增加高度，showLabel = false 时不会减少 CELL_HEIGHT
+        // actualCellHeight = CELL_HEIGHT + (showName ? LABEL_HEIGHT : 0)
         const nameHeight = options.showName ? LABEL_HEIGHT : 0
         const actualCellHeight = CELL_HEIGHT + nameHeight
 
@@ -181,7 +185,7 @@ export class CanvasGenerator {
             const img = images[i] || null
 
             if (item) {
-                this.drawCellContent(x, y, item, img, options.showName)
+                this.drawCellContent(x, y, item, img, options.showName, options.showLabel)
             }
         }
 
@@ -195,7 +199,7 @@ export class CanvasGenerator {
             const isLastRow = row === rows - 1
 
             if (list[i]) {
-                this.drawCellBorders(x, y, isLastCol, isLastRow, options.showName)
+                this.drawCellBorders(x, y, isLastCol, isLastRow, options.showName, options.showLabel)
             }
         }
 
@@ -217,7 +221,7 @@ export class CanvasGenerator {
                 templateConfig?.creator
             )
         } else {
-            await this.drawWatermark(canvasWidth, canvasHeight, padding)
+            await this.drawWatermark(canvasWidth, canvasHeight, padding, options.variant)
         }
 
         return this.canvas.toDataURL('image/png')
@@ -252,9 +256,20 @@ export class CanvasGenerator {
         this.ctx.fillText(`— ${templateName} —`, centerX, height / 2 + 40)
     }
 
-    private drawCellContent(x: number, y: number, item: GridItem, img: HTMLImageElement | null, showName?: boolean) {
-        const imageAreaHeight = CELL_HEIGHT - LABEL_HEIGHT
-        // When showing name, we don't change imageAreaHeight, we just push the label down by LABEL_HEIGHT (reused for name)
+    private drawCellContent(x: number, y: number, item: GridItem, img: HTMLImageElement | null, showName?: boolean, showLabel?: boolean) {
+        const showLabel_ = showLabel !== false // 默认显示
+
+        // 逻辑：
+        // - showName = true 时，名字区域是额外的，格子总高度 = CELL_HEIGHT + LABEL_HEIGHT
+        // - showLabel = false 时，标签不显示，但格子总高度不变（图片区域更大）
+        // - 图片区域 = 格子总高度 - 名字区域（如果有）- 标签区域（如果有）
+        const nameHeight = showName ? LABEL_HEIGHT : 0
+        const labelHeight = showLabel_ ? LABEL_HEIGHT : 0
+
+        // 当 showLabel = false 时，格子总高度仍然是 CELL_HEIGHT + nameHeight
+        // 图片区域 = 格子总高度 - 名字区域（因为标签隐藏了，所以不减）
+        const totalCellHeight = CELL_HEIGHT + nameHeight
+        const imageAreaHeight = totalCellHeight - nameHeight - labelHeight
 
         if (img) {
             this.ctx.save()
@@ -302,51 +317,61 @@ export class CanvasGenerator {
             this.ctx.restore()
         }
 
-        const labelY = y + imageAreaHeight + (showName ? LABEL_HEIGHT : 0)
-        this.ctx.fillStyle = THEME.colors.bg
-        this.ctx.fillRect(x, labelY, CELL_WIDTH, LABEL_HEIGHT)
+        // Draw Label (Optional)
+        if (showLabel_) {
+            const labelY = y + imageAreaHeight + nameHeight
+            this.ctx.fillStyle = THEME.colors.bg
+            this.ctx.fillRect(x, labelY, CELL_WIDTH, LABEL_HEIGHT)
 
-        this.ctx.save()
-        this.ctx.beginPath()
-        this.ctx.rect(x, labelY, CELL_WIDTH, LABEL_HEIGHT)
-        this.ctx.clip()
+            this.ctx.save()
+            this.ctx.beginPath()
+            this.ctx.rect(x, labelY, CELL_WIDTH, LABEL_HEIGHT)
+            this.ctx.clip()
 
-        this.ctx.fillStyle = THEME.colors.text
-        let labelFontSize = 32
-        this.ctx.font = `bold ${labelFontSize}px ${THEME.typography.fontFamily}`
-        this.ctx.textAlign = 'center'
-        this.ctx.textBaseline = 'middle'
-
-        const maxLabelWidth = CELL_WIDTH * 0.9
-        while (this.ctx.measureText(item.label).width > maxLabelWidth && labelFontSize > 10) {
-            labelFontSize -= 1
+            this.ctx.fillStyle = THEME.colors.text
+            let labelFontSize = 32
             this.ctx.font = `bold ${labelFontSize}px ${THEME.typography.fontFamily}`
-        }
+            this.ctx.textAlign = 'center'
+            this.ctx.textBaseline = 'middle'
 
-        this.ctx.fillText(item.label, x + CELL_WIDTH / 2, labelY + LABEL_HEIGHT / 2)
-        this.ctx.restore()
+            const maxLabelWidth = CELL_WIDTH * 0.9
+            while (this.ctx.measureText(item.label).width > maxLabelWidth && labelFontSize > 10) {
+                labelFontSize -= 1
+                this.ctx.font = `bold ${labelFontSize}px ${THEME.typography.fontFamily}`
+            }
+
+            this.ctx.fillText(item.label, x + CELL_WIDTH / 2, labelY + LABEL_HEIGHT / 2)
+            this.ctx.restore()
+        }
     }
 
-    private drawCellBorders(x: number, y: number, isLastCol: boolean, isLastRow: boolean, showName?: boolean) {
-        const imageAreaHeight = CELL_HEIGHT - LABEL_HEIGHT
+    private drawCellBorders(x: number, y: number, isLastCol: boolean, isLastRow: boolean, showName?: boolean, showLabel?: boolean) {
+        const showLabel_ = showLabel !== false
+
+        // 逻辑与 drawCellContent 一致
+        const nameHeight = showName ? LABEL_HEIGHT : 0
+        const labelHeight = showLabel_ ? LABEL_HEIGHT : 0
+        const totalCellHeight = CELL_HEIGHT + nameHeight
+        const imageAreaHeight = totalCellHeight - nameHeight - labelHeight
+
         const nameY = y + imageAreaHeight
-        const labelY = nameY + (showName ? LABEL_HEIGHT : 0)
+        const labelY = nameY + nameHeight
 
         this.ctx.beginPath()
         this.ctx.lineWidth = BORDER_WIDTH
         this.ctx.strokeStyle = THEME.colors.border
 
-        // Line between Image and Name (or Label if no Name)
+        // 画图片区域的底线（总是画，因为图片区域始终存在）
         this.ctx.moveTo(x, nameY)
         this.ctx.lineTo(x + CELL_WIDTH, nameY)
 
-        // Line between Name and Label (if Name exists)
+        // 画名字和标签之间的分割线（如果显示名字）
         if (showName) {
             this.ctx.moveTo(x, labelY)
             this.ctx.lineTo(x + CELL_WIDTH, labelY)
         }
 
-        const totalHeight = CELL_HEIGHT + (showName ? LABEL_HEIGHT : 0)
+        const totalHeight = totalCellHeight
 
         if (!isLastCol) {
             this.ctx.moveTo(x + CELL_WIDTH, y)
@@ -361,7 +386,24 @@ export class CanvasGenerator {
         this.ctx.stroke()
     }
 
-    private async drawWatermark(width: number, height: number, padding: number) {
+    private async drawWatermark(width: number, height: number, padding: number, variant?: string) {
+        const isStandard = variant !== 'challenge'
+
+        // ========== 左下角水印 (仅 standard 版本) ==========
+        if (isStandard) {
+            const leftX = padding
+            const leftY = height - padding / 2
+
+            this.ctx.save()
+            this.ctx.textAlign = 'left'
+            this.ctx.textBaseline = 'bottom'
+            this.ctx.font = `bold ${20}px ${THEME.typography.fontFamily}`
+            this.ctx.fillStyle = '#9ca3af' // 灰色，与右下角形成对比
+            this.ctx.fillText('oshigrid.me', leftX, leftY)
+            this.ctx.restore()
+        }
+
+        // ========== 右下角水印 ==========
         const x = width - padding
         const y = height - padding / 2
 

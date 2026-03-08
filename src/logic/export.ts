@@ -2,7 +2,7 @@ import QRCode from 'qrcode'
 import { CanvasGenerator } from './canvasDraw'
 import type { GridItem } from '~/types'
 
-export async function exportGridAsImage(list: GridItem[], templateId: string, customTitle: string, fileName: string, showName: boolean = false, templateConfig?: any, qrCodeUrl?: string, variant?: 'standard' | 'challenge', templateName?: string) {
+export async function exportGridAsImage(list: GridItem[], templateId: string, customTitle: string, fileName: string, showName: boolean = false, templateConfig?: any, qrCodeUrl?: string, variant?: 'standard' | 'challenge', templateName?: string, showLabel: boolean = true) {
     try {
         // Generate QR Code if needed (for challenge mode)
         if (variant === 'challenge' && !qrCodeUrl) {
@@ -15,7 +15,7 @@ export async function exportGridAsImage(list: GridItem[], templateId: string, cu
         }
 
         const generator = new CanvasGenerator()
-        const dataUrl = await generator.generate({ list, templateId, customTitle, showName, templateConfig, qrCodeUrl, variant, templateName })
+        const dataUrl = await generator.generate({ list, templateId, customTitle, showName, templateConfig, qrCodeUrl, variant, templateName, showLabel })
 
         // Detect Mobile/iOS
         const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !(window as any).MSStream

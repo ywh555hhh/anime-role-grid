@@ -1,6 +1,6 @@
 <script setup lang="ts">
 // App.vue is just a router shell now
-import GlobalAnnouncement from './components/GlobalAnnouncement.vue'
+// import GlobalAnnouncement from './components/GlobalAnnouncement.vue' // TODO: 暂时下线公告
 import ModalDispatcher from './components/ModalDispatcher.vue'
 
 import { Toaster } from 'vue-sonner'
@@ -26,7 +26,7 @@ watch(shouldLockScroll, (val) => {
 </script>
 
 <template>
-  <GlobalAnnouncement />
+  <!-- <GlobalAnnouncement /> 暂时下线公告 -->
   <Toaster position="top-center" richColors />
   <ModalDispatcher />
   <router-view />

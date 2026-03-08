@@ -1,5 +1,8 @@
 export type TemplateCategory = 'character' | 'work' | 'relation' | 'fun' | 'nsfw' | 'custom'
 
+// 角标类型
+export type TemplateBadge = 'hot' | 'new' | 'recommend' | 'classic' | 'limited' | 'pure'
+
 export interface Template {
     id: string
     name: string
@@ -8,10 +11,275 @@ export interface Template {
     cols: number
     items: string[]
     defaultTitle?: string
-    hot?: boolean
+    hot?: boolean // 兼容旧字段
+    badge?: TemplateBadge // 新角标字段
 }
 
 export const TEMPLATES: Template[] = [
+    // =================================================================
+    // PURE SERIES - 纯粹系列 (展示你最喜欢的 N 个 X)
+    // =================================================================
+    {
+        id: '9comic',
+        name: '9 comic (3x3)',
+        category: 'work',
+        label: '纯粹',
+        cols: 3,
+        badge: 'pure',
+        defaultTitle: '构成我人生的 9 部漫画',
+        items: ['漫画 1', '漫画 2', '漫画 3', '漫画 4', '漫画 5', '漫画 6', '漫画 7', '漫画 8', '漫画 9']
+    },
+    {
+        id: '9anime',
+        name: '9 anime (3x3)',
+        category: 'work',
+        label: '纯粹',
+        cols: 3,
+        badge: 'pure',
+        defaultTitle: '构成我人生的 9 部动画',
+        items: ['动画 1', '动画 2', '动画 3', '动画 4', '动画 5', '动画 6', '动画 7', '动画 8', '动画 9']
+    },
+    {
+        id: '9novel',
+        name: '9 novel (3x3)',
+        category: 'work',
+        label: '纯粹',
+        cols: 3,
+        badge: 'pure',
+        defaultTitle: '构成我人生的 9 部小说',
+        items: ['小说 1', '小说 2', '小说 3', '小说 4', '小说 5', '小说 6', '小说 7', '小说 8', '小说 9']
+    },
+    {
+        id: '9game',
+        name: '9 game (3x3)',
+        category: 'work',
+        label: '纯粹',
+        cols: 3,
+        badge: 'pure',
+        defaultTitle: '构成我人生的 9 个游戏',
+        items: ['游戏 1', '游戏 2', '游戏 3', '游戏 4', '游戏 5', '游戏 6', '游戏 7', '游戏 8', '游戏 9']
+    },
+    {
+        id: '9role',
+        name: '9 role (3x3)',
+        category: 'character',
+        label: '纯粹',
+        cols: 3,
+        badge: 'pure',
+        defaultTitle: '构成我人生的 9 个角色',
+        items: ['角色 1', '角色 2', '角色 3', '角色 4', '角色 5', '角色 6', '角色 7', '角色 8', '角色 9']
+    },
+    {
+        id: '9op',
+        name: '9 OP (3x3)',
+        category: 'work',
+        label: '纯粹',
+        cols: 3,
+        badge: 'pure',
+        defaultTitle: '构成我人生的 9 首 OP',
+        items: ['OP 1', 'OP 2', 'OP 3', 'OP 4', 'OP 5', 'OP 6', 'OP 7', 'OP 8', 'OP 9']
+    },
+    {
+        id: '9ed',
+        name: '9 ED (3x3)',
+        category: 'work',
+        label: '纯粹',
+        cols: 3,
+        badge: 'pure',
+        defaultTitle: '构成我人生的 9 首 ED',
+        items: ['ED 1', 'ED 2', 'ED 3', 'ED 4', 'ED 5', 'ED 6', 'ED 7', 'ED 8', 'ED 9']
+    },
+    {
+        id: '9ost',
+        name: '9 OST (3x3)',
+        category: 'work',
+        label: '纯粹',
+        cols: 3,
+        badge: 'pure',
+        defaultTitle: '构成我人生的 9 首配乐',
+        items: ['配乐 1', '配乐 2', '配乐 3', '配乐 4', '配乐 5', '配乐 6', '配乐 7', '配乐 8', '配乐 9']
+    },
+    {
+        id: '9song',
+        name: '9 song (3x3)',
+        category: 'work',
+        label: '纯粹',
+        cols: 3,
+        badge: 'pure',
+        defaultTitle: '构成我人生的 9 首歌',
+        items: ['歌曲 1', '歌曲 2', '歌曲 3', '歌曲 4', '歌曲 5', '歌曲 6', '歌曲 7', '歌曲 8', '歌曲 9']
+    },
+    {
+        id: '9va',
+        name: '9 voice actor (3x3)',
+        category: 'character',
+        label: '纯粹',
+        cols: 3,
+        badge: 'pure',
+        defaultTitle: '构成我人生的 9 位声优',
+        items: ['声优 1', '声优 2', '声优 3', '声优 4', '声优 5', '声优 6', '声优 7', '声优 8', '声优 9']
+    },
+    {
+        id: '9person',
+        name: '9 person (3x3)',
+        category: 'character',
+        label: '纯粹',
+        cols: 3,
+        badge: 'pure',
+        defaultTitle: '构成我人生的 9 位人物',
+        items: ['人物 1', '人物 2', '人物 3', '人物 4', '人物 5', '人物 6', '人物 7', '人物 8', '人物 9']
+    },
+    {
+        id: '9couple',
+        name: '9 couple (3x3)',
+        category: 'relation',
+        label: '纯粹',
+        cols: 3,
+        badge: 'pure',
+        defaultTitle: '构成我人生的 9 对 CP',
+        items: ['CP 1', 'CP 2', 'CP 3', 'CP 4', 'CP 5', 'CP 6', 'CP 7', 'CP 8', 'CP 9']
+    },
+    {
+        id: '9meme',
+        name: '9 meme (3x3)',
+        category: 'fun',
+        label: '纯粹',
+        cols: 3,
+        badge: 'pure',
+        defaultTitle: '构成我人生的 9 个梗',
+        items: ['梗 1', '梗 2', '梗 3', '梗 4', '梗 5', '梗 6', '梗 7', '梗 8', '梗 9']
+    },
+    {
+        id: '9quote',
+        name: '9 quote (3x3)',
+        category: 'fun',
+        label: '纯粹',
+        cols: 3,
+        badge: 'pure',
+        defaultTitle: '构成我人生的 9 句台词',
+        items: ['台词 1', '台词 2', '台词 3', '台词 4', '台词 5', '台词 6', '台词 7', '台词 8', '台词 9']
+    },
+    {
+        id: '9episode',
+        name: '9 episode (3x3)',
+        category: 'work',
+        label: '纯粹',
+        cols: 3,
+        badge: 'pure',
+        defaultTitle: '构成我人生的 9 集动画',
+        items: ['第 1 集', '第 2 集', '第 3 集', '第 4 集', '第 5 集', '第 6 集', '第 7 集', '第 8 集', '第 9 集']
+    },
+    {
+        id: '9chapter',
+        name: '9 chapter (3x3)',
+        category: 'work',
+        label: '纯粹',
+        cols: 3,
+        badge: 'pure',
+        defaultTitle: '构成我人生的 9 话漫画',
+        items: ['第 1 话', '第 2 话', '第 3 话', '第 4 话', '第 5 话', '第 6 话', '第 7 话', '第 8 话', '第 9 话']
+    },
+    {
+        id: '9chapter_novel',
+        name: '9 chapter novel (3x3)',
+        category: 'work',
+        label: '纯粹',
+        cols: 3,
+        badge: 'pure',
+        defaultTitle: '构成我人生的 9 章小说',
+        items: ['第 1 章', '第 2 章', '第 3 章', '第 4 章', '第 5 章', '第 6 章', '第 7 章', '第 8 章', '第 9 章']
+    },
+    {
+        id: '9boss',
+        name: '9 boss (3x3)',
+        category: 'character',
+        label: '纯粹',
+        cols: 3,
+        badge: 'pure',
+        defaultTitle: '构成我人生的 9 个 Boss',
+        items: ['Boss 1', 'Boss 2', 'Boss 3', 'Boss 4', 'Boss 5', 'Boss 6', 'Boss 7', 'Boss 8', 'Boss 9']
+    },
+    {
+        id: '9weapon',
+        name: '9 weapon (3x3)',
+        category: 'work',
+        label: '纯粹',
+        cols: 3,
+        badge: 'pure',
+        defaultTitle: '构成我人生的 9 把武器',
+        items: ['武器 1', '武器 2', '武器 3', '武器 4', '武器 5', '武器 6', '武器 7', '武器 8', '武器 9']
+    },
+    {
+        id: '9scene',
+        name: '9 scene (3x3)',
+        category: 'fun',
+        label: '纯粹',
+        cols: 3,
+        badge: 'pure',
+        defaultTitle: '构成我人生的 9 个名场面',
+        items: ['场面 1', '场面 2', '场面 3', '场面 4', '场面 5', '场面 6', '场面 7', '场面 8', '场面 9']
+    },
+    {
+        id: '9character',
+        name: '9 character (3x3)',
+        category: 'character',
+        label: '纯粹',
+        cols: 3,
+        badge: 'pure',
+        defaultTitle: '构成我人生的 9 个角色',
+        items: ['角色 1', '角色 2', '角色 3', '角色 4', '角色 5', '角色 6', '角色 7', '角色 8', '角色 9']
+    },
+    {
+        id: '9person_2',
+        name: '9 creator (3x3)',
+        category: 'character',
+        label: '纯粹',
+        cols: 3,
+        badge: 'pure',
+        defaultTitle: '构成我人生的 9 位创作者',
+        items: ['创作者 1', '创作者 2', '创作者 3', '创作者 4', '创作者 5', '创作者 6', '创作者 7', '创作者 8', '创作者 9']
+    },
+    {
+        id: '9studio',
+        name: '9 studio (3x3)',
+        category: 'work',
+        label: '纯粹',
+        cols: 3,
+        badge: 'pure',
+        defaultTitle: '构成我人生的 9 家动画公司',
+        items: ['公司 1', '公司 2', '公司 3', '公司 4', '公司 5', '公司 6', '公司 7', '公司 8', '公司 9']
+    },
+    {
+        id: '9voice',
+        name: '9 voice (3x3)',
+        category: 'work',
+        label: '纯粹',
+        cols: 3,
+        badge: 'pure',
+        defaultTitle: '构成我人生的 9 句台词',
+        items: ['台词 1', '台词 2', '台词 3', '台词 4', '台词 5', '台词 6', '台词 7', '台词 8', '台词 9']
+    },
+    {
+        id: '9rating',
+        name: '9 rating (3x3)',
+        category: 'work',
+        label: '纯粹',
+        cols: 3,
+        badge: 'pure',
+        defaultTitle: '构成我人生的 9 部最高分',
+        items: ['Top 1', 'Top 2', 'Top 3', 'Top 4', 'Top 5', 'Top 6', 'Top 7', 'Top 8', 'Top 9']
+    },
+    {
+        id: '9collection',
+        name: '9 collection (3x3)',
+        category: 'work',
+        label: '纯粹',
+        cols: 3,
+        badge: 'pure',
+        defaultTitle: '构成我人生的 9 个收藏',
+        items: ['收藏 1', '收藏 2', '收藏 3', '收藏 4', '收藏 5', '收藏 6', '收藏 7', '收藏 8', '收藏 9']
+    },
+
     // =================================================================
     // CATEGORY: CHARACTER (角色)
     // =================================================================

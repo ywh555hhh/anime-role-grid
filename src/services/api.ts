@@ -34,7 +34,12 @@ export const api = {
 
     async getTemplate(id: string): Promise<CustomTemplate> {
         const res = await fetch(`/api/template/${id}`)
-        if (!res.ok) throw new Error('Template not found')
+        // if (!res.ok) throw new Error('Template not found')
+        // 暂时隐藏旧模板错误提示，直接跳转首页
+        if (!res.ok) {
+            window.location.href = '/'
+            return Promise.reject()
+        }
         return res.json()
     },
 

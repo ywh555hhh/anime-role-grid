@@ -12,6 +12,7 @@ const props = defineProps<{
   defaultTitle?: string
   forExport?: boolean
   showCharacterName?: boolean
+  showLabel?: boolean
   editable?: boolean // New prop to force editability
   isStreamerMode?: boolean
 }>()
@@ -250,7 +251,8 @@ function onDropAdd(evt: any) {
         </div>
 
         <!-- Label Area (Bottom) -->
-        <div 
+        <div
+          v-if="showLabel !== false"
           class="h-[20px] md:h-[25px] flex-shrink-0 flex items-center justify-center text-center bg-white border-t-2 border-black overflow-hidden px-1 relative w-full min-w-0"
           @click.stop="handleLabelClick(index)"
         >
