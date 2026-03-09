@@ -1,10 +1,8 @@
 <script setup lang="ts">
-import { ref, shallowRef, onMounted, onBeforeUnmount, watch, nextTick } from 'vue'
+import { ref, shallowRef, onMounted, watch } from 'vue'
 import { useMagicKeys, watchDebounced, useStorage } from '@vueuse/core'
 import { api } from '~/services/api'
 import type { BgmSearchResultItem } from '~/types'
-import Cropper from 'cropperjs'
-import 'cropperjs/dist/cropper.css'
 
 const props = defineProps<{
     mode?: 'single' | 'streamer'
@@ -59,14 +57,14 @@ const searchYear = ref('')
 const customName = ref('')
 const customImageFile = ref<File | null>(null)
 const customImagePreview = ref<string | null>(null)
+const finalImagePreview = ref<string | null>(null) // 预览最终效果
 const fileInput = ref<HTMLInputElement | null>(null)
-const cropperImageRef = ref<HTMLImageElement | null>(null)
-const cropperInstance = shallowRef<Cropper | null>(null)
-const cropSource = ref<string | null>(null)
 const cropError = ref('')
+const uploadStep = ref<'upload' | 'preview'>('upload') // 上传步骤
+const isProcessing = ref(false)
 
 const GRID_ASPECT_RATIO = 120 / 187 // match grid cell aspect ratio (width/height)
-const CROP_EXPORT_WIDTH = 800 // balanced size for crisp exports without heavy payload
+const TARGET_WIDTH = 800 // 导出宽度
 
 const { escape } = useMagicKeys()
 if (escape) {
@@ -193,23 +191,106 @@ function triggerFileInput() {
   fileInput.value?.click()
 }
 
-function prepareCustomImage(file: File) {
+async function processImage(file: File): Promise<string | null> {
+  return new Promise((resolve) => {
+    const img = new Image()
+    const reader = new FileReader()
+
+    reader.onload = (e) => {
+      img.onload = () => {
+        // 计算裁剪参数
+        const srcWidth = img.width
+        const srcHeight = img.height
+        const srcRatio = srcWidth / srcHeight
+        const targetRatio = GRID_ASPECT_RATIO
+
+        let cropX = 0
+        let cropY = 0
+        let cropWidth = srcWidth
+        let cropHeight = srcHeight
+
+        // 根据比例差异自动选择裁剪方式
+        if (srcRatio > targetRatio) {
+          // 图片更宽，裁剪左右
+          cropWidth = srcHeight * targetRatio
+          cropX = (srcWidth - cropWidth) / 2
+        } else {
+          // 图片更高，裁剪上下
+          cropHeight = srcWidth / targetRatio
+          cropY = (srcHeight - cropHeight) / 2
+        }
+
+        // 创建 Canvas
+        const canvas = document.createElement('canvas')
+        const ctx = canvas.getContext('2d')
+        if (!ctx) {
+          resolve(null)
+          return
+        }
+
+        // 设置目标尺寸
+        const targetWidth = props.mode === 'streamer' ? 150 : TARGET_WIDTH
+        const targetHeight = Math.round(targetWidth / targetRatio)
+        canvas.width = targetWidth
+        canvas.height = targetHeight
+
+        // 绘制裁剪后的图片
+        ctx.drawImage(
+          img,
+          cropX, cropY, cropWidth, cropHeight, // 源裁剪区域
+          0, 0, targetWidth, targetHeight // 目标区域
+        )
+
+        // 导出为图片
+        const mime = props.mode === 'streamer' ? 'image/jpeg' : 'image/png'
+        const quality = props.mode === 'streamer' ? 0.8 : 1.0
+        const dataUrl = canvas.toDataURL(mime, quality)
+        resolve(dataUrl)
+      }
+
+      img.onerror = () => {
+        resolve(null)
+      }
+
+      img.src = e.target?.result as string
+    }
+
+    reader.onerror = () => {
+      resolve(null)
+    }
+
+    reader.readAsDataURL(file)
+  })
+}
+
+async function prepareCustomImage(file: File) {
   cropError.value = ''
+  isProcessing.value = true
+
   if (!file.type.startsWith('image/')) {
     cropError.value = '仅支持图片文件'
+    isProcessing.value = false
     return
   }
-  customImageFile.value = file
+
+  // 先显示原始图片预览
   const reader = new FileReader()
   reader.onload = (e) => {
-    const result = e.target?.result as string
-    customImagePreview.value = result
-    cropSource.value = result
-  }
-  reader.onerror = () => {
-    cropError.value = '图片读取失败，请重试或选择其他文件'
+    customImagePreview.value = e.target?.result as string
   }
   reader.readAsDataURL(file)
+
+  // 处理图片
+  const processed = await processImage(file)
+  if (processed) {
+    finalImagePreview.value = processed
+    customImageFile.value = file
+    uploadStep.value = 'preview'
+  } else {
+    cropError.value = '图片处理失败，请重试或选择其他文件'
+  }
+
+  isProcessing.value = false
 }
 
 function handleFileChange(event: Event) {
@@ -228,90 +309,27 @@ function handleDrop(event: DragEvent) {
   }
 }
 
-function destroyCropper() {
-  cropperInstance.value?.destroy()
-  cropperInstance.value = null
-}
-
-async function initCropper() {
-  if (!cropSource.value) return
-  await nextTick()
-  if (!cropperImageRef.value) return
-  destroyCropper()
-  cropperInstance.value = new Cropper(cropperImageRef.value, {
-    aspectRatio: GRID_ASPECT_RATIO,
-    viewMode: 1,
-    dragMode: 'move',
-    autoCropArea: 1,
-    background: false,
-    responsive: true,
-    movable: true,
-    zoomOnWheel: true,
-  })
-}
-
-function applyCrop() {
-  const instance = cropperInstance.value
-  if (!instance) return null
-  try {
-    // Streamer Mode: Compress heavily for Dock (Thumbnail)
-    // Standard: 800px. Streamer: 150px.
-    const targetWidth = props.mode === 'streamer' ? 150 : CROP_EXPORT_WIDTH
-    
-    const canvas = instance.getCroppedCanvas({
-      width: targetWidth,
-      height: Math.round(targetWidth / GRID_ASPECT_RATIO),
-      imageSmoothingEnabled: true,
-      imageSmoothingQuality: 'high',
-    })
-    // Use JPEG 0.8 for thumbnails to save space, PNG for high quality
-    const mime = props.mode === 'streamer' ? 'image/jpeg' : 'image/png'
-    const quality = props.mode === 'streamer' ? 0.8 : undefined
-    
-    const dataUrl = canvas.toDataURL(mime, quality)
-    customImagePreview.value = dataUrl
-    return dataUrl
-  } catch (error) {
-    console.error('Crop failed:', error)
-    cropError.value = '裁切失败，请重新选择图片'
-    return null
-  }
+function resetUpload() {
+  customName.value = ''
+  customImageFile.value = null
+  customImagePreview.value = null
+  finalImagePreview.value = null
+  cropError.value = ''
+  uploadStep.value = 'upload'
+  isProcessing.value = false
 }
 
 function handleCustomAdd() {
-  let finalImage = customImagePreview.value
-  if (cropperInstance.value) {
-    const cropped = applyCrop()
-    if (cropped) finalImage = cropped
-  }
-
-  if (finalImage) {
+  if (finalImagePreview.value) {
     emit('add', {
       id: `custom-${Date.now()}`,
-      name: customName.value.trim() || '自定义图片', // Use custom name or default
-      image: finalImage,
+      name: customName.value.trim() || '自定义图片',
+      image: finalImagePreview.value,
     })
     emit('close')
-    // Reset
-    customName.value = ''
-    customImageFile.value = null
-    customImagePreview.value = null
-    cropSource.value = null
+    resetUpload()
   }
 }
-
-watch(cropSource, async (val) => {
-  if (val) {
-    cropError.value = ''
-    await initCropper()
-  } else {
-    destroyCropper()
-  }
-})
-
-onBeforeUnmount(() => {
-  destroyCropper()
-})
 
 onMounted(() => {
   input.value?.focus()
@@ -598,67 +616,130 @@ onMounted(() => {
         </div>
       </div>
 
-      <!-- Custom Upload Tab Content (unchanged) -->
+      <!-- Custom Upload Tab Content -->
       <div v-else class="p-4 flex flex-col gap-4">
-        
-        <div class="flex flex-col gap-2">
-            <label class="text-sm font-bold text-black">角色名字 (可选)</label>
-            <input 
-                v-model="customName"
-                class="w-full px-4 py-3 rounded-lg border-2 border-gray-300 bg-white text-black outline-none focus:border-primary"
-                placeholder="给图片起个名字..."
-                type="text"
-            >
+
+        <!-- 错误提示 -->
+        <div v-if="cropError" class="bg-red-50 border border-red-200 rounded-lg p-3 flex items-start gap-2">
+          <div i-carbon-warning-filled class="text-red-500 text-lg shrink-0" />
+          <p class="text-sm text-red-600 font-medium">{{ cropError }}</p>
         </div>
 
-        <div class="flex flex-col gap-2">
-          <label class="text-sm font-bold text-black">上传图片</label>
-          <div 
-          class="border-2 border-dashed border-gray-300 rounded-lg p-8 flex flex-col items-center justify-center cursor-pointer hover:border-primary transition-colors relative"
-          @click="triggerFileInput"
-          @dragover.prevent
-          @drop.prevent="handleDrop"
-        >
-            <input 
+        <!-- 步骤 1: 上传图片 -->
+        <div v-if="uploadStep === 'upload'" class="flex flex-col gap-4">
+          <!-- 上传区域 -->
+          <div
+            class="border-2 border-dashed border-gray-300 rounded-2xl p-8 flex flex-col items-center justify-center cursor-pointer hover:border-primary hover:bg-primary/5 transition-all relative"
+            :class="{ 'pointer-events-none opacity-50': isProcessing }"
+            @click="triggerFileInput"
+            @dragover.prevent
+            @drop.prevent="handleDrop"
+          >
+            <input
               ref="fileInput"
-              type="file" 
-              accept="image/*" 
+              type="file"
+              accept="image/*"
               class="hidden"
               @change="handleFileChange"
             >
-            <div v-if="customImagePreview" class="w-32 h-auto mb-2">
-              <img :src="customImagePreview" class="w-full h-full object-cover rounded-lg shadow-md">
+
+            <div v-if="isProcessing" class="flex flex-col items-center gap-3">
+              <div i-carbon-circle-dash class="text-5xl text-primary animate-spin" />
+              <p class="text-sm text-gray-600 font-medium">正在处理图片...</p>
             </div>
-            <div v-else i-carbon-image class="text-4xl text-black mb-2" />
-            <p class="text-sm text-black font-medium">{{ customImagePreview ? '点击更换图片' : '点击或拖拽上传图片' }}</p>
+
+            <div v-else class="flex flex-col items-center gap-3">
+              <div class="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center">
+                <div i-carbon-upload class="text-3xl text-primary" />
+              </div>
+              <div class="text-center">
+                <p class="text-base font-bold text-black mb-1">点击或拖拽上传图片</p>
+                <p class="text-xs text-gray-500">支持 JPG、PNG、WEBP 等格式</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- 名字输入 -->
+          <div class="flex flex-col gap-2">
+            <label class="text-sm font-bold text-black">角色名字 (可选)</label>
+            <input
+                v-model="customName"
+                class="w-full px-4 py-3 rounded-lg border-2 border-gray-300 bg-white text-black outline-none focus:border-primary transition-colors"
+                placeholder="给图片起个名字..."
+                type="text"
+            >
           </div>
         </div>
 
-        <div 
-          v-if="cropSource" 
-          class="border border-gray-200 rounded-lg bg-gray-50 p-4 flex flex-col gap-3"
-        >
+        <!-- 步骤 2: 预览和确认 -->
+        <div v-else class="flex flex-col gap-4">
+          <!-- 标题 -->
+          <div class="flex items-center justify-between">
+            <h3 class="text-base font-bold text-black">预览效果</h3>
+            <button
+              @click="resetUpload"
+              class="text-sm text-gray-600 hover:text-primary flex items-center gap-1 px-3 py-1.5 rounded-lg hover:bg-gray-100 transition-colors"
+            >
+              <div i-carbon-arrow-left />
+              <span>重新上传</span>
+            </button>
+          </div>
+
+          <!-- 预览区域 -->
           <div class="flex flex-col md:flex-row gap-4">
-            <div class="flex-1 min-h-[260px] rounded-md border border-gray-200 overflow-hidden bg-white">
-              <img 
-                ref="cropperImageRef"
-                :src="cropSource" 
-                class="w-full h-full object-contain block"
-                style="max-height: 420px;"
-                alt="待裁切图片"
-              >
+            <!-- 原图预览 -->
+            <div class="flex-1 flex flex-col gap-2">
+              <p class="text-xs font-bold text-gray-600">原图</p>
+              <div class="aspect-[2/3] rounded-lg overflow-hidden bg-gray-100 border-2 border-gray-200">
+                <img
+                  v-if="customImagePreview"
+                  :src="customImagePreview"
+                  class="w-full h-full object-contain"
+                  alt="原图"
+                >
+              </div>
+            </div>
+
+            <!-- 效果预览 -->
+            <div class="flex-1 flex flex-col gap-2">
+              <p class="text-xs font-bold text-primary">效果预览</p>
+              <div class="aspect-[2/3] rounded-lg overflow-hidden bg-gradient-to-br from-primary/20 to-pink-100 border-2 border-primary shadow-lg">
+                <img
+                  v-if="finalImagePreview"
+                  :src="finalImagePreview"
+                  class="w-full h-full object-contain"
+                  alt="预览"
+                >
+              </div>
             </div>
           </div>
-          <p v-if="cropError" class="text-sm text-red-500 font-semibold">{{ cropError }}</p>
-        </div>
 
-        <button 
-          class="btn w-full py-3 bg-primary hover:bg-primary-hover text-white rounded-lg font-bold transition-colors disabled:opacity-50 disabled:cursor-not-allowed mt-4"
-          :disabled="!customImagePreview"
-          @click="handleCustomAdd"
-        >
-          确认添加
-        </button>
+          <!-- 提示信息 -->
+          <div class="bg-blue-50 border border-blue-200 rounded-lg p-3 flex items-start gap-2">
+            <div i-carbon-information-filled class="text-blue-500 text-lg shrink-0" />
+            <div class="flex-1">
+              <p class="text-sm text-blue-900 font-medium mb-1">已自动裁剪为最佳比例</p>
+              <p class="text-xs text-blue-700">图片已自动调整为格子比例，保持人物居中</p>
+            </div>
+          </div>
+
+          <!-- 名字确认 -->
+          <div v-if="customName" class="bg-gray-50 rounded-lg p-3">
+            <p class="text-sm text-gray-600">角色名字：<span class="font-bold text-black">{{ customName }}</span></p>
+          </div>
+
+          <!-- 确认按钮 -->
+          <button
+            class="btn w-full py-4 bg-primary hover:bg-primary-hover text-white rounded-lg font-bold transition-all shadow-lg hover:shadow-xl text-base"
+            :disabled="!finalImagePreview"
+            @click="handleCustomAdd"
+          >
+            <div class="flex items-center justify-center gap-2">
+              <div i-carbon-checkmark-filled />
+              <span>确认添加</span>
+            </div>
+          </button>
+        </div>
       </div>
     </div>
   </div>
