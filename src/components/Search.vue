@@ -646,6 +646,17 @@ onMounted(() => {
 
         <!-- 步骤 1: 上传图片 -->
         <div v-if="uploadStep === 'upload'" class="flex flex-col gap-4">
+          <!-- 名字输入 -->
+          <div class="flex flex-col gap-2">
+            <label class="text-sm font-bold text-black">角色名字 (可选)</label>
+            <input
+                v-model="customName"
+                class="w-full px-4 py-3 rounded-lg border-2 border-gray-300 bg-white text-black outline-none focus:border-primary transition-colors"
+                placeholder="给图片起个名字..."
+                type="text"
+            >
+          </div>
+
           <!-- 上传区域 -->
           <div
             class="border-2 border-dashed border-gray-300 rounded-2xl p-8 flex flex-col items-center justify-center cursor-pointer hover:border-primary hover:bg-primary/5 transition-all relative"
@@ -676,17 +687,6 @@ onMounted(() => {
                 <p class="text-xs text-gray-500">支持 JPG、PNG、WEBP 等格式</p>
               </div>
             </div>
-          </div>
-
-          <!-- 名字输入 -->
-          <div class="flex flex-col gap-2">
-            <label class="text-sm font-bold text-black">角色名字 (可选)</label>
-            <input
-                v-model="customName"
-                class="w-full px-4 py-3 rounded-lg border-2 border-gray-300 bg-white text-black outline-none focus:border-primary transition-colors"
-                placeholder="给图片起个名字..."
-                type="text"
-            >
           </div>
         </div>
 
