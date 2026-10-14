@@ -55,8 +55,14 @@ const SNAPSHOT_KEYS = {
     trendingTemplates: 'trending-templates',
 } as const;
 
-/** 热榜周期。与前端 Search.vue 里的 tab 一致 */
-const TRENDING_PERIODS = ['12h', '24h', 'week', 'all'] as const;
+/**
+ * 热榜周期。与前端 Search.vue 的三个 tab 一致（周榜/日榜/总榜）。
+ *
+ * 刻意不含 '12h'：前端从未使用它，但它会让聚合多一次 COUNT(DISTINCT)，
+ * 使整个聚合从约 1.4M 行涨到 1.82M 行（+30%）。
+ * 读取端的白名单也同样不含 12h，因此 ?period=12h 会被归一到 24h。
+ */
+const TRENDING_PERIODS = ['24h', 'week', 'all'] as const;
 
 /** 热榜每个周期取前多少名（与旧实现一致） */
 const TRENDING_LIMIT = 63;
@@ -73,35 +79,37 @@ const STATS_CONCURRENCY = 8;
 /** 写入 batch 每次最多多少条语句 */
 const WRITE_BATCH_SIZE = 50;
 
-/** 各周期对应的聚合列名 */
-const TRENDING_WINDOW_COLUMN: Record<string, string> = {
-    '12h': 'c12h',
+/** 各周期对应的聚合列名。用 as const 保留字面量类型，避免下面的取值需要强制转换 */
+const TRENDING_WINDOW_COLUMN = {
     '24h': 'c24h',
-    'week': 'cWeek',
-    'all': 'cAll',
-};
+    week: 'cWeek',
+    all: 'cAll',
+} as const;
 
 // =============================================================================
 // 热榜快照
 // =============================================================================
 
 /**
- * 一次扫描算出 4 个周期的排名。
+ * 一次扫描算出 3 个周期的排名。
  *
  * 已验证的查询计划（本地 SQLite，72 万行数据）：
  *   MATERIALIZE agg
  *   SEARCH si USING INDEX idx_items_category (item_category=?)   ← 唯一一次扫描
- *   ...（后续 4 次 SCAN agg 都发生在内存临时表上）
+ *   ...（后续 3 次 SCAN agg 都发生在内存临时表上）
  *
  * 外层 `id IN (各周期前 63 的并集)` 是为了把返回行数压到 ≤252。
  * 若不这么做，agg 的全部中间结果（线上约数万行）都要传回 Worker。
+ *
+ * 实测（生产真实数据，含 12h 的 4 周期版本）：返回 119 行，读取 1,820,445 行，2.9 秒。
+ * 每多一个周期就多一次 COUNT(DISTINCT)（实测约 +30%），所以 12h 被移除了 ——
+ * 移除后预期约 1.4M 行。
  */
 const TRENDING_SQL = `
 WITH agg AS MATERIALIZED (
     SELECT si.bangumi_id AS id,
            MAX(si.character_name) AS name,
            MAX(si.img_url)        AS image,
-           COUNT(DISTINCT CASE WHEN s.created_at > strftime('%s','now') - 43200  THEN s.user_hash END) AS c12h,
            COUNT(DISTINCT CASE WHEN s.created_at > strftime('%s','now') - 86400  THEN s.user_hash END) AS c24h,
            COUNT(DISTINCT CASE WHEN s.created_at > strftime('%s','now') - 604800 THEN s.user_hash END) AS cWeek,
            COUNT(DISTINCT s.user_hash) AS cAll
@@ -110,11 +118,9 @@ WITH agg AS MATERIALIZED (
     WHERE si.item_category = 'character'
     GROUP BY si.bangumi_id
 )
-SELECT id, name, image, c12h, c24h, cWeek, cAll
+SELECT id, name, image, c24h, cWeek, cAll
 FROM agg
 WHERE id IN (
-    SELECT id FROM (SELECT id FROM agg WHERE c12h  > 0 ORDER BY c12h  DESC LIMIT ${TRENDING_LIMIT})
-    UNION
     SELECT id FROM (SELECT id FROM agg WHERE c24h  > 0 ORDER BY c24h  DESC LIMIT ${TRENDING_LIMIT})
     UNION
     SELECT id FROM (SELECT id FROM agg WHERE cWeek > 0 ORDER BY cWeek DESC LIMIT ${TRENDING_LIMIT})
@@ -127,7 +133,6 @@ interface TrendingRow {
     id: number;
     name: string;
     image: string | null;
-    c12h: number;
     c24h: number;
     cWeek: number;
     cAll: number;
@@ -146,19 +151,17 @@ async function refreshTrending(db: D1Database): Promise<{ aggRows: number; writt
     const now = Math.floor(Date.now() / 1000);
     const statements = TRENDING_PERIODS.map((period) => {
         const column = TRENDING_WINDOW_COLUMN[period];
+        const countOf = (row: TrendingRow) => row[column];
+
         const top: TrendingItem[] = results
-            .filter((row) => (row[column as keyof TrendingRow] as number) > 0)
-            .sort(
-                (a, b) =>
-                    (b[column as keyof TrendingRow] as number) -
-                    (a[column as keyof TrendingRow] as number),
-            )
+            .filter((row) => countOf(row) > 0)
+            .sort((a, b) => countOf(b) - countOf(a))
             .slice(0, TRENDING_LIMIT)
             .map((row) => ({
                 name: row.name,
                 id: row.id,
                 image: row.image,
-                count: row[column as keyof TrendingRow] as number,
+                count: countOf(row),
             }));
 
         return db

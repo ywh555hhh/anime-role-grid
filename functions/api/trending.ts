@@ -5,10 +5,14 @@ interface Env {
 /**
  * 只接受这几个 period，其余一律回落到 24h。
  *
+ * 不含 '12h'：前端只有周榜/日榜/总榜三个 tab，从未使用 12h，
+ * 而它会多一次 COUNT(DISTINCT)，使快照刷新成本涨 30%。
+ * 写入端（workers/snapshot-refresh）也同样不生成 12h。
+ *
  * period 会参与缓存键和快照键；如果允许任意值，攻击者只要循环请求
  * ?period=x1、?period=x2…… 就能每次都绕过缓存/快照直查数据库。
  */
-const VALID_PERIODS = new Set(['12h', '24h', 'week', 'all']);
+const VALID_PERIODS = new Set(['24h', 'week', 'all']);
 
 /**
  * 快照键前缀。
