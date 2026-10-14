@@ -94,8 +94,7 @@ export const onRequestGet: PagesFunction<Env> = async (context) => {
                 .first<{ data: string; updated_at: number }>();
 
             const response = buildSnapshotResponse(snapshot, period);
-            // 存进边缘缓存；失败也不影响本次响应
-            context.waitUntil(cache.put(cacheKey, response.clone()).catch(() => undefined));
+            await putCache(cacheKey, response);
             return forClient(response, cached ? 'REFRESH' : 'MISS');
         } catch (error) {
             // 3) 回源失败（D1 额度耗尽 / 故障）→ 降级到旧快照，而不是报 500
@@ -122,6 +121,26 @@ function jsonError(status: number, error: string): Response {
             'Cache-Control': 'no-store',
         },
     });
+}
+
+/**
+ * 写边缘缓存。
+ *
+ * 用 await 而不是 `context.waitUntil(...)`，原因有两条：
+ *  1. 本仓库里已被验证可用的 search.ts 用的就是 await；
+ *     waitUntil 在 Pages Functions 中的完成时机没有保证。
+ *  2. 一旦 put 没跑完，回源失败时就没有旧快照可以降级 ——
+ *     整套 stale-if-error 会静默失效。所以这里显式等待。
+ *
+ * 另外**不再静默吞掉错误**：缓存写失败必须能从日志里发现，
+ * 否则“缓存没生效”这种问题会毫无痕迹。
+ */
+async function putCache(key: Request, response: Response): Promise<void> {
+    try {
+        await caches.default.put(key, response.clone());
+    } catch (error) {
+        console.error('[Trending] 写边缘缓存失败:', error);
+    }
 }
 
 /**

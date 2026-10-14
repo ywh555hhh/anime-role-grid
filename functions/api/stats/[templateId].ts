@@ -72,7 +72,7 @@ export const onRequestGet: PagesFunction<Env> = async (context) => {
         try {
             const { data, source } = await getStats(env, templateId, period)
             const response = buildResponse(data, source)
-            context.waitUntil(cache.put(cacheKey, response.clone()).catch(() => undefined))
+            await putCache(cacheKey, response)
             return forClient(response, cached ? 'REFRESH' : 'MISS')
         } catch (error) {
             // 3) 取数失败 → 降级到旧快照，而不是报 500
@@ -109,6 +109,18 @@ function isFresh(response: Response): boolean {
     if (!Number.isFinite(fetchedAt) || fetchedAt <= 0) return false
     const age = Math.floor(Date.now() / 1000) - fetchedAt
     return age >= 0 && age < FRESH_TTL_SECONDS
+}
+
+/**
+ * 写边缘缓存：显式 await，且不静默吞错误。
+ * 详见 functions/api/trending.ts 里同名函数的注释。
+ */
+async function putCache(key: Request, response: Response): Promise<void> {
+    try {
+        await caches.default.put(key, response.clone())
+    } catch (error) {
+        console.error('[Stats] 写边缘缓存失败:', error)
+    }
 }
 
 function forClient(response: Response, status: string): Response {
