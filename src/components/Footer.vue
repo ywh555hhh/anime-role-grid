@@ -86,6 +86,17 @@ const showQQModal = ref(false)
         <span class="i-carbon-information" />
         仅供个人娱乐使用 · 禁止用于任何商业用途
       </p>
+
+      <!-- 网络自测入口：图片加载异常时引导用户自查 -->
+      <p class="text-[10px] mt-3 tracking-wider flex items-center justify-center">
+        <router-link
+          to="/netcheck"
+          class="opacity-50 hover:opacity-100 hover:text-primary transition-all flex items-center gap-1 border-b border-transparent hover:border-primary"
+        >
+          <span class="i-carbon-network-4" />
+          图片加载不出来？跑一下网络自测
+        </router-link>
+      </p>
     </div>
   </footer>
 </template>

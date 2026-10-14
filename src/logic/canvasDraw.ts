@@ -1,6 +1,7 @@
 import type { ExportTemplateConfig, GridItem } from '~/types'
 import { TEMPLATES } from '~/logic/templates'
 import { THEME } from '~/logic/constants/theme'
+import { proxyImage } from '~/logic/imageUrl'
 
 // Constants derived from THEME for static export
 // We keep CELL_WIDTH = 300 to maintain the high resolution for static image export
@@ -34,14 +35,6 @@ export class CanvasGenerator {
         const ctx = this.canvas.getContext('2d')
         if (!ctx) throw new Error('Could not get canvas context')
         this.ctx = ctx
-    }
-
-    private getImageUrl(url?: string): string {
-        if (!url) return ''
-        if (url.startsWith('blob:') || url.startsWith('data:')) {
-            return url
-        }
-        return `https://wsrv.nl/?url=${encodeURIComponent(url)}&output=png&n=-1&t=${Date.now()}`
     }
 
     private loadImage(url: string): Promise<HTMLImageElement> {
@@ -184,8 +177,11 @@ export class CanvasGenerator {
             this.drawTitle(customTitle, defaultTitle, templateTitle, canvasWidth, titleHeight)
         }
 
+        // 图片统一走同源代理（/api/img）。
+        // 原先用 wsrv.nl + output=png：会把 JPEG 重编码成 PNG（实测膨胀约 8 倍），
+        // 且带 t=Date.now() 每次导出都击穿缓存；同源图片另外还不会污染 canvas。
         const images = await Promise.all(
-            list.map(item => item.character ? this.loadImage(this.getImageUrl(item.character.image)) : Promise.resolve(null))
+            list.map(item => item.character ? this.loadImage(proxyImage(item.character.image)) : Promise.resolve(null))
         )
 
         const startX = padding
@@ -492,7 +488,7 @@ export class CanvasGenerator {
 
             this.ctx.fillStyle = THEME.colors.watermark
             this.ctx.fillText(part1, textEndX - w3 - w2, y)
-        } catch (e) {
+        } catch {
             this.ctx.fillStyle = THEME.colors.watermark
             this.ctx.fillText('【我推的格子】', x, y)
         }

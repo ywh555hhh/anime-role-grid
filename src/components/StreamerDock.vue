@@ -2,6 +2,7 @@
 import { ref } from 'vue'
 import { VueDraggable } from 'vue-draggable-plus'
 import { useGridStore } from '~/stores/gridStore'
+import { proxyImage } from '~/logic/imageUrl'
 
 const gridStore = useGridStore()
 const { dockItems, removeFromDock, clearDock, isToolbarOpen, isDragging, resolveImage } = gridStore
@@ -114,7 +115,7 @@ const dragOptions = {
                 <!-- Image -->
                 <div class="w-16 h-16 md:w-24 md:h-24 rounded-lg overflow-hidden border-2 border-white shadow-md relative bg-gray-100">
                     <img 
-                        :src="resolveImage(item)" 
+                        :src="proxyImage(resolveImage(item))" 
                         draggable="false"
                         class="w-full h-full object-cover object-top pointer-events-none select-none" 
                     />

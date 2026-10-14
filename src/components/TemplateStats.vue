@@ -2,6 +2,7 @@
 import { ref, onMounted, computed } from 'vue'
 import { useRoute } from 'vue-router'
 import { api } from '~/services/api'
+import { proxyImage } from '~/logic/imageUrl'
 
 const route = useRoute()
 const loading = ref(false)
@@ -135,7 +136,7 @@ onMounted(() => {
                     <div v-if="slot.candidates[0]" class="flex items-center gap-3 mb-4 pb-4 border-b border-gray-50 border-dashed">
                         <div class="relative shrink-0">
                             <img 
-                                :src="slot.candidates[0].image" 
+                                :src="proxyImage(slot.candidates[0].image)" 
                                 class="w-14 h-14 rounded-lg object-cover object-top shadow-sm border border-gray-100"
                             />
                             <div class="absolute -top-1.5 -left-1.5 bg-yellow-400 text-white rounded-full p-0.5 shadow-sm">
@@ -156,7 +157,7 @@ onMounted(() => {
                             class="flex items-center gap-2 group"
                         >
                             <span class="w-4 text-center font-mono text-[10px] text-gray-300 group-hover:text-gray-500 transition-colors">{{ idx + 2 }}</span>
-                            <img :src="cand.image" class="w-6 h-6 rounded bg-gray-100 object-cover object-top shrink-0" />
+                            <img :src="proxyImage(cand.image)" class="w-6 h-6 rounded bg-gray-100 object-cover object-top shrink-0" />
                             <span class="flex-1 truncate text-xs text-gray-600 group-hover:text-black transition-colors">{{ cand.name }}</span>
                             <span class="text-[10px] text-gray-400 font-mono bg-gray-50 px-1 rounded">{{ cand.count }}</span>
                         </div>

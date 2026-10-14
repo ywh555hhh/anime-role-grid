@@ -16,6 +16,12 @@ const routes = [
         name: 'Template',
         component: () => import('~/pages/ViewTemplate.vue')
     },
+    {
+        // 网络自测：用于定位「图片加载不出来」到底是网络问题还是站点问题
+        path: '/netcheck',
+        name: 'NetCheck',
+        component: () => import('~/pages/NetCheck.vue')
+    },
     // V3 Route Removed
 ]
 

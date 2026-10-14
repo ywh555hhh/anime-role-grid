@@ -3,6 +3,7 @@ import { computed, ref, nextTick } from 'vue'
 import type { GridItem, GridItemCharacter } from '~/types'
 import { VueDraggable } from 'vue-draggable-plus'
 import { useGridStore } from '~/stores/gridStore' // Import Store
+import { proxyImage } from '~/logic/imageUrl'
 
 const props = defineProps<{
   list: GridItem[]
@@ -82,11 +83,11 @@ function getImageUrl(char?: GridItemCharacter | string) {
 
   if (!url) return ''
   
-  if (props.forExport) {
-    // Use proxy for export to ensure CORS headers are correct
-    return `https://wsrv.nl/?url=${encodeURIComponent(url)}&output=png`
-  }
-  return url
+  // 统一走同源图片代理（/api/img）。
+  // lain.bgm.tv 在国内被 DNS 污染 + TLS SNI 阻断，浏览器直连必然失败；
+  // 改由 Cloudflare 边缘回源后，用户无需任何代理配置。
+  // 导出场景同样用它：同源图片不会污染 canvas，也不再依赖第三方 wsrv.nl。
+  return proxyImage(url)
 }
 
 // Direct handler for drop events to avoid ephemeral computed refs

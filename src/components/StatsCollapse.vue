@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue'
 import { useGridStore } from '~/stores/gridStore'
+import { proxyImage } from '~/logic/imageUrl'
 
 const store = useGridStore()
 const isOpen = ref(false)
@@ -102,7 +103,7 @@ function handleLoad() {
                         </div>
                         
                         <div class="w-8 h-8 rounded-full overflow-hidden bg-gray-100 shrink-0 border border-gray-100">
-                            <img :src="cand.image" class="w-full h-full object-cover">
+                            <img :src="proxyImage(cand.image)" class="w-full h-full object-cover">
                         </div>
                         
                         <div class="flex-1 min-w-0">

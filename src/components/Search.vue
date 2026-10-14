@@ -5,6 +5,7 @@ import { api } from '~/services/api'
 import type { BgmSearchResultItem } from '~/types'
 import Cropper from 'cropperjs'
 import 'cropperjs/dist/cropper.css'
+import { proxyImage } from '~/logic/imageUrl'
 
 const props = defineProps<{
     mode?: 'single' | 'streamer'
@@ -527,7 +528,7 @@ onMounted(() => {
                                 <span>NO.{{ trendingList.indexOf(item) + 1 }}</span>
                             </div>
                             <img 
-                                :src="item.image" 
+                                :src="proxyImage(item.image)" 
                                 class="w-full h-full object-cover object-top group-hover:scale-105 transition-transform duration-500"
                                 loading="lazy"
                                 referrerpolicy="no-referrer"
@@ -555,7 +556,7 @@ onMounted(() => {
                             <div class="w-full aspect-[2/3] rounded-lg overflow-hidden bg-gray-100 relative shadow-sm border border-gray-100 group-hover:border-primary transition-colors">
                                 <span class="absolute top-0 left-0 bg-black/60 text-white text-[10px] px-1.5 rounded-br-lg font-bold z-10">{{ trendingList.indexOf(item) + 1 }}</span>
                                 <img 
-                                    :src="item.image" 
+                                    :src="proxyImage(item.image)" 
                                     class="w-full h-full object-cover object-top group-hover:scale-105 transition-transform duration-300"
                                     loading="lazy"
                                     referrerpolicy="no-referrer"
@@ -593,7 +594,7 @@ onMounted(() => {
           >
             <div class="w-full overflow-hidden rounded-lg bg-gray-100 relative">
               <img 
-                :src="item.images?.large || item.images?.medium || item.images?.grid" 
+                :src="proxyImage(item.images?.large || item.images?.medium || item.images?.grid)" 
                 class="w-full h-auto object-cover group-hover:scale-105 transition-transform duration-300"
                 loading="lazy"
                 referrerpolicy="no-referrer"

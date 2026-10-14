@@ -2,6 +2,7 @@ import { ref } from 'vue'
 import type { GridItem } from '~/types'
 import * as Mp4Muxer from 'mp4-muxer'
 import { THEME } from '~/logic/constants/theme'
+import { proxyImage } from '~/logic/imageUrl'
 
 interface VideoSettings {
     platform: string
@@ -29,12 +30,9 @@ export function useVideoExport() {
             img.crossOrigin = 'anonymous'
             img.referrerPolicy = 'no-referrer'
 
-            // Bypass proxy for local blob/data URLs
-            if (url.startsWith('blob:') || url.startsWith('data:')) {
-                img.src = url
-            } else {
-                img.src = `https://wsrv.nl/?url=${encodeURIComponent(url)}&output=png&n=-1`
-            }
+            // 统一走同源图片代理（/api/img）；data:/blob: 由 proxyImage 内部原样放行。
+            // 同源图片不会污染 canvas，也不再依赖第三方 wsrv.nl。
+            img.src = proxyImage(url)
 
             img.onload = () => resolve(img)
             img.onerror = () => {
