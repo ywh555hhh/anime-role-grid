@@ -10,6 +10,15 @@ const CELL_HEIGHT = CELL_WIDTH / THEME.layout.cellAspectRatio
 const BORDER_WIDTH = 4
 const LABEL_HEIGHT = CELL_HEIGHT * THEME.layout.labelHeightRatio
 
+/**
+ * 单张图片的客户端加载超时（毫秒）。
+ *
+ * 第二道防线：服务端 `/api/img` 已有 20s 回源超时，但这里再兜一次，
+ * 保证即使代理或网络完全不响应，导出也会有确定结局（该格降级为空占位图），
+ * 而不会让整张图永远卡在某一格上。
+ */
+const IMAGE_LOAD_TIMEOUT_MS = 25_000
+
 const STANDARD_WATERMARK_HEIGHT = 60
 const STANDARD_QR_WATERMARK_HEIGHT = 180
 
@@ -43,21 +52,29 @@ export class CanvasGenerator {
             img.crossOrigin = 'anonymous'
             img.referrerPolicy = 'no-referrer'
 
+            const timer = setTimeout(() => {
+                console.warn(`Image load timed out after ${IMAGE_LOAD_TIMEOUT_MS}ms: ${url}`)
+                this.resolvePlaceholder(resolve)
+            }, IMAGE_LOAD_TIMEOUT_MS)
+
             img.onload = async () => {
                 try {
                     await img.decode()
                     if (img.naturalWidth === 0 || img.naturalHeight === 0) {
                         throw new Error('Image loaded but has 0 dimensions')
                     }
+                    clearTimeout(timer)
                     resolve(img)
                 } catch (e) {
                     console.warn(`Image decode failed: ${url}`, e)
+                    clearTimeout(timer)
                     this.resolvePlaceholder(resolve)
                 }
             }
 
             img.onerror = () => {
                 console.warn(`Failed to load image: ${url}`)
+                clearTimeout(timer)
                 this.resolvePlaceholder(resolve)
             }
 

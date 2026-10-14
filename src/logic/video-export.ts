@@ -16,6 +16,21 @@ interface VideoSettings {
 // Feature Detection
 export const isMp4Supported = typeof VideoEncoder !== 'undefined'
 
+/**
+ * 单张图片的客户端加载超时（毫秒）。
+ *
+ * 第二道防线：服务端 `/api/img` 已有 20s 回源超时，这里再兜一次，
+ * 保证视频导出不会因为某一张图永远不响应而卡死。
+ */
+const IMAGE_LOAD_TIMEOUT_MS = 25_000
+
+/** 加载失败时使用的 1x1 透明占位图 */
+function placeholderImage(): HTMLImageElement {
+    const placeholder = new Image()
+    placeholder.src = 'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7'
+    return placeholder
+}
+
 export function useVideoExport() {
     const isModalOpen = ref(false)
     const isExporting = ref(false)
@@ -30,15 +45,22 @@ export function useVideoExport() {
             img.crossOrigin = 'anonymous'
             img.referrerPolicy = 'no-referrer'
 
+            const timer = window.setTimeout(() => {
+                console.warn(`Video export image load timed out after ${IMAGE_LOAD_TIMEOUT_MS}ms: ${url}`)
+                resolve(placeholderImage())
+            }, IMAGE_LOAD_TIMEOUT_MS)
+
             // 统一走同源图片代理（/api/img）；data:/blob: 由 proxyImage 内部原样放行。
             // 同源图片不会污染 canvas，也不再依赖第三方 wsrv.nl。
             img.src = proxyImage(url)
 
-            img.onload = () => resolve(img)
+            img.onload = () => {
+                window.clearTimeout(timer)
+                resolve(img)
+            }
             img.onerror = () => {
-                const placeholder = new Image()
-                placeholder.src = 'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7'
-                resolve(placeholder)
+                window.clearTimeout(timer)
+                resolve(placeholderImage())
             }
         })
     }
