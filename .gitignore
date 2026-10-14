@@ -24,3 +24,6 @@ dist-ssr
 *.sln
 *.sw?
 .wrangler/state/v3
+
+# Worker 本地开发变量（含测试令牌），不要提交
+workers/**/.dev.vars

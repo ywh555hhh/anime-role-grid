@@ -1,0 +1,20 @@
+name = "anime-role-grid-snapshot-refresh"
+main = "src/index.ts"
+compatibility_date = "2024-11-20"
+
+# 每 12 小时刷新一次快照（UTC 00:00 / 12:00，即北京时间 08:00 / 20:00）
+#
+# 为什么是 12 小时而不是更短：
+#   一次完整刷新约读 1.5M 行（热榜聚合扫 568k，投票统计按模板扫约 791k，另有 saves 扫描），
+#   而 D1 免费额度是 5,000,000 行/天。
+#     每 6 小时 → 4 次 ≈ 6.0M  ❌ 超
+#     每 12 小时 → 2 次 ≈ 3.0M ✅ 60%，留有余量
+#   而站点每天只新增约 188 条 item，「全站热门」榜单本身变化极慢，
+#   12 小时的新鲜度用户完全无感。
+[triggers]
+crons = ["0 */12 * * *"]
+
+[[d1_databases]]
+binding = "DB"
+database_name = "anime-grid-db"
+database_id = "6f0fb911-3611-4626-8ee2-7c2471375897"
