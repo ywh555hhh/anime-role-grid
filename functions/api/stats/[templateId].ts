@@ -1,46 +1,70 @@
+/**
+ * 统计结果缓存时长（秒）。
+ *
+ * 为什么要缓存：重算一次要全量扫描 save_items（实测约 791,290 行），
+ * 而 D1 免费额度只有 5,000,000 行/天 —— 也就是**一天最多只够算 6 次**。
+ * 在此之前这个文件的缓存读取被注释掉了（调试残留），导致每个请求都重算，
+ * 实测每天因此消耗约 2 亿行。
+ *
+ * 为什么取 6 小时：统计是「大家填了什么」榜单，不需要实时；
+ * 而线上每天只有约 7 个不同的 (模板, 周期) 被请求，请求间隔远大于短 TTL，
+ * 因此短 TTL 几乎不起作用。6 小时是「能真正减少重算」与「可接受的新鲜度」的折中。
+ *
+ * 注意：这只是止血。要让这个接口真正廉价，必须改写查询本身。
+ */
+const CACHE_TTL_SECONDS = 21600
+
 export const onRequestGet: PagesFunction<Env> = async (context) => {
     const { params, env } = context
     const templateId = params.templateId as string
-    const url = new URL(context.request.url)
-    const period = url.searchParams.get('period') || 'all'
-
-    console.log(`[Stats API] Request for ${templateId}, period=${period}`)
 
     try {
+        let url: URL
+        try {
+            url = new URL(context.request.url)
+        } catch {
+            return new Response(JSON.stringify({ error: 'Malformed request URL' }), { status: 400 })
+        }
+        const period = url.searchParams.get('period') || 'all'
+
         if (!templateId) {
             return new Response(JSON.stringify({ error: 'Missing template ID' }), { status: 400 })
         }
 
-        // 1. Try to get from Cache (DISABLED FOR DEBUGGING)
-        const cacheKey = `${templateId}_${period}`
-        console.log(`[Stats API] Request for ${templateId}, period=${period}`)
+        // 1. 先读缓存。(template_id, period) 是主键，命中只读 1 行。
+        const cached = await env.DB.prepare(
+            'SELECT data, updated_at FROM statistics_cache WHERE template_id = ? AND period = ?'
+        ).bind(templateId, period).first<{ data: string; updated_at: number }>()
 
-        // FORCE FRESH
-        // let cached = null;
-        // ... cache read logic commented out ...
-
-        /* 
         if (cached && typeof cached.data === 'string') {
-             // ... cache hit logic ...
-             return new Response(cached.data, ...)
+            const age = Math.floor(Date.now() / 1000) - (cached.updated_at || 0)
+            if (age >= 0 && age < CACHE_TTL_SECONDS) {
+                return new Response(cached.data, {
+                    headers: {
+                        'Content-Type': 'application/json',
+                        // 浏览器/边缘只需缓存到本条数据过期为止
+                        'Cache-Control': `public, max-age=${Math.max(60, CACHE_TTL_SECONDS - age)}`,
+                        'X-Stats-Cache': 'HIT',
+                    },
+                })
+            }
         }
-        */
 
-        // 3. Scenario B: Miss (Always for now)
-        console.log('[Stats API] Cache Skipped (Debug Check) -> Computing...')
-
-        // 3. Scenario B: Miss (First time ever)
-        console.log('[Stats API] Cache Miss -> Computing...')
+        // 2. 未命中或已过期 → 重算（updateStats 内部会写回缓存）
         const freshData = await updateStats(env, templateId, period)
-        console.log('[Stats API] Computation Done')
         return new Response(JSON.stringify(freshData), {
-            headers: { 'Content-Type': 'application/json' }
+            headers: {
+                'Content-Type': 'application/json',
+                'Cache-Control': `public, max-age=${CACHE_TTL_SECONDS}`,
+                'X-Stats-Cache': cached ? 'STALE' : 'MISS',
+            },
         })
     } catch (err: any) {
         console.error('[Stats API] Fatal Error', err)
-        return new Response(JSON.stringify({ error: err.message, stack: err.stack }), {
+        // 不再把 stack 返回给客户端
+        return new Response(JSON.stringify({ error: 'Failed to load statistics' }), {
             status: 500,
-            headers: { 'Content-Type': 'application/json' }
+            headers: { 'Content-Type': 'application/json' },
         })
     }
 }
