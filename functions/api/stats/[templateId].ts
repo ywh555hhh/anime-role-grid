@@ -18,6 +18,28 @@
  */
 const CACHE_TTL_SECONDS = 93600
 
+/** 边缘缓存条目的新鲜窗口：与上面的阈值对齐（数据库里的行新鲜，缓存就新鲜） */
+const FRESH_TTL_SECONDS = CACHE_TTL_SECONDS
+
+/**
+ * 缓存条目存活时间（秒）：7 天。
+ *
+ * 刻意远长于 FRESH_TTL_SECONDS —— 回源失败时（D1 额度耗尽、故障）
+ * 缓存里还留着上一次成功的快照可以顶上，也就是 stale-if-error 语义：
+ * **宁可给用户旧数据，也不要给 500。**
+ */
+const CACHE_ENTRY_TTL_SECONDS = 604800
+
+/** 返回给浏览器的缓存时长（秒）。取短值，让刷新能较快看到新数据 */
+const CLIENT_MAX_AGE_SECONDS = 300
+
+/** 记录这份数据是什么时候取到的，用于判断缓存条目是否仍新鲜 */
+const HEADER_FETCHED_AT = 'x-snapshot-fetched-at'
+
+/** 观测标记 */
+const HEADER_STATUS = 'X-Stats-Cache'
+const HEADER_SOURCE = 'X-Stats-Source'
+
 export const onRequestGet: PagesFunction<Env> = async (context) => {
     const { params, env } = context
     const templateId = params.templateId as string
@@ -27,54 +49,146 @@ export const onRequestGet: PagesFunction<Env> = async (context) => {
         try {
             url = new URL(context.request.url)
         } catch {
-            return new Response(JSON.stringify({ error: 'Malformed request URL' }), { status: 400 })
+            return jsonError(400, 'Malformed request URL')
         }
         const period = url.searchParams.get('period') || 'all'
 
         if (!templateId) {
-            return new Response(JSON.stringify({ error: 'Missing template ID' }), { status: 400 })
+            return jsonError(400, 'Missing template ID')
         }
 
-        // 1. 先读缓存。(template_id, period) 是主键，命中只读 1 行。
-        const cached = await env.DB.prepare(
-            'SELECT data, updated_at FROM statistics_cache WHERE template_id = ? AND period = ?'
-        ).bind(templateId, period).first<{ data: string; updated_at: number }>()
-
-        if (cached && typeof cached.data === 'string') {
-            const age = Math.floor(Date.now() / 1000) - (cached.updated_at || 0)
-            if (age >= 0 && age < CACHE_TTL_SECONDS) {
-                return new Response(cached.data, {
-                    headers: {
-                        'Content-Type': 'application/json',
-                        // 浏览器/边缘只需缓存到本条数据过期为止
-                        'Cache-Control': `public, max-age=${Math.max(60, CACHE_TTL_SECONDS - age)}`,
-                        'X-Stats-Cache': 'HIT',
-                    },
-                })
-            }
-        }
-
-        // 2. 未命中或已过期 → 重算（updateStats 内部会写回缓存）
-        const freshData = await updateStats(env, templateId, period)
-        return new Response(JSON.stringify(freshData), {
-            headers: {
-                'Content-Type': 'application/json',
-                'Cache-Control': `public, max-age=${CACHE_TTL_SECONDS}`,
-                'X-Stats-Cache': cached ? 'STALE' : 'MISS',
-            },
+        const cache = caches.default
+        const cacheKey = new Request(`https://stats-cache.internal/${templateId}/${period}`, {
+            method: 'GET',
         })
-    } catch (err: any) {
-        console.error('[Stats API] Fatal Error', err)
+        const cached = await cache.match(cacheKey)
+
+        // 1) 边缘缓存仍新鲜 → 直接返回，完全不碰 D1
+        if (cached && isFresh(cached)) {
+            return forClient(cached, 'HIT')
+        }
+
+        // 2) 取数：优先读快照表，没有/过期才按需重算
+        try {
+            const { data, source } = await getStats(env, templateId, period)
+            const response = buildResponse(data, source)
+            context.waitUntil(cache.put(cacheKey, response.clone()).catch(() => undefined))
+            return forClient(response, cached ? 'REFRESH' : 'MISS')
+        } catch (error) {
+            // 3) 取数失败 → 降级到旧快照，而不是报 500
+            console.error(
+                `[Stats] 取数失败，尝试降级到旧快照 template=${templateId} period=${period}:`,
+                error,
+            )
+            if (cached) return forClient(cached, 'STALE-DB-ERROR')
+            return jsonError(503, 'Statistics are temporarily unavailable')
+        }
+    } catch (error) {
+        console.error('[Stats] unexpected failure:', error)
         // 不再把 stack 返回给客户端
-        return new Response(JSON.stringify({ error: 'Failed to load statistics' }), {
-            status: 500,
-            headers: { 'Content-Type': 'application/json' },
-        })
+        return jsonError(500, 'Failed to load statistics')
     }
 }
 
+// =============================================================================
+// 辅助
+// =============================================================================
+
+function jsonError(status: number, error: string): Response {
+    return new Response(JSON.stringify({ error }), {
+        status,
+        headers: {
+            'Content-Type': 'application/json',
+            'Cache-Control': 'no-store',
+        },
+    })
+}
+
+function isFresh(response: Response): boolean {
+    const fetchedAt = Number(response.headers.get(HEADER_FETCHED_AT) || 0)
+    if (!Number.isFinite(fetchedAt) || fetchedAt <= 0) return false
+    const age = Math.floor(Date.now() / 1000) - fetchedAt
+    return age >= 0 && age < FRESH_TTL_SECONDS
+}
+
+function forClient(response: Response, status: string): Response {
+    const out = new Response(response.body, {
+        status: response.status,
+        headers: new Headers(response.headers),
+    })
+    // 长 TTL 只用于内部缓存条目的存活，不应让浏览器缓存一周
+    out.headers.set('Cache-Control', `public, max-age=${CLIENT_MAX_AGE_SECONDS}`)
+    out.headers.set(HEADER_STATUS, status)
+    return out
+}
+
+function buildResponse(data: unknown, source: string): Response {
+    return new Response(JSON.stringify(data), {
+        headers: {
+            'Content-Type': 'application/json',
+            'Cache-Control': `public, max-age=${CACHE_ENTRY_TTL_SECONDS}`,
+            [HEADER_FETCHED_AT]: String(Math.floor(Date.now() / 1000)),
+            [HEADER_SOURCE]: source,
+        },
+    })
+}
+
+/**
+ * 取统计数据：优先用快照表，没有/过期才按需重算。
+ *
+ * @returns data 为给前端的结构；source 标记来源（ROW=快照表，COMPUTED=本次重算）
+ */
+async function getStats(
+    env: Env,
+    templateId: string,
+    period: string,
+): Promise<{ data: unknown; source: 'ROW' | 'COMPUTED' }> {
+    // 1) 读快照表。(template_id, period) 是主键，命中只读 1 行。
+    const row = await env.DB.prepare(
+        'SELECT data, updated_at FROM statistics_cache WHERE template_id = ? AND period = ?',
+    )
+        .bind(templateId, period)
+        .first<{ data: string; updated_at: number }>()
+
+    if (row && typeof row.data === 'string') {
+        const age = Math.floor(Date.now() / 1000) - (row.updated_at || 0)
+        if (age >= 0 && age < CACHE_TTL_SECONDS) {
+            try {
+                return { data: JSON.parse(row.data) as unknown, source: 'ROW' }
+            } catch (error) {
+                // 快照内容坏了：不要返回坏数据，改为重算
+                console.error(
+                    `[Stats] 快照 JSON 解析失败 template=${templateId} period=${period}，改为重算:`,
+                    error,
+                )
+            }
+        }
+    }
+
+    // 2) 没有 / 已过期 / 解析失败 → 重算（updateStats 内部会写回快照表）
+    return { data: await updateStats(env, templateId, period), source: 'COMPUTED' }
+}
+
+interface StatsRow {
+    slot_label: string
+    character_name: string
+    bangumi_id: number | null
+    img_url: string | null
+    vote_count: number
+}
+
+interface StatsCandidate {
+    name: string
+    id: number | null
+    image: string | null
+    count: number
+}
+
+/** 形如 { [格子标签]: 候选列表 } */
+type StatsBySlot = Record<string, StatsCandidate[]>
+
 // The Heavy Lifter
-async function updateStats(env: Env, templateId: string, period: string) {
+async function updateStats(env: Env, templateId: string, period: string): Promise<StatsBySlot> {
     // Only 'total' (all) is supported now per user request
     // No time filter needed for 'all'
 
@@ -93,15 +207,13 @@ async function updateStats(env: Env, templateId: string, period: string) {
     ORDER BY i.slot_label, vote_count DESC
   `
 
-    const { results } = await env.DB.prepare(sql).bind(templateId).all()
+    const { results } = await env.DB.prepare(sql).bind(templateId).all<StatsRow>()
 
     // Process results in JS to group by slot
-    const statsBySlot: Record<string, any[]> = {}
-
-    if (!results) return {} // Graceful exit
+    const statsBySlot: StatsBySlot = {}
 
     for (const row of results) {
-        const label = row.slot_label as string
+        const label = row.slot_label
         if (!statsBySlot[label]) statsBySlot[label] = []
 
         // Limit to Top 50 per slot
