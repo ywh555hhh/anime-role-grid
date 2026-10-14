@@ -27,3 +27,6 @@ dist-ssr
 
 # Worker 本地开发变量（含测试令牌），不要提交
 workers/**/.dev.vars
+
+# Wrangler 本地构建产物（含 workers/ 下的嵌套目录）
+**/.wrangler/tmp/
