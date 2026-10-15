@@ -44,6 +44,93 @@
     <img src="/logo.png" alt="WeChat Share Logo" width="300" height="300" />
   </div>
   <div id="app"></div>
+
+  <!--
+    加载失败保底提示。
+
+    为什么需要它：如果 CSS/JS 被网络屏掉、或缓存与部署错配，页面只会剩一个空的 #app ——
+    用户看到的是「一片空白」，既不知道该等还是该刷新，也看不出是哪一步断了。
+    这里把「静默白屏」变成「明确告知 + 一个重新加载的按钮」。
+
+    注意：必须内联。它要解决的正是「外部资源拿不到」的情况，
+    自己再发一个外部请求就本末倒置了。
+  -->
+  <script>
+    (function () {
+      var box = null;
+
+      /** 建一个带 style 和纯文本的元素（全部走 textContent，不用 innerHTML） */
+      function make(tag, style, text) {
+        var node = document.createElement(tag);
+        if (style) node.setAttribute('style', style);
+        if (text) node.textContent = text;
+        return node;
+      }
+
+      // 注意：这里同时要求「真的渲染出内容」。
+      // 只看 #app 有没有子节点是不够的 —— 路由匹配不到时 #app 里也是有节点的，
+      // 但整页一个字都没有（用户看到的就是一片空白）。
+      function appMounted() {
+        var app = document.querySelector('#app');
+        if (!app || app.childElementCount === 0) return false;
+        return document.body.innerText.trim().length > 0;
+      }
+
+      function dismiss() {
+        if (box && box.parentNode) box.parentNode.removeChild(box);
+        box = null;
+      }
+
+      function failBecause(why) {
+        if (box || appMounted()) return;
+
+        box = make('div',
+          'font:14px/1.8 -apple-system,BlinkMacSystemFont,"PingFang SC","Microsoft YaHei",sans-serif;' +
+          'max-width:34em;margin:11vh auto;padding:0 20px;color:#333;text-align:center');
+
+        box.appendChild(make('div', 'font-size:17px;font-weight:700;margin-bottom:10px', '页面没能加载出来'));
+        box.appendChild(make('div', 'color:#666', why));
+
+        var actions = make('div', 'margin-top:20px');
+        var reload = make('a',
+          'display:inline-block;padding:10px 24px;border-radius:999px;background:#e4007f;color:#fff;' +
+          'text-decoration:none;font-weight:700', '重新加载');
+        reload.setAttribute('href', '');
+        actions.appendChild(reload);
+        box.appendChild(actions);
+
+        var hint = make('div', 'margin-top:14px;font-size:12px;color:#999');
+        hint.appendChild(document.createTextNode('如果一直失败，可以试试 '));
+        var alt = make('a', 'color:#e4007f', 'oshigrid.me');
+        alt.setAttribute('href', 'https://oshigrid.me');
+        hint.appendChild(alt);
+        hint.appendChild(document.createTextNode('；也可能是当前网络访问不了这个域名'));
+        box.appendChild(hint);
+
+        document.body.appendChild(box);
+      }
+
+      // 1) 静态资源本身就没下来：脚本/样式加载失败会冒泡到这里（捕获阶段）
+      window.addEventListener('error', function (e) {
+        var t = e.target;
+        if (t && (t.tagName === 'SCRIPT' || t.tagName === 'LINK')) {
+          var name = (t.src || t.href || '').split('/').pop().split('?')[0];
+          failBecause('加载 ' + name + ' 失败，通常是网络拦截或缓存与最新版本错配');
+        }
+      }, true);
+
+      // 2) 兜底计时：正常一两秒就挂载完了；同时盯着，真的挂上了就把提示撤掉
+      setTimeout(function () {
+        failBecause('静态资源没加载完，可能是当前网络访问不了本站的资源域名');
+      }, 9000);
+
+      var watch = setInterval(function () {
+        if (appMounted()) { dismiss(); clearInterval(watch); }
+        else if (box) clearInterval(watch);
+      }, 500);
+    })();
+  </script>
+
   <script type="module" src="/src/main.ts"></script>
 </body>
 

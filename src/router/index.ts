@@ -23,12 +23,25 @@ const routes = [
         component: () => import("~/pages/NetCheck.vue"),
     },
     {
-        // PROTOTYPE：/hangla 的「手机端排序交互」方案对比原型。
-        // 只回答一个问题——A 托盘+点层 / B 弹层选层 / C 长按拖拽，哪种在手机上更顺手。
-        // 验证完即删（连带 src/pages/hangla-proto-items.ts）。
-        path: "/hangla-proto",
+        // PROTOTYPE：/hangla —— tier list 制作器（把作品/角色从「夯」排到「拉」）。
+        //
+        // 路径必须用 /hangla：导出的图片里那个二维码指向的就是它，
+        // 用别的路径（之前是 /hangla-proto）扫码会打开一个空白页。
+        // /hangla-proto 保留为别名，已经发出去的测试链接不会失效。
+        //
+        // 验证完即删（连带 src/pages/hangla-proto-items.ts、src/logic/hanglaDraw.ts、
+        // src/logic/protoMemory.ts）。
+        path: "/hangla",
+        alias: "/hangla-proto",
         name: "HanglaProto",
         component: () => import("~/pages/HanglaProto.vue"),
+    },
+    {
+        // 兜底：匹配不到的地址**绝不能**静默渲染空白。
+        // 之前任何拼错的 URL（比如路由叫 /hangla-proto 而用户访问 /hangla）
+        // 都会得到一片空白，看起来就像站点坏了——实际上只是没匹配到路由。
+        path: "/:pathMatch(.*)*",
+        redirect: "/",
     },
     // V3 Route Removed
 ];
