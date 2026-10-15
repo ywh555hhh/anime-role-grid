@@ -190,9 +190,22 @@ export async function drawHanglaBoard(
         qrUrl,
     } = options;
 
-    // 字体就绪后再画（内部带超时）：字体是非阻塞加载的，
-    // 导出可能先于字体到达，那样标题会用回退字体画出不一样的成品。
-    await waitForFonts();
+    // 按「真正要画的文字」补齐字体子集。
+    //
+    // 不能只等 fonts.ready：Google Fonts 把 Noto Serif SC 按 unicode-range 切成上百个子集，
+    // 只下载 DOM 真的用到的那几个。而层级色块、副标题在 DOM 里用的是系统字体，
+    // 从没触发过 Noto 的下载 —— 导出时那些字就逐字回退成别的字体，
+    // 成品里个别字（实测是层级名「夯」）会明显和周围不一样。
+    const drawnText = [
+        title,
+        "从夯到拉的排序头脑战",
+        author?.trim() ? `排表人：${author.trim()}` : "",
+        tiers.map((t) => t.name).join(""),
+        tiers.flatMap((t) => t.items.map((i) => i.name)).join(""),
+        "oshigrid.me/hangla【我推的格子】",
+    ].join("");
+    // 子集只看「字体族 + 字重 + 字符」，与字号无关，所以合并成一次调用就够
+    await waitForFonts([{ font: `bold 44px ${THEME.typography.fontFamily}`, text: drawnText }]);
 
     const cellTotalHeight = CELL_HEIGHT + (showNames ? LABEL_HEIGHT : 0);
 

@@ -147,18 +147,31 @@ export class CanvasGenerator {
     }
 
     async generate(options: DrawOptions): Promise<string> {
-        // 字体就绪后再画。Noto Serif SC 已改成非阻塞加载（见 index.html 的说明）：
-        // 那是为了修「fonts.googleapis.com 被墙时整页白屏」的，代价是首屏可能先用回退字体。
-        // 导出成品不能接受这个代价 —— 字不一样，观感就变了。
-        // 内部带超时，字体被墙时不会把导出挂死。
-        await waitForFonts()
-
         const { list, templateId, customTitle, templateConfig } = options
         const template = TEMPLATES.find(t => t.id === templateId)
 
         const cols = template ? template.cols : (templateConfig?.cols || 3)
         const templateTitle = options.templateName || template?.name || '自定义模版'
         const defaultTitle = template?.defaultTitle || customTitle
+
+        // 字体要按「真正会画出来的文字」补齐子集 —— 详见 fontReady.ts 的说明。
+        //
+        // 不能只 await fonts.ready：Google Fonts 把 Noto Serif SC 按 unicode-range
+        // 切成上百个子集，只下载 DOM 真的用到的那些。角色名出现在 canvas 上、
+        // 却未必出现在 DOM 里（或者用的是系统字体），那些子集就不会下载，
+        // 于是 canvas 会逐字回退成别的字体 —— 成品里个别字会明显不一样。
+        // 内部带超时，字体被墙时不会把导出挂死。
+        const drawnText = [
+            customTitle ?? '',
+            defaultTitle ?? '',
+            templateTitle,
+            templateConfig?.filler ?? '',
+            templateConfig?.creator ?? '',
+            ...list.map((it) => `${it.character?.name ?? ''}${it.label ?? ''}`),
+            'oshigrid.me【我推的格子】',
+        ].join('')
+        // 子集只看「字体族 + 字重 + 字符」，与字号无关，合并成一次调用即可
+        await waitForFonts([{ font: `bold 44px ${THEME.typography.fontFamily}`, text: drawnText }])
 
         const rows = Math.ceil(list.length / cols)
         const gridWidth = cols * CELL_WIDTH
