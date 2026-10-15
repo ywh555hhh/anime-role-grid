@@ -34,6 +34,12 @@ const routes = [
         path: "/hangla",
         alias: "/hangla-proto",
         name: "HanglaProto",
+        // 注：纯 tsc 系的静态检查会在这里报
+        //   Cannot find module '~/pages/HanglaProto.vue' or its corresponding type declarations
+        // 那是假阳性（探针逐文件孤立编译、不加载 vue 插件与项目 .d.ts），
+        // vue-tsc / vite build / 线上都是正常的。
+        // 不要用 `declare module '*.vue'` 去消 —— 那会关闭全项目的 .vue 路径校验。
+        // 详见 docs/lens-false-positives.md（附可复现实验）。
         component: () => import("~/pages/HanglaProto.vue"),
     },
     {

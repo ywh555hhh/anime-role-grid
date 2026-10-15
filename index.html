@@ -35,7 +35,26 @@
 
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;700;900&display=swap" rel="stylesheet">
+  <!--
+    Noto Serif SC · **非阻塞加载**
+
+    原先是一个普通的 render-blocking <link rel="stylesheet">。这在国内是个真陷阱：
+    fonts.googleapis.com 被墙，若该请求被黑洞（DNS 污染返回假 IP、连接一直不响应），
+    浏览器会**一直不渲染**——body 里只剩一个空的 <div id="app">，用户看到的是整页白屏。
+
+    改成 media="print" 先标记为不适用、onload 再切回 all，渲染就不会被它阻塞；
+    字体到达后浏览器自动重绘（display=swap 本来也允许先用回退字体）。
+    导出图片前会 await document.fonts.ready（带超时），所以成品字形不受影响。
+  -->
+  <link
+    href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;700;900&display=swap"
+    rel="stylesheet"
+    media="print"
+    onload="this.media='all'"
+  >
+  <noscript>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;700;900&display=swap" rel="stylesheet">
+  </noscript>
 </head>
 
 <body>

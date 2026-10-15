@@ -19,6 +19,7 @@
 import QRCode from "qrcode";
 import { THEME } from "~/logic/constants/theme";
 import { bgmThumb, proxyImage } from "~/logic/imageUrl";
+import { waitForFonts } from "~/logic/fontReady";
 
 // ---------------------------------------------------------------- 与主站一致的像素规格
 
@@ -189,14 +190,9 @@ export async function drawHanglaBoard(
         qrUrl,
     } = options;
 
-    // 字体必须就绪，否则 canvas 会用回退字体画出不一样的标题
-    if (document.fonts?.ready) {
-        try {
-            await document.fonts.ready;
-        } catch {
-            /* 忽略：拿不到字体就用回退字体，不该阻断导出 */
-        }
-    }
+    // 字体就绪后再画（内部带超时）：字体是非阻塞加载的，
+    // 导出可能先于字体到达，那样标题会用回退字体画出不一样的成品。
+    await waitForFonts();
 
     const cellTotalHeight = CELL_HEIGHT + (showNames ? LABEL_HEIGHT : 0);
 

@@ -2,6 +2,7 @@ import type { ExportTemplateConfig, GridItem } from '~/types'
 import { TEMPLATES } from '~/logic/templates'
 import { THEME } from '~/logic/constants/theme'
 import { proxyImage } from '~/logic/imageUrl'
+import { waitForFonts } from '~/logic/fontReady'
 
 // Constants derived from THEME for static export
 // We keep CELL_WIDTH = 300 to maintain the high resolution for static image export
@@ -146,6 +147,12 @@ export class CanvasGenerator {
     }
 
     async generate(options: DrawOptions): Promise<string> {
+        // 字体就绪后再画。Noto Serif SC 已改成非阻塞加载（见 index.html 的说明）：
+        // 那是为了修「fonts.googleapis.com 被墙时整页白屏」的，代价是首屏可能先用回退字体。
+        // 导出成品不能接受这个代价 —— 字不一样，观感就变了。
+        // 内部带超时，字体被墙时不会把导出挂死。
+        await waitForFonts()
+
         const { list, templateId, customTitle, templateConfig } = options
         const template = TEMPLATES.find(t => t.id === templateId)
 
