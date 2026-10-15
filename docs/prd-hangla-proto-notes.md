@@ -241,3 +241,123 @@ for (const item of selectedItems.value) {
 「有重复被跳过」时原本用 `window.alert` 提示 —— 它会**阻塞整个页面**（连 CDP 的输入事件都发不进去，
 测试因此超时），手机上又丑又卡。改成非阻塞 toast，并把三种结果都说清楚：
 全重复 / 部分重复 / 全部新增。
+
+---
+
+## 上线到测试分支 + 线上验证
+
+### 推送
+
+本机 HTTPS 到 GitHub 被封（`github.com:443` 不通、本地代理 7897 没在跑、8 把 SSH key 都没注册）。
+但 `api.github.com:443` 可达且 `gh` 有 `repo` 权限，于是走 **GitHub Git Data API** 推送：
+
+```
+POST /git/trees    (base_tree = 父提交的 tree, 9 个变更文件) → tree 19200ba0fb
+POST /git/commits  (同一 message / author / committer / parents)
+PATCH /git/refs/heads/fix/search-pagination
+```
+
+结果 **tree 与 commit 的 SHA 都与本地逐字节一致**（`02672e1d`），等价于一次真正的 `git push`，
+本地与远端没有分叉。用到的 author/committer 时间与身份都从 `git cat-file commit HEAD` 原样取出。
+
+### 线上验证（对 `https://fix-search-pagination.anime-role-grid.pages.dev/hangla-proto` 跑 CDP）
+
+```
+预览站 /hangla-proto 打开正常（SPA 路由生效）                ✅
+★ 预览站 /api/search 返回 20 条（分页修复在这个分支生效）    ✅ 生产站是 10 条
+★ 多选批量添加正常 [3,0,0,0,0]                              ✅
+★ 图片走同源 /api/img（3 张，尺寸 200x300…）                 ✅
+★ 线上导出产出 PNG 1320×3158                                ✅
+★★ 线上导出的图里**有真实图片**（颜色 604 / 不透明 100% / 标准差 66.6） ✅
+★ 刷新后榜还在（localStorage 记忆）                          ✅
+★ localStorage + sessionStorage 都写入了                     ✅
+整页无 JS 报错                                              ✅
+```
+
+### 上线前抓到的一个必炸问题：导出图里没有图片
+
+**根因**：原型里图片地址写死了 `https://oshigrid.me/api/img`（绝对地址 → 跨域），
+而 `functions/api/img.ts` 的设计说明里明确写着「**不返回 CORS 头**」（只服务同源）。
+导出时 `hanglaDraw.loadImage` 会设 `crossOrigin='anonymous'` → 跨域且无 CORS → **加载失败 → 落到占位图**
+→ 画布上只剩透明占位。
+
+**否定对照（同一次测试里跑出来的）**：
+
+```
+绝对地址 不加 crossOrigin  → ok 822x1080    ← 所以 <img> 显示完全正常，这个坑一直不露
+绝对地址 加 crossOrigin    → ERROR          ← 这正是修复前导出的处境
+```
+
+**修法**：改用相对路径 `proxyImage(...)` → 本地由 vite 代理、线上本来同源，两边都成立。
+
+**这也是我验证方法上的漏洞**：之前的导出断言只看了尺寸 / 框线位置 / 水印布局 / 非白像素占比 ——
+全是**几何**断言，画布里只有色块和线也能满足，于是完全掩盖了「图片全没进去」。
+已补上内容判据（颜色种类数 / alpha 不透明度 / 亮度标准差）与否定对照。
+
+---
+
+## 复盘：用户报「CF preview 一片空白」
+
+### 现象与定位
+
+用户访问 `https://<deployment>.anime-role-grid.pages.dev/hangla` → 一片空白。
+
+实测（iOS Safari UA + 手机视口）：
+
+```
+/hangla          层级行=0  正文长度=0    ❌ 空白   ← 用户访问的
+/hangla-proto    层级行=5  正文长度=170  ✅ 正常
+/hangla/         层级行=0  正文长度=0    ❌ 空白
+```
+
+### 根因：路由名和用户/二维码期望的不一致
+
+原型路由被命名成 `/hangla-proto`，而**产品名、用户直觉、以及导出图片里那个二维码**
+指向的都是 `/hangla`。路由匹配不到 → `<RouterView>` 渲染空 → 白屏。
+
+**连带问题更严重**：导出图里的二维码指向 `/hangla`，也就是**扫自己生成的图也会打开白屏**。
+这说明「导出里引用的任何地址」都必须和真实可访问路径对齐 —— 光在代码里跑通不算。
+
+### 修法
+
+- `path` 改为 `/hangla`，`/hangla-proto` 保留为 `alias`（已发出的测试链接不失效）
+- 加 catch-all 兜底路由 → 重定向 `/`：**任何拼错/过期的地址都不再静默渲染成空白**
+- `index.html` 内联「加载失败保底提示」：把「一片空白」变成可判断的信息
+  - 判定条件同时要求「真的渲染出了内容」——只看 `#app` 有子节点不够
+    （路由匹配不到时里面也是有节点的），这条正是为了兜住本次这种情况
+
+### 验证（线上）
+
+```
+/hangla                     5 个层级行            ✅
+/hangla-proto               5 个层级行（alias）   ✅
+/hangla/                    5 个层级行            ✅
+/nonexistent-xyz            重定向回 /            ✅
+/hangla + JS 被拦           出现「页面没能加载出来 / 加载 index-*.js 失败 / [重新加载]」 ✅
+```
+
+### 验证过程中的一个坑（记下来免得再踩）
+
+部署完成后**立刻**跑线上断言，可能拿到边缘还没换掉的旧 chunk ——
+表现是「明明代码改了、chunk 哈希也变了、线上文件内容是干净的，但页面还是旧文案」。
+之后重跑同一条断言就正常了。**改完部署，等边缘铺开再断言，或者重跑一次确认。**
+
+---
+
+## 另一个发现：`（致敬辉告）` 是注解，不是文案
+
+初版原型把品牌副标题写成「从夯到拉的排序头脑战（致敬辉告）」——
+但「致敬辉告」是在解释「从夯到拉」这个说法的出处（源自辉夜大小姐），
+属于**文档层面的说明**，不该出现在界面与成品里。
+
+原型是照抄 PRD 里的写法才带上括号的，所以 `docs/prd-hangla.md` 里几处
+「当作渲染结果」的写法也一并改掉了，并加了明确说明。
+`src/logic/hanglaDraw.ts` 本来就是干净的（只画不带括号的文案）。
+
+---
+
+## 静态检查假阳性
+
+`lens` 会报 `Cannot find module '~/pages/Xxx.vue'`，那是纯 tsc 系探针解析不了 `.vue` 导致的。
+**不要用 `declare module '*.vue'` 去消它** —— 实验证明那会让全局不再校验 `.vue` 路径
+（打错的组件名会被静默吞掉）。详见 `docs/lens-false-positives.md`。
