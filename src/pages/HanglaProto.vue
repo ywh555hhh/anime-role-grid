@@ -719,7 +719,7 @@ const stateSummary = computed(() => ({
           【我推<span class="text-primary">的</span>格子】
         </h1>
         <div class="bg-primary rounded-full w-full max-w-xs h-[3px]" />
-        <p class="text-[11px] text-gray-400 tracking-wider">从夯到拉的排序头脑战（致敬辉告）</p>
+        <p class="text-[11px] text-gray-400 tracking-wider">从夯到拉的排序头脑战</p>
       </div>
       <div v-else class="flex items-center gap-2">
         <img src="/logo.png" alt="我推的格子" class="w-7 h-7 object-contain" />
@@ -727,7 +727,7 @@ const stateSummary = computed(() => ({
           <div class="font-bold tracking-widest text-sm leading-tight" style="font-family: 'Noto Serif SC', serif;">
             【我推<span class="text-primary">的</span>格子】
           </div>
-          <div class="text-[10px] text-gray-400 tracking-wide leading-tight truncate">从夯到拉的排序头脑战（致敬辉告）</div>
+          <div class="text-[10px] text-gray-400 tracking-wide leading-tight truncate">从夯到拉的排序头脑战</div>
         </div>
       </div>
     </header>
