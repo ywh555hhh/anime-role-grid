@@ -1202,7 +1202,7 @@ const stateSummary = computed(() => ({
           <div class="flex gap-1.5">
             <input
               v-model="keyword"
-              class="input-std flex-1 py-2 text-sm"
+              class="input-std flex-1 py-2"
               :placeholder="isSubject ? '搜作品名（留空＝直接看榜）' : '搜角色名'"
               @keyup.enter="runSearch({ force: true })"
             />
