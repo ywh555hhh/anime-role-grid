@@ -28,7 +28,7 @@
  * 数据来源：经 vite 的 dev proxy 调用 /api/search（服务端代理，带鉴权与缓存）。
  * 网络失败时回落到硬编码的 28 个真实角色，保证原型永远能用。
  */
-import { computed, onMounted, ref, watch } from 'vue'
+import { computed, nextTick, onMounted, onUnmounted, ref, watch } from 'vue'
 import { VueDraggable } from 'vue-draggable-plus'
 import { PROTO_POOL } from '~/pages/hangla-proto-items'
 import { bgmThumb, proxyImage } from '~/logic/imageUrl'
@@ -37,7 +37,6 @@ import {
     STORE_KEYS,
     createQueryCache,
     debounce,
-    isArrayOf,
     isBoolean,
     isNumber,
     isOptionalNumber,
@@ -352,14 +351,84 @@ const platformFilter = ref('')          // 客户端过滤（Bangumi 的 filter 
  * 命中就瞬间出结果、不转圈；条目旧了仍然先给旧的，后台再换新。
  * limit 40 是有意的：一个用户实际会用的查询组合就那么多，多了只是白占内存。
  */
-const searchCache = createQueryCache<BoardItem[]>({
-    limit: 40,
+/**
+ * 一页搜索结果。
+ *
+ * 带 total 才能**准确**判断「到底了」—— 上游确实会返回 total（实测 total=53），
+ * 比「返回条数 < limit」这种猜法可靠得多。
+ */
+interface SearchPage {
+    items: BoardItem[]
+    total: number
+}
+
+const isSearchPage = (v: unknown): v is SearchPage => {
+    if (typeof v !== 'object' || v === null) return false
+    const r = v as Record<string, unknown>
+    return isNumber(r.total) && Array.isArray(r.items) && r.items.every(isBoardItemShape)
+}
+
+/**
+ * 搜索结果缓存：按「查询指纹 + 页码」索引，LRU + sessionStorage 镜像。
+ *
+ * 每页单独做键（而不是整个查询只存一条），这样翻回去过的页不用重新请求，
+ * 命中粒度也更细。
+ */
+const searchCache = createQueryCache<SearchPage>({
+    limit: 60,
     ttlMs: 10 * 60_000,
     mirrorKey: STORE_KEYS.searchCache,
-    mirrorValidate: isArrayOf(isBoardItemShape),
+    mirrorValidate: isSearchPage,
 })
 const revalidating = ref(false)
 const cacheHits = ref(0)
+
+// ---------------------------------------------------------------- 翻页状态
+
+/**
+ * 已经取回的原始条数（= 下一页的 offset）。
+ *
+ * 不能用 rawResults.length：跨页会按 uid 去重（上游分页确实会给重复项），
+ * 用去重后的长度推进 offset 会卡在同一条上反复请求。
+ */
+const nextOffset = ref(0)
+const totalCount = ref(0)
+const loadingMore = ref(false)
+const loadMoreError = ref('')
+const scrollEl = ref<HTMLElement | null>(null)
+const sentinelEl = ref<HTMLElement | null>(null)
+let scrollObserver: IntersectionObserver | null = null
+
+/**
+ * 竞态守卫。
+ *
+ * 每次请求领一个序号；回来时序号对不上，说明用户已经改了条件 ——
+ * 直接丢弃，否则旧请求会覆盖新结果（这个 bug 很难复现但一旦发生就很难解释）。
+ */
+let requestSeq = 0
+
+/**
+ * 无限滚动也不能真的无限。
+ *
+ * 空关键词的默认榜是「整个库按热度排」，总数能到四位数 ——
+ * 一路滚下去既费流量、也没意义（人在几百条里根本挑不出东西）。
+ * 停在一个合理位置、并**明确引导用关键词缩小范围**，比无限加载有用得多。
+ */
+const MAX_ITEMS = 200
+
+/** 到底没有。用「已消费 < 总数」判断，并受上限约束 */
+const hasMore = computed(
+    () =>
+        totalCount.value > 0 &&
+        nextOffset.value > 0 &&
+        nextOffset.value < totalCount.value &&
+        nextOffset.value < MAX_ITEMS,
+)
+
+/** 是因为到了上限而停（而不是真的没有更多） */
+const reachedCap = computed(
+    () => nextOffset.value >= MAX_ITEMS && totalCount.value > nextOffset.value,
+)
 
 /** 网络返回的原始一批：只有它需要联网 */
 const rawResults = ref<BoardItem[]>([])
@@ -402,19 +471,108 @@ const platformOptions = computed(() => {
     // 必须用 rawResults：用过滤后的 results 的话，
     // 一选中某个平台，其他平台选项就会消失，等于选不回来了
     for (const r of rawResults.value) if (r.platform) set.add(r.platform)
-    return [...set].slice(0, 8)
+    // ★ 已选但当前这批结果里没有的平台也要列出来。
+    // 否则换关键词后选项会变，而 platformFilter 仍在生效 ——
+    // 结果为空却看不出原因，也没地方取消。
+    if (platformFilter.value) set.add(platformFilter.value)
+    return [...set].slice(0, 10)
+})
+
+// ---------------------------------------------------------------- 筛选（收进面板）
+
+/** 筛选面板开关。排序/年份/名次/平台都收进去，不再固定占 4 行高 */
+const filterSheetOpen = ref(false)
+
+/** 生效中的筛选数量，显示在「筛选」按钮上 */
+const activeFilterCount = computed(() => {
+    let n = 0
+    if (isSubject.value) {
+        if (sort.value !== 'heat') n++
+        if (yearKey.value !== 'all') n++
+        if (rankedOnly.value) n++
+    } else if (sort.value !== 'match') {
+        n++
+    }
+    if (platformFilter.value) n++
+    return n
+})
+
+/** 折叠时把生效的条件写出来，一眼知道自己在看哪个子集 */
+const activeFilterSummary = computed(() => {
+    const parts: string[] = []
+    const sortLabel = availableSorts.value.find((s) => s.key === sort.value)?.label
+    const sortIsDefault = isSubject.value ? sort.value === 'heat' : sort.value === 'match'
+    if (sortLabel && !sortIsDefault) parts.push(sortLabel)
+    if (isSubject.value && yearKey.value !== 'all') {
+        parts.push(YEAR_FILTERS.find((y) => y.key === yearKey.value)?.label ?? '')
+    }
+    if (isSubject.value && rankedOnly.value) parts.push('只要有名次')
+    if (platformFilter.value) parts.push(platformFilter.value)
+    return parts.filter(Boolean).join(' · ')
+})
+
+/**
+ * uid → 它现在在哪一层。
+ * 用来在结果卡上直接标出「已经在榜上了」—— 之前完全看不出来，
+ * 于是只能选完点添加、再被 toast 告知"已经在里了"，白操作一次。
+ */
+const placedByUid = computed(() => {
+    const m = new Map<string, Tier>()
+    for (const t of tiers.value) for (const it of t.items) m.set(it.uid, t)
+    return m
+})
+
+function clearFilters() {
+    const allowed = SORTS_BY_KIND[KIND_QUERY[kind.value].searchMode].map((s) => s.key)
+    sort.value = allowed.includes('heat') ? 'heat' : allowed[0] ?? 'match'
+    yearKey.value = 'all'
+    rankedOnly.value = false
+    platformFilter.value = ''
+    void runSearch()
+}
+
+/**
+ * 无限滚动。
+ *
+ * rootMargin 提前 600px（大约一屏）触发 —— 这就是「更智能」的地方：
+ * 不是等用户滚到底才转圈，而是在还看不见的时候就把下一页取回来，滚起来是连续的。
+ */
+function setupInfiniteScroll() {
+    scrollObserver?.disconnect()
+    const root = scrollEl.value
+    const target = sentinelEl.value
+    if (!root || !target || typeof IntersectionObserver === 'undefined') return
+    scrollObserver = new IntersectionObserver(
+        (entries) => {
+            if (entries.some((e) => e.isIntersecting)) void loadMore()
+        },
+        { root, rootMargin: '600px 0px', threshold: 0 },
+    )
+    scrollObserver.observe(target)
+}
+
+onUnmounted(() => {
+    scrollObserver?.disconnect()
+    scrollObserver = null
 })
 
 function openDialog(tierKey: number) {
     dialogTierKey.value = tierKey
     // 刻意不在里清空选择：误触关闭再打开不该丢掉已选的（用户反馈「没有记忆」）
     dialogOpen.value = true
-    void runSearch()
+    // 面板是 v-if 才渲染的，等它挂上再接管滚动
+    void nextTick(() => {
+        setupInfiniteScroll()
+        void runSearch()
+    })
 }
 
 function closeDialog() {
-    // 也不重置 platformFilter：筛选项属于「记忆」的一部分，页面上有高亮看得见
+    // 也不重置 platformFilter：筛选项属于「记忆」的一部分，面板里看得到
     dialogOpen.value = false
+    filterSheetOpen.value = false
+    scrollObserver?.disconnect()
+    scrollObserver = null
 }
 
 /** 切换类型时把排序收敛到该类型支持的范围 */
@@ -423,7 +581,10 @@ function setKind(k: Kind) {
     platformFilter.value = ''
     rankedOnly.value = false
     const allowed = SORTS_BY_KIND[KIND_QUERY[k].searchMode].map((s) => s.key)
-    if (!allowed.includes(sort.value)) sort.value = 'heat'
+    // 收敛到该类型**支持**的排序。之前固定回落到 'heat'，
+    // 但角色只有 相关度/收藏数，'heat' 对角色不合法 →
+    // 结果是一个 chip 都不高亮、而且查询参数也是错的。
+    if (!allowed.includes(sort.value)) sort.value = allowed[0] ?? 'match'
     void runSearch()
 }
 
@@ -482,8 +643,8 @@ function serverQueryKey(): string {
     ])
 }
 
-/** 真正联网取一批结果，成功后写进缓存 */
-async function fetchResults(key: string): Promise<BoardItem[]> {
+/** 真正联网取一页，成功后写进缓存 */
+async function fetchPage(cacheKey: string, offset: number): Promise<SearchPage> {
     const q = KIND_QUERY[kind.value]
     const isChar = q.searchMode === 'character'
 
@@ -496,7 +657,7 @@ async function fetchResults(key: string): Promise<BoardItem[]> {
     const body: Record<string, unknown> = {
         keyword: keyword.value.trim(),
         filter,
-        offset: 0,
+        offset,
         limit: PAGE_SIZE,
         searchMode: q.searchMode,
     }
@@ -509,11 +670,14 @@ async function fetchResults(key: string): Promise<BoardItem[]> {
         body: JSON.stringify(body),
     })
     if (!res.ok) throw new Error(`HTTP ${res.status}`)
-    const data = (await res.json()) as { data?: RawBgmItem[] }
+    const data = (await res.json()) as { data?: RawBgmItem[]; total?: number }
     // 客户端过滤/排序都放在 results computed 里，这里只存原始结果
     const items = (data.data || []).map((raw) => toBoardItem(raw, isChar)).filter((i) => i.image)
-    searchCache.set(key, items)
-    return items
+    // total 缺失时用「offset + 本页条数」兜底 → hasMore 会自然变 false，不会无限请求
+    const total = typeof data.total === 'number' ? data.total : offset + items.length
+    const page: SearchPage = { items, total }
+    searchCache.set(cacheKey, page)
+    return page
 }
 
 /** 网络不可用时的本地回落，保证原型永远可测 */
@@ -528,18 +692,98 @@ function fallbackResults(): BoardItem[] {
 }
 
 /**
- * 后台换新（stale-while-revalidate 里的 revalidate）。
+ * 把一页合并进结果。
+ *
+ * 跨页按 uid 去重 —— 上游分页确实会给出重复项（改过排序/筛选之后更容易出现）。
+ */
+function applyPage(page: SearchPage, offset: number, isReset: boolean) {
+    if (isReset) {
+        rawResults.value = page.items
+        // 回到顶部：换了条件却还停在半中间最让人迷失
+        if (scrollEl.value) scrollEl.value.scrollTop = 0
+    } else {
+        const seen = new Set(rawResults.value.map((i) => i.uid))
+        rawResults.value = [...rawResults.value, ...page.items.filter((i) => !seen.has(i.uid))]
+    }
+    // 用「已消费的原始条数」推进 offset，而不是去重后的长度
+    nextOffset.value = isReset ? page.items.length : offset + page.items.length
+    totalCount.value = page.total
+}
+
+/**
+ * 取一页。offset=0 表示重新开始（筛选/关键词变了），否则是接着往下加载。
+ */
+async function loadPage(offset: number, opts: { force?: boolean } = {}) {
+    const baseKey = serverQueryKey()
+    const cacheKey = `${baseKey}|${offset}`
+    const isReset = offset === 0
+    const seq = ++requestSeq
+
+    // ---- 缓存命中：立刻出结果，绝不转圈 ----
+    const hit = opts.force ? null : searchCache.get(cacheKey)
+    if (hit) {
+        cacheHits.value++
+        applyPage(hit.value, offset, isReset)
+        // 旧了就在后台悄悄换新，界面仍然是「秒开」
+        if (!hit.fresh) void revalidatePage(cacheKey, baseKey, offset)
+        return
+    }
+
+    if (isReset) {
+        loading.value = true
+        searchError.value = ''
+        usedFallback.value = false
+    } else {
+        loadingMore.value = true
+        loadMoreError.value = ''
+    }
+
+    try {
+        const page = await fetchPage(cacheKey, offset)
+        if (seq !== requestSeq) return
+        applyPage(page, offset, isReset)
+    } catch (e) {
+        if (seq !== requestSeq) return
+        if (isReset) {
+            // 网络不可用时回落，保证原型永远可测
+            usedFallback.value = true
+            searchError.value = String(e)
+            const items = fallbackResults()
+            applyPage({ items, total: items.length }, offset, true)
+        } else {
+            // 加载更多失败**不能**破坏已经看到的结果，只在底部提示并可重试
+            loadMoreError.value = String(e)
+        }
+    } finally {
+        if (seq === requestSeq) {
+            loading.value = false
+            loadingMore.value = false
+        }
+    }
+}
+
+async function runSearch(opts: { force?: boolean } = {}) {
+    await loadPage(0, opts)
+}
+
+/** 滚到底部附近自动加载下一页 */
+async function loadMore() {
+    if (loading.value || loadingMore.value || !hasMore.value) return
+    await loadPage(nextOffset.value)
+}
+
+/**
+ * 后台换新一页（stale-while-revalidate 里的 revalidate）。
  *
  * 三条约束：不转圈、不清空、失败静默。
- * 旧数据留在屏幕上远比转圈好；而且只在「用户还停在这个查询上」时才覆盖界面，
- * 否则会把用户已经切过去的那批结果冲掉。
+ * 只在用户还停在这个查询上时才覆盖界面，否则会把用户已经切过去的那批结果冲掉。
  */
-async function revalidate(key: string) {
+async function revalidatePage(cacheKey: string, baseKey: string, offset: number) {
     if (revalidating.value) return
     revalidating.value = true
     try {
-        const fresh = await fetchResults(key)
-        if (serverQueryKey() === key) rawResults.value = fresh
+        const fresh = await fetchPage(cacheKey, offset)
+        if (serverQueryKey() === baseKey) applyPage(fresh, offset, offset === 0)
     } catch {
         /* 后台失败静默：界面上的旧数据继续用 */
     } finally {
@@ -547,36 +791,18 @@ async function revalidate(key: string) {
     }
 }
 
-async function runSearch(opts: { force?: boolean } = {}) {
-    const key = serverQueryKey()
-
-    // ---- 缓存命中：立刻出结果，绝不转圈 ----
-    const hit = opts.force ? null : searchCache.get(key)
-    if (hit && hit.value.length) {
-        rawResults.value = hit.value
-        searchError.value = ''
-        usedFallback.value = false
-        loading.value = false
-        cacheHits.value++
-        // 旧了就在后台悄悄换新，但用户看到的仍然是「秒开」
-        if (!hit.fresh) void revalidate(key)
-        return
-    }
-
-    loading.value = true
-    searchError.value = ''
-    usedFallback.value = false
-    try {
-        rawResults.value = await fetchResults(key)
-    } catch (e) {
-        // 网络不可用时回落，保证原型永远可测
-        usedFallback.value = true
-        searchError.value = String(e)
-        rawResults.value = fallbackResults()
-    } finally {
-        loading.value = false
-    }
-}
+/**
+ * 关键词即时搜（去抖 350ms）。
+ *
+ * 原来改关键词必须按「搜索」才生效，而改筛选是立即生效 ——
+ * 同一区域里两种交互模式混着，用起来最恼人。现在统一成即时。
+ */
+watch(
+    keyword,
+    debounce(() => {
+        void runSearch()
+    }, 350),
+)
 
 function toggleSelect(it: BoardItem) {
     const i = selectedItems.value.findIndex((s) => s.uid === it.uid)
@@ -587,21 +813,34 @@ function toggleSelect(it: BoardItem) {
 /**
  * 添加：把**选中的物品本体**追加进目标层。
  *
- * 刻意不再回 results 里反查 —— 之前是 `results.value.find(id)`，
- * 只要选中之后重新搜索过一次（排序/年份/再点搜索都会触发），results 被整批替换，
- * 反查就落空、物品被静默丢弃，而底部仍显示「已选 N」。
- * 现在选择本身就是完整的物品数据，网络怎么变都不影响。
+ * 两条规则：
+ *  1. 不再回 results 里反查 —— 之前是 `results.value.find(id)`，
+ *     只要选中后重新搜过一次，results 被整批替换，反查就落空、
+ *     物品被静默丢弃，而底部仍显示「已选 N」。现在选择本身就是完整数据。
+ *  2. **一个物品只占一层**：如果它已经在别的层里，就**移过来**而不是复制一份。
+ *     之前允许同一个作品同时出现在「夯」和「顶级」—— 对排行来说这是没有意义的，
+ *     而且真到导出时会变成两格重复的图。
  */
 function commitToTier() {
     const tier = dialogTier.value
     if (!tier || !selectedItems.value.length) return
-    const total = selectedItems.value.length
     let added = 0
+    let moved = 0
+    let skipped = 0
     pushHistory()
     for (const item of selectedItems.value) {
-        if (tier.items.some((i) => i.uid === item.uid)) continue
+        const from = tiers.value.find((t) => t.items.some((i) => i.uid === item.uid))
+        if (from && from.key === tier.key) {
+            skipped++
+            continue
+        }
+        if (from) {
+            from.items = from.items.filter((i) => i.uid !== item.uid)
+            moved++
+        } else {
+            added++
+        }
         tier.items.push({ ...item })
-        added++
     }
     // 加完就清空选择：这批已经落层了，不该在下次打开时还勾着
     selectedItems.value = []
@@ -609,13 +848,12 @@ function commitToTier() {
     window.setTimeout(() => (flashTier.value = null), 300)
     if (navigator.vibrate) navigator.vibrate(10)
     closeDialog()
-    if (added === 0) {
-        showToast(`${total} 个都已经在「${tier.name}」里了，没有变化`)
-    } else if (added < total) {
-        showToast(`新增 ${added} 个，跳过 ${total - added} 个（已存在）`)
-    } else {
-        showToast(`已添加 ${added} 个到「${tier.name}」`)
-    }
+    // 结果说清楚，别让用户自己猜「点了 5 个怎么只多了 3 个」
+    const parts: string[] = []
+    if (added) parts.push(`新增 ${added} 个`)
+    if (moved) parts.push(`移到本层 ${moved} 个`)
+    if (skipped) parts.push(`已在「${tier.name}」跳过 ${skipped} 个`)
+    showToast(`「${tier.name}」：${parts.join(' · ') || '没有变化'}`)
 }
 
 onMounted(() => {
@@ -925,15 +1163,27 @@ const stateSummary = computed(() => ({
     <!-- ===== 弹框：搜索 / 筛选 / 排序 → 添加 ===== -->
     <Teleport to="body">
       <div v-if="dialogOpen" class="fixed inset-0 z-50 flex flex-col bg-gray-50">
-        <!-- 顶栏：告诉用户「要放到哪一层」 -->
-        <div class="shrink-0 bg-white border-b border-gray-200 px-3 py-2 flex items-center gap-2">
-          <div class="min-w-0 flex items-center gap-2">
-            <span class="text-[11px] text-gray-400 shrink-0">添加到</span>
-            <span class="text-sm font-black text-white rounded px-2 py-0.5 truncate" :style="{ backgroundColor: dialogTier?.color }">
-              {{ dialogTier?.name }}
-            </span>
-          </div>
+        <!-- 顶栏 -->
+        <div class="shrink-0 bg-white px-3 pt-2 flex items-center gap-2">
+          <span class="text-sm font-black">加进榜里</span>
           <button class="ml-auto text-gray-400 text-xl leading-none px-1" @click="closeDialog">×</button>
+        </div>
+
+        <!--
+          目标层：可以直接在这里切换。
+          之前要换层必须关掉弹框 → 点另一层的虚线＋ → 再搜一遍，
+          同一个词要搜两次才能放进两层 —— 这是「操作逻辑不对」最直观的地方。
+        -->
+        <div class="shrink-0 bg-white px-2 py-1.5 flex items-center gap-1.5 overflow-x-auto border-b border-gray-100">
+          <span class="text-[10px] text-gray-400 shrink-0">加到</span>
+          <button
+            v-for="t in tiers"
+            :key="t.key"
+            class="shrink-0 text-[11px] font-bold rounded-full px-2.5 py-1 border"
+            :class="dialogTierKey === t.key ? 'text-white border-transparent' : 'text-gray-600 border-gray-200 bg-gray-50'"
+            :style="dialogTierKey === t.key ? { backgroundColor: t.color } : undefined"
+            @click="dialogTierKey = t.key"
+          >{{ t.name }}</button>
         </div>
 
         <!-- 类型 tab -->
@@ -947,7 +1197,7 @@ const stateSummary = computed(() => ({
           >{{ t.label }}</button>
         </div>
 
-        <!-- 搜索 + 排序 + 筛选 -->
+        <!-- 搜索 + 筛选入口（筛选条件收进面板，结果区不再被压掉一半） -->
         <div class="shrink-0 bg-white px-2 py-2 flex flex-col gap-1.5 border-b border-gray-100">
           <div class="flex gap-1.5">
             <input
@@ -959,47 +1209,18 @@ const stateSummary = computed(() => ({
             <button class="btn-primary text-xs px-3" @click="runSearch({ force: true })">搜索</button>
           </div>
 
-          <div class="flex items-center gap-1.5 overflow-x-auto">
-            <span class="text-[10px] text-gray-400 shrink-0">排序</span>
+          <div class="flex items-center gap-1.5 min-w-0">
             <button
-              v-for="s in availableSorts"
-              :key="s.key"
-              class="shrink-0 text-[11px] font-bold rounded px-2 py-1"
-              :class="sort === s.key ? 'bg-gray-800 text-white' : 'bg-gray-100 text-gray-600'"
-              @click="sort = s.key; runSearch()"
-            >{{ s.label }}</button>
-          </div>
-
-          <div v-if="isSubject" class="flex items-center gap-1.5 overflow-x-auto">
-            <span class="text-[10px] text-gray-400 shrink-0">年份</span>
+              class="shrink-0 flex items-center gap-1 text-[11px] font-bold rounded px-2.5 py-1 border"
+              :class="activeFilterCount ? 'border-primary text-primary bg-white' : 'border-gray-200 text-gray-600 bg-gray-50'"
+              @click="filterSheetOpen = true"
+            ><span class="i-carbon-filter" />筛选<span v-if="activeFilterCount">（{{ activeFilterCount }}）</span></button>
+            <span class="text-[11px] text-gray-400 truncate">{{ activeFilterSummary || '未加筛选' }}</span>
             <button
-              v-for="y in YEAR_FILTERS"
-              :key="y.key"
-              class="shrink-0 text-[11px] font-bold rounded px-2 py-1"
-              :class="yearKey === y.key ? 'bg-gray-800 text-white' : 'bg-gray-100 text-gray-600'"
-              @click="yearKey = y.key; runSearch()"
-            >{{ y.label }}</button>
-            <button
-              class="shrink-0 text-[11px] font-bold rounded px-2 py-1"
-              :class="rankedOnly ? 'bg-gray-800 text-white' : 'bg-gray-100 text-gray-600'"
-              @click="rankedOnly = !rankedOnly; runSearch()"
-            >只要有名次</button>
-          </div>
-
-          <div v-if="platformOptions.length > 1" class="flex items-center gap-1.5 overflow-x-auto">
-            <span class="text-[10px] text-gray-400 shrink-0">平台</span>
-            <button
-              class="shrink-0 text-[11px] font-bold rounded px-2 py-1"
-              :class="!platformFilter ? 'bg-gray-800 text-white' : 'bg-gray-100 text-gray-600'"
-              @click="platformFilter = ''"
-            >全部</button>
-            <button
-              v-for="p in platformOptions"
-              :key="p"
-              class="shrink-0 text-[11px] font-bold rounded px-2 py-1"
-              :class="platformFilter === p ? 'bg-gray-800 text-white' : 'bg-gray-100 text-gray-600'"
-              @click="platformFilter = p"
-            >{{ p }}</button>
+              v-if="activeFilterCount"
+              class="ml-auto shrink-0 text-[11px] text-gray-400 underline"
+              @click="clearFilters"
+            >清空</button>
           </div>
         </div>
 
@@ -1010,14 +1231,20 @@ const stateSummary = computed(() => ({
           在它合入生产之前，本地这里仍只会显示 10 条。
           picker 目前只取第一页，翻页留给正式实现。
         -->
-        <div class="flex-1 min-h-0 overflow-y-auto p-2">
-          <div v-if="!loading && results.length" class="text-[10px] text-gray-400 pb-1.5">
-            结果 {{ results.length }} 条
-            <span v-if="results.length >= 20">（已取满一页 · picker 暂未接翻页）</span>
+        <div ref="scrollEl" class="flex-1 min-h-0 overflow-y-auto p-2">
+          <div v-if="!loading && rawResults.length" class="text-[10px] text-gray-400 pb-1.5">
+            已加载 {{ rawResults.length }} 条<span v-if="totalCount"> / 共 {{ totalCount }} 条</span>
+            <span v-if="rawResults.length !== results.length" class="text-gray-300">
+              （筛选后显示 {{ results.length }} 条）
+            </span>
           </div>
           <div v-if="loading" class="text-center py-10 text-sm text-gray-400">搜索中…</div>
           <div v-else-if="!results.length" class="text-center py-10 text-sm text-gray-400">
-            没搜到。换个关键词，或清空关键词直接看榜。
+            <div>没搜到。换个关键词，或清空关键词直接看榜。</div>
+            <!-- 筛选把结果滤空时，直接给出路，而不是只告诉用户「没搜到」 -->
+            <button v-if="activeFilterCount" class="mt-2 text-primary text-xs underline" @click="clearFilters">
+              清空筛选试试
+            </button>
           </div>
           <div v-else class="grid grid-cols-3 gap-2">
             <button
@@ -1037,11 +1264,114 @@ const stateSummary = computed(() => ({
                 </div>
               </div>
               <div v-if="isSelected(it)" class="absolute top-1 right-1 w-5 h-5 rounded-full bg-primary text-white text-[11px] leading-none flex items-center justify-center font-bold">✓</div>
+              <!-- 已经在榜上的，直接标出在哪一层：不然只能选完点添加、再被 toast 告知「已经在里了」，白操作一次 -->
+              <div
+                v-if="placedByUid.get(it.uid)"
+                class="absolute top-1 left-1 max-w-[74px] truncate rounded px-1 py-0.5 text-[9px] font-bold text-white"
+                :style="{ backgroundColor: placedByUid.get(it.uid)?.color }"
+              >{{ placedByUid.get(it.uid)?.name }}</div>
             </button>
           </div>
+          <!--
+            无限滚动的哨兵。
+            真正触发加载的时机在 IntersectionObserver 里（rootMargin 提前 600px）——
+            所以正常情况下用户根本看不到这行文字，滚动是连续不断的。
+            这一行是给「加载不动」的情况一个可点击的出路，以及明确告知「到底了」。
+          -->
+          <div ref="sentinelEl" class="h-10 flex items-center justify-center text-[10px] text-gray-400">
+            <template v-if="loadingMore">加载中…</template>
+            <template v-else-if="loadMoreError">
+              <button class="underline text-amber-600" @click="loadMore">加载失败，点这里重试</button>
+            </template>
+            <template v-else-if="hasMore">继续向下滚动</template>
+            <template v-else-if="reachedCap">
+              结果很多 · 已加载 {{ rawResults.length }} 条，输入关键词能更快找到
+            </template>
+            <template v-else-if="results.length">没有更多了</template>
+          </div>
+
           <p v-if="usedFallback" class="text-[10px] text-amber-600 mt-2">
             网络请求失败，已回落到本地 28 个角色（{{ searchError }}）
           </p>
+        </div>
+
+        <!-- 筛选面板：底出面板，条件按维度分组，不再和主界面挤在一行 -->
+        <div
+          v-if="filterSheetOpen"
+          class="absolute inset-0 z-[60] flex flex-col justify-end bg-black/40"
+          @click="filterSheetOpen = false"
+        >
+          <div class="bg-white rounded-t-2xl max-h-[78%] flex flex-col" @click.stop>
+            <div class="shrink-0 px-3 py-2 border-b border-gray-100 flex items-center">
+              <span class="text-sm font-bold">筛选</span>
+              <button class="ml-auto text-gray-400 text-xl leading-none px-1" @click="filterSheetOpen = false">×</button>
+            </div>
+
+            <div class="flex-1 min-h-0 overflow-y-auto p-3 flex flex-col gap-3.5">
+              <div>
+                <div class="text-[10px] text-gray-400 mb-1.5">排序</div>
+                <div class="flex flex-wrap gap-1.5">
+                  <button
+                    v-for="s in availableSorts"
+                    :key="s.key"
+                    class="text-[11px] font-bold rounded px-2.5 py-1.5"
+                    :class="sort === s.key ? 'bg-gray-800 text-white' : 'bg-gray-100 text-gray-600'"
+                    @click="sort = s.key; runSearch()"
+                  >{{ s.label }}</button>
+                </div>
+              </div>
+
+              <div v-if="isSubject">
+                <div class="text-[10px] text-gray-400 mb-1.5">年份</div>
+                <div class="flex flex-wrap gap-1.5">
+                  <button
+                    v-for="y in YEAR_FILTERS"
+                    :key="y.key"
+                    class="text-[11px] font-bold rounded px-2.5 py-1.5"
+                    :class="yearKey === y.key ? 'bg-gray-800 text-white' : 'bg-gray-100 text-gray-600'"
+                    @click="yearKey = y.key; runSearch()"
+                  >{{ y.label }}</button>
+                </div>
+              </div>
+
+              <!-- 「名次」单独一组：它和年份是两个维度，之前挤在同一行很容易看错 -->
+              <div v-if="isSubject">
+                <div class="text-[10px] text-gray-400 mb-1.5">名次</div>
+                <button
+                  class="text-[11px] font-bold rounded px-2.5 py-1.5"
+                  :class="rankedOnly ? 'bg-gray-800 text-white' : 'bg-gray-100 text-gray-600'"
+                  @click="rankedOnly = !rankedOnly; runSearch()"
+                >只要有名次</button>
+              </div>
+
+              <!--
+                平台选项来自当前这批结果。若已选的平台不在结果里也照样列出来，
+                否则换关键词后这一组会整组消失，而筛选仍在生效 —— 结果为空却说不出原因。
+              -->
+              <div v-if="platformOptions.length > 1 || platformFilter">
+                <div class="text-[10px] text-gray-400 mb-1.5">平台</div>
+                <div class="flex flex-wrap gap-1.5">
+                  <button
+                    class="text-[11px] font-bold rounded px-2.5 py-1.5"
+                    :class="!platformFilter ? 'bg-gray-800 text-white' : 'bg-gray-100 text-gray-600'"
+                    @click="platformFilter = ''"
+                  >全部</button>
+                  <button
+                    v-for="p in platformOptions"
+                    :key="p"
+                    class="text-[11px] font-bold rounded px-2.5 py-1.5"
+                    :class="platformFilter === p ? 'bg-gray-800 text-white' : 'bg-gray-100 text-gray-600'"
+                    @click="platformFilter = p"
+                  >{{ p }}</button>
+                </div>
+              </div>
+            </div>
+
+            <div class="shrink-0 px-3 py-2 border-t border-gray-100 flex gap-2">
+              <button class="btn-outline-gray flex-1 py-2 text-xs" @click="clearFilters">清空全部</button>
+              <button class="btn-primary flex-1 py-2 text-xs" @click="filterSheetOpen = false">完成</button>
+            </div>
+          </div>
         </div>
 
         <!-- 底部：已选 N + 添加 -->
