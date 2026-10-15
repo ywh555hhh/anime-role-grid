@@ -20,16 +20,16 @@
  */
 
 /** 需要走代理的 Bangumi 图源域名后缀 */
-const BANGUMI_HOST_SUFFIXES = ['bgm.tv', 'chii.in'] as const
+const BANGUMI_HOST_SUFFIXES = ["bgm.tv", "chii.in"] as const;
 
 /** 同源图片代理路径 */
-export const IMAGE_PROXY_PATH = '/api/img'
+export const IMAGE_PROXY_PATH = "/api/img";
 
 function isBangumiHost(hostname: string): boolean {
-    const host = hostname.toLowerCase()
-    return BANGUMI_HOST_SUFFIXES.some(
-        (suffix) => host === suffix || host.endsWith(`.${suffix}`),
-    )
+   const host = hostname.toLowerCase();
+   return BANGUMI_HOST_SUFFIXES.some(
+      (suffix) => host === suffix || host.endsWith(`.${suffix}`),
+   );
 }
 
 /**
@@ -41,21 +41,22 @@ function isBangumiHost(hostname: string): boolean {
  * - 其他 CDN —— 不归我们管，保持原样
  */
 export function needsProxy(url?: string | null): boolean {
-    if (!url) return false
+   if (!url) return false;
 
-    const raw = url.trim()
-    if (!raw) return false
-    if (raw.startsWith('data:') || raw.startsWith('blob:')) return false
-    if (raw.startsWith(IMAGE_PROXY_PATH)) return false
-    if (raw.startsWith('/') || raw.startsWith('//')) return false
+   const raw = url.trim();
+   if (!raw) return false;
+   if (raw.startsWith("data:") || raw.startsWith("blob:")) return false;
+   if (raw.startsWith(IMAGE_PROXY_PATH)) return false;
+   if (raw.startsWith("/") || raw.startsWith("//")) return false;
 
-    try {
-        const parsed = new URL(raw)
-        if (parsed.protocol !== 'http:' && parsed.protocol !== 'https:') return false
-        return isBangumiHost(parsed.hostname)
-    } catch {
-        return false
-    }
+   try {
+      const parsed = new URL(raw);
+      if (parsed.protocol !== "http:" && parsed.protocol !== "https:")
+         return false;
+      return isBangumiHost(parsed.hostname);
+   } catch {
+      return false;
+   }
 }
 
 /**
@@ -65,11 +66,39 @@ export function needsProxy(url?: string | null): boolean {
  * - 其他一切 → 原样返回
  */
 export function proxyImage(url?: string | null): string {
-    if (!url) return ''
+   if (!url) return "";
 
-    const raw = url.trim()
-    if (!raw) return ''
-    if (!needsProxy(raw)) return raw
+   const raw = url.trim();
+   if (!raw) return "";
+   if (!needsProxy(raw)) return raw;
 
-    return `${IMAGE_PROXY_PATH}?url=${encodeURIComponent(raw)}`
+   return `${IMAGE_PROXY_PATH}?url=${encodeURIComponent(raw)}`;
+}
+
+/**
+ * 按显示宽度派生 Bangumi 缩略图。
+ *
+ * Bangumi 的图床支持在路径前插入 `/r/{宽度}/` 取缩放版（实测有效）：
+ *   `/r/100/` → 100px · `/r/200/` → 200px · `/r/400/` → 400px · 不加 → 原图
+ *
+ * 而它自带档位的**真实像素**（这就是「图片特别糊」的根因）：
+ *   small  100×131 · grid **75×75 且是方形** · medium 400×526 · large 822×1080
+ * 用 75px 的 grid 去填一张 235px 宽的卡片 = 放大 3.5 倍；
+ * 而且方形图配 2:3 的容器还要再 `object-cover` 裁切一次，糊上加糊。
+ *
+ * 注意：`/r/{w}/` **不能**加在 `/g/` 路径上（实测 502），所以必须以 large 为源。
+ * 非 Bangumi 图源（用户自行上传等）原样返回，不动它。
+ */
+export function bgmThumb(url: string, width: number): string {
+   let parsed: URL;
+   try {
+      parsed = new URL(url);
+   } catch {
+      return url;
+   }
+   if (!isBangumiHost(parsed.hostname)) return url;
+   // 去掉可能已有的 /r/{w}/ 前缀，避免叠加
+   parsed.pathname = parsed.pathname.replace(/^\/r\/\d+\//, "/");
+   parsed.pathname = `/r/${width}${parsed.pathname}`;
+   return parsed.toString();
 }
