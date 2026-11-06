@@ -17,7 +17,17 @@ npm run dev:full         # 启动完整开发环境 (含 Cloudflare Functions �
 npm run build            # 类型检查 + 构建生产版本
 npm run test             # 运行 Vitest 测试
 npm run preview          # 预览构建结果
+
+# 工程纪律（提交前跑 npm run check 即可全部过一遍）
+npm run type-check       # 类型检查：src/ + functions/ + workers/
+npm run lint             # ESLint：禁 any、禁组件内 scoped CSS
+npm run lint:fix         # ESLint 自动修
+npm run format           # Prettier 格式化全仓
+npm run format:check     # Prettier 检查（有改动会 exit 1）
+npm run check            # type-check + lint + test:run
 ```
+
+> 工具链的取舍与规则来源见 `docs/RFCs/002-tooling-policy.md`。
 
 ## Tech Stack
 
@@ -75,6 +85,12 @@ npm run preview          # 预览构建结果
   <!-- 保持语义化 HTML，使用 UnoCSS 类 -->
 </template>
 ```
+
+### Tooling (2026-11 起)
+
+- **Prettier** 管格式，**ESLint** 管正确性 —— 两边职责不重叠
+- `any` 与组件内 `<style scoped>` 是**硬错误**，由 ESLint 直接拦住
+- 后端（`functions/`、`workers/`）**也做类型检查**，别以为只有前端有
 
 ### Testing Strategy
 

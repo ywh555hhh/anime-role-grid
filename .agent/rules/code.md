@@ -64,7 +64,19 @@ trigger: always_on
 *   在修改代码前，**先阅读**相关目录下的 `README.md` 或现有代码风格。
 *   不要随意发明新的工具函数，先检查 `vueuse` 或 `lodash` 是否已有实现。
 ## 5. 提交检查清单 (Pre-Commit Checklist)
-1.  [ ] `npm run type-check` 通过了吗？
-2.  [ ] 没有新增 `any` 吗？
-3.  [ ] 新增的样式都用 UnoCSS 解决了吗？
+
+> 这几条现在有**工具在管**了，不是靠自觉：
+>
+> | 规则 | 工具 | 拦截方式 |
+> |---|---|---|
+> | 严禁 `any` | ESLint `@typescript-eslint/no-explicit-any` | `npm run lint` 报错 |
+> | 禁止组件内 `<style scoped>` | ESLint `local/no-scoped-style`（仓库内自定义规则） | `npm run lint` 报错 |
+> | 类型检查（含后端） | tsc | `npm run type-check` 报错 |
+> | 格式统一 | Prettier | `npm run format:check` 报错 |
+>
+> 提交前跑一次 `npm run check`（type-check + lint + test）就全齐了。
+
+1.  [ ] `npm run check` 通过了吗？（type-check + lint + test）
+2.  [ ] 没有新增 `any` 吗？（ESLint 会拦，但先想清楚类型对不对）
+3.  [ ] 新增的样式都用 UnoCSS 解决了吗？（组件内不许写 `<style scoped>`）
 4.  [ ] 所有的业务逻辑都解耦到 Composable/Service 了吗？
