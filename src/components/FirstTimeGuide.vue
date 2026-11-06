@@ -1,12 +1,42 @@
 <script setup lang="ts">
+/**
+ * 每日精选引导
+ * ============
+ *
+ * 三件事：推三个热门模板、给一个加群入口、给一个 B 站入口。
+ *
+ * ## 模板按钮以前是装饰的
+ * 三个「热门模板」按钮以前点了只 `emit("close")` —— 什么都不会发生，
+ * 用户以为点了有反应，结果只是关掉弹窗。现在它们真的会切换模板。
+ */
+import { getFeaturedGroup } from "~/logic/communityGroups";
+
 defineProps<{
     show: boolean;
 }>();
 
-const emit = defineEmits(["close"]);
+const emit = defineEmits<{
+    (e: "close"): void;
+    /** 用户点了某个热门模板。payload 是模板 id */
+    (e: "select-template", templateId: string): void;
+}>();
 
-const GROUP_LINK = "https://qm.qq.com/q/Jkf6Vgmyw8";
+/** 加群入口指向主推群 —— 一个入口只推一个群，别让用户自己挑 */
+const featured = getFeaturedGroup();
+
 const BILIBILI_LINK = "https://space.bilibili.com/36078469";
+
+/** 三个热门模板。id 必须与 templates/ 里的真实 id 对得上 */
+const HOT_TEMPLATES = [
+    { id: "classic", icon: "i-carbon-user-avatar", title: "我的动漫人物\n喜好果然有问题" },
+    { id: "9comic", icon: "i-carbon-book", title: "构成我人生的\n9 部漫画" },
+    { id: "xp_3x3", icon: "i-carbon-list", title: "Bro 懂我的\nXP" },
+] as const;
+
+function pickTemplate(templateId: string) {
+    emit("select-template", templateId);
+    emit("close");
+}
 </script>
 
 <template>
@@ -52,36 +82,16 @@ const BILIBILI_LINK = "https://space.bilibili.com/36078469";
                         <div class="text-xs font-bold text-gray-400 mb-2">热门模板</div>
                         <div class="grid grid-cols-3 gap-2">
                             <button
-                                @click="emit('close')"
+                                v-for="tpl in HOT_TEMPLATES"
+                                :key="tpl.id"
+                                @click="pickTemplate(tpl.id)"
                                 class="p-3 rounded-xl border-2 border-gray-100 dark:border-gray-700 hover:border-primary bg-white dark:bg-gray-800 text-center transition-all hover:shadow-md flex flex-col items-center gap-1"
                             >
-                                <div class="i-carbon-user-avatar text-2xl text-primary" />
+                                <div :class="tpl.icon" class="text-2xl text-primary" />
                                 <div
-                                    class="text-[10px] font-bold text-gray-700 dark:text-gray-200 leading-tight"
+                                    class="text-[10px] font-bold text-gray-700 dark:text-gray-200 leading-tight whitespace-pre-line"
                                 >
-                                    我的动漫人物<br />喜好果然有问题
-                                </div>
-                            </button>
-                            <button
-                                @click="emit('close')"
-                                class="p-3 rounded-xl border-2 border-gray-100 dark:border-gray-700 hover:border-primary bg-white dark:bg-gray-800 text-center transition-all hover:shadow-md flex flex-col items-center gap-1"
-                            >
-                                <div class="i-carbon-book text-2xl text-primary" />
-                                <div
-                                    class="text-[10px] font-bold text-gray-700 dark:text-gray-200 leading-tight"
-                                >
-                                    构成我人生的<br />9 部漫画
-                                </div>
-                            </button>
-                            <button
-                                @click="emit('close')"
-                                class="p-3 rounded-xl border-2 border-gray-100 dark:border-gray-700 hover:border-primary bg-white dark:bg-gray-800 text-center transition-all hover:shadow-md flex flex-col items-center gap-1"
-                            >
-                                <div class="i-carbon-list text-2xl text-primary" />
-                                <div
-                                    class="text-[10px] font-bold text-gray-700 dark:text-gray-200 leading-tight"
-                                >
-                                    Bro 懂我的<br />XP
+                                    {{ tpl.title }}
                                 </div>
                             </button>
                         </div>
@@ -89,7 +99,7 @@ const BILIBILI_LINK = "https://space.bilibili.com/36078469";
 
                     <!-- Join Group CTA -->
                     <a
-                        :href="GROUP_LINK"
+                        :href="featured.url"
                         target="_blank"
                         class="w-full group relative overflow-hidden rounded-2xl bg-gradient-to-br from-primary-light/50 to-white dark:from-pink-900/20 dark:to-gray-800 border-2 border-pink-100 hover:border-primary transition-all duration-300 shadow-sm hover:shadow-md p-4 flex items-center gap-4 mb-3"
                     >
@@ -101,7 +111,7 @@ const BILIBILI_LINK = "https://space.bilibili.com/36078469";
                         <div class="flex-1">
                             <div class="flex items-center gap-2 mb-0.5">
                                 <span class="font-black text-base text-gray-900 dark:text-gray-100"
-                                    >加入【我推的ACNG】</span
+                                    >加入{{ featured.name }}</span
                                 >
                                 <span
                                     class="text-[10px] bg-primary text-white px-1.5 py-0.5 rounded text-xs font-bold"
@@ -109,7 +119,7 @@ const BILIBILI_LINK = "https://space.bilibili.com/36078469";
                                 >
                             </div>
                             <div class="text-xs text-gray-500 dark:text-gray-400">
-                                分享作品 / 寻找同好 / 反馈建议
+                                {{ featured.tagline }} · 分享作品 / 寻找同好 / 反馈建议
                             </div>
                         </div>
                         <div

@@ -34,7 +34,7 @@ const emit = defineEmits(["close"]);
                         class="font-bold text-lg flex items-center gap-2 text-gray-900 dark:text-white"
                     >
                         <div class="i-carbon-group text-primary" />
-                        <span>加入组织</span>
+                        <span>加入群聊</span>
                     </h3>
                     <button
                         class="w-7 h-7 flex items-center justify-center rounded-full hover:bg-black/5 dark:hover:bg-white/10 transition-colors"
@@ -45,6 +45,9 @@ const emit = defineEmits(["close"]);
                 </div>
 
                 <div class="p-4 overflow-y-auto flex-1 min-h-0 scrollbar-thin">
+                    <p class="text-xs text-gray-500 dark:text-gray-400 mb-3 leading-relaxed">
+                        找到同好、反馈问题、第一时间收到活动通知 —— 挑一个群待着就好， 不必全加。
+                    </p>
                     <CommunityGroupLinks class="!border-0 !shadow-none !p-0 !bg-transparent" />
                 </div>
 

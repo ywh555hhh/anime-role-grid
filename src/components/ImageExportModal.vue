@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { useRouter } from "vue-router";
+import { getFeaturedGroup } from "~/logic/communityGroups";
 
 defineProps<{
     modelValue: boolean; // show
@@ -13,14 +14,21 @@ const emit = defineEmits<{
 }>();
 
 const router = useRouter();
-const GROUP_LINK = "https://qm.qq.com/q/Jkf6Vgmyw8";
+/**
+ * 加群入口指向主推群。
+ *
+ * 以前这里硬编码了 `qm.qq.com/q/Jkf6Vgmyw8`，界面上却写着「【我推的ACNG】」——
+ * 和 CommunityGroupLinks 里的「【我推的ACN】」是同一个群（1018213653），
+ * 但名字差一个 G、链接也长得完全不一样。现在两边读同一份数据。
+ */
+const featured = getFeaturedGroup();
 
 function close() {
     emit("update:modelValue", false);
 }
 
 function joinGroup() {
-    window.open(GROUP_LINK, "_blank");
+    window.open(featured.url, "_blank");
 }
 </script>
 
@@ -87,7 +95,7 @@ function joinGroup() {
                         <!-- 1. Join Group -->
                         <button @click="joinGroup" class="w-full btn-primary text-base">
                             <div class="i-carbon-chat" />
-                            <span>加入【我推的ACNG】交流群</span>
+                            <span>加入{{ featured.name }}</span>
                         </button>
 
                         <!-- 2. Make Your Own -->

@@ -1,10 +1,14 @@
 <script setup lang="ts">
+import { getFeaturedGroup } from "~/logic/communityGroups";
 defineProps<{
     show: boolean;
     format: "mp4" | "webm" | null;
 }>();
 
 const emit = defineEmits(["close", "open-join-group"]);
+
+/** 加群入口指向主推群 —— 与首屏引导、导出弹窗保持同一个目标 */
+const featured = getFeaturedGroup();
 </script>
 
 <template>
@@ -106,7 +110,7 @@ const emit = defineEmits(["close", "open-join-group"]);
                             <div
                                 class="i-carbon-group text-lg group-hover:scale-110 transition-transform"
                             />
-                            <span>加入交流群分享视频</span>
+                            <span>加入{{ featured.name }}，分享你的作品</span>
                         </button>
 
                         <button

@@ -3,9 +3,13 @@ import { ref } from "vue";
 import { VueDraggable, type SortableEvent } from "vue-draggable-plus";
 import { useGridStore } from "~/stores/gridStore";
 import { proxyImage } from "~/logic/imageUrl";
+import { getFeaturedGroup } from "~/logic/communityGroups";
 
 const gridStore = useGridStore();
 const { dockItems, removeFromDock, clearDock, isToolbarOpen, isDragging, resolveImage } = gridStore;
+
+/** 主播模式底栏的 QQ 图标 → 指向主推群 */
+const featured = getFeaturedGroup();
 
 // Trash Logic: Accept drops to delete
 const trashList = ref([]);
@@ -81,9 +85,10 @@ const dragOptions = {
                 class="flex items-center gap-6 mt-2 opacity-60 hover:opacity-100 transition-opacity"
             >
                 <a
-                    href="https://qun.qq.com/universal-share/share?ac=1&authKey=axd5YDW0i5ZiyX8jTultFRVHCHv9FAsCnqHq40itBLuQEoUOdCo06bAh05W%2Bv1c7&busi_data=eyJncm91cENvZGUiOiIxMDU1NTkxMDY0IiwidG9rZW4iOiJMazMxZ1pPZHdQejMyS1BaSFZ2UkJIdHp5b29NbTI4VU9NaGhSSW96T0NpcS9ha0oyZzJEVmpPRXZ1Nit2eTVNIiwidWluIjoiMTkxNjY0NzYxNiJ9&data=Tsay2nkLgPoS1UGFPbFnpdAsQeLPgFErKFco7mYPmWPldhqQme_u6smVnM0ifq8X5nO5TiLUbxgl57S9deOLIw&svctype=4&tempid=h5_group_info"
+                    :href="featured.url"
                     target="_blank"
-                    title="QQ群"
+                    rel="noopener"
+                    :title="`${featured.name}（群号 ${featured.groupCode}）`"
                     class="text-gray-600 dark:text-gray-400 hover:text-black dark:hover:text-white transition-colors"
                 >
                     <!-- QQ SVG -->
