@@ -61,6 +61,20 @@ export default defineConfig({
             },
         },
     },
+    /**
+     * 动态类名白名单。
+     *
+     * UnoCSS 默认只扫 `.vue / .html / .jsx / .tsx / .mdx` 等文件，
+     * **`.ts` 文件不在扫描范围内**。而排序按钮的图标是数据驱动的
+     * （`<div :class="option.icon" />`），类名只存在于
+     * `src/logic/templateGallery.ts` 里 —— 静态扫描**永远看不到它**，
+     * 结果就是图标位置一片空白。
+     *
+     * 所以这里显式列出。改 `GALLERY_SORTS` 的图标时，记得同步这里
+     * （`src/tests/templateGallery.test.ts` 会替你盯着这件事）。
+     */
+    safelist: ["i-carbon-fire", "i-carbon-grid", "i-carbon-text-align-left"],
+
     shortcuts: {
         // Base button class: consolidates default styles + cleaner focus state (no double pink border)
         btn: "border-none rounded-btn cursor-pointer transition-all duration-200 outline-none focus:ring-2 focus:ring-primary/50 disabled:opacity-50 disabled:cursor-not-allowed",
