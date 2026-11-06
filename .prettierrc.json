@@ -1,0 +1,18 @@
+{
+  "printWidth": 100,
+  "tabWidth": 4,
+  "useTabs": false,
+  "semi": true,
+  "singleQuote": false,
+  "trailingComma": "all",
+  "bracketSameLine": false,
+  "arrowParens": "always",
+  "endOfLine": "lf",
+  "vueIndentScriptAndStyle": false,
+  "overrides": [
+    {
+      "files": ["*.json", "*.yml", "*.yaml"],
+      "options": { "tabWidth": 2 }
+    }
+  ]
+}

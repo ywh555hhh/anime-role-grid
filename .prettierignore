@@ -1,0 +1,16 @@
+# 构建产物 / 依赖
+dist
+node_modules
+.wrangler
+package-lock.json
+
+# 死代码：不参与格式化（见 docs 里的 legacy 说明）
+src_legacy_backup
+legacy_html
+
+# 静态资源
+public
+
+# 文档：Markdown 的表格/换行由人控制，交给 Prettier 反而会制造噪声
+docs
+*.md

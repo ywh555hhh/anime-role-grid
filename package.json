@@ -6,9 +6,16 @@
   "scripts": {
     "dev": "vite",
     "dev:full": "wrangler pages dev -- npm run dev",
-    "build": "vue-tsc -b && vite build",
+    "build": "npm run type-check && vite build",
     "preview": "vite preview",
-    "test": "vitest"
+    "test": "vitest",
+    "test:run": "vitest run",
+    "type-check": "vue-tsc -b && tsc -p functions/tsconfig.json && tsc -p workers/snapshot-refresh/tsconfig.json",
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "check": "npm run type-check && npm run lint && npm run test:run"
   },
   "dependencies": {
     "@libsql/client": "^0.15.15",
@@ -31,6 +38,7 @@
   },
   "devDependencies": {
     "@cloudflare/workers-types": "^4.20251217.0",
+    "@eslint/js": "^9.39.5",
     "@iconify-json/carbon": "^1.2.14",
     "@types/node": "^24.10.1",
     "@types/uuid": "^11.0.0",
@@ -40,12 +48,18 @@
     "@vueuse/core": "^14.1.0",
     "dotenv": "^17.2.3",
     "drizzle-kit": "^0.31.8",
+    "eslint": "^9.39.4",
+    "eslint-plugin-vue": "^10.12.0",
+    "globals": "^17.14.0",
     "jsdom": "^27.3.0",
+    "prettier": "^3.9.10",
     "tsx": "^4.20.6",
     "typescript": "~5.9.3",
+    "typescript-eslint": "^8.72.1",
     "unocss": "^66.5.9",
     "vite": "^7.2.4",
     "vitest": "^4.0.16",
+    "vue-eslint-parser": "^10.4.1",
     "vue-tsc": "^3.1.4",
     "wrangler": "^4.53.0"
   }

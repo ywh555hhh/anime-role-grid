@@ -3,14 +3,16 @@
     "target": "esnext",
     "module": "esnext",
     "moduleResolution": "bundler",
-    "lib": [
-      "esnext"
-    ],
-    "types": [
-      "@cloudflare/workers-types"
-    ]
+    "lib": ["esnext"],
+    "types": ["@cloudflare/workers-types"],
+    // 后端以前**根本没有被类型检查过** —— 这个 tsconfig 存在，但没有任何
+    // npm script 会跑它。这里补上 strict，并让它真的被 type-check 调起来。
+    "strict": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    // 只检查，不产出 —— 否则 tsc 会在 .ts 旁边吐出一堆 .js
+    "noEmit": true,
+    "skipLibCheck": true
   },
-  "include": [
-    "**/*.ts"
-  ]
+  "include": ["**/*.ts", "../shared/**/*.ts"]
 }
