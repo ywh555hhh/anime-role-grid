@@ -73,7 +73,7 @@ export default defineConfig({
      * 所以这里显式列出。改 `GALLERY_SORTS` 的图标时，记得同步这里
      * （`src/tests/templateGallery.test.ts` 会替你盯着这件事）。
      */
-    safelist: ["i-carbon-fire", "i-carbon-grid", "i-carbon-text-align-left"],
+    safelist: ["i-carbon-fire", "i-carbon-time", "i-carbon-grid", "i-carbon-text-align-left"],
 
     shortcuts: {
         // Base button class: consolidates default styles + cleaner focus state (no double pink border)

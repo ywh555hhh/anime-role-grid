@@ -148,6 +148,21 @@ describe("排序", () => {
         expect(sorted.map((t) => t.id)).toEqual(["x", "y"]);
     });
 
+    it("最新：有 addedAt 的排在前面，按月份降序", () => {
+        const old = tpl({ id: "old", name: "老模板" });
+        const nov = tpl({ id: "nov", name: "11 月的", addedAt: "2026-11" });
+        const oct = tpl({ id: "oct", name: "10 月的", addedAt: "2026-10" });
+        const sorted = sortTemplates([old, oct, nov], "newest", {});
+        expect(sorted.map((t) => t.id)).toEqual(["nov", "oct", "old"]);
+    });
+
+    it("最新：同月上线的按热门排", () => {
+        const a = tpl({ id: "a", name: "A", addedAt: "2026-11" });
+        const b = tpl({ id: "b", name: "B", addedAt: "2026-11" });
+        const sorted = sortTemplates([a, b], "newest", { b: 50 });
+        expect(sorted.map((t) => t.id)).toEqual(["b", "a"]);
+    });
+
     it("不改动传入的数组", () => {
         const input = [a, b, c];
         const copy = [...input];

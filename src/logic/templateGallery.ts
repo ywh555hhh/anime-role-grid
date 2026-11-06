@@ -25,7 +25,7 @@
 import type { Template } from "~/logic/templates";
 
 /** 排序维度 */
-export type GallerySort = "popular" | "size" | "name";
+export type GallerySort = "popular" | "newest" | "size" | "name";
 
 export interface GallerySortOption {
     id: GallerySort;
@@ -36,6 +36,7 @@ export interface GallerySortOption {
 /** 可选的排序维度，顺序即显示顺序 */
 export const GALLERY_SORTS: GallerySortOption[] = [
     { id: "popular", label: "热门", icon: "i-carbon-fire" },
+    { id: "newest", label: "最新", icon: "i-carbon-time" },
     { id: "size", label: "格子数", icon: "i-carbon-grid" },
     { id: "name", label: "名称", icon: "i-carbon-text-align-left" },
 ];
@@ -112,6 +113,10 @@ function byPopular(a: Template, b: Template, trending: Record<string, number>): 
  *
  * - `popular` —— 真实填写次数降序。没有数据的排在有数据之后（而不是混在一起），
  *   因为「没人填过」是真实信息，不该被当成「排在中间」。
+ * - `newest` —— **按上线月份**（`addedAt`）降序。
+ *   这个维度是为「刚上线的新模板」准备的：它们还没有填写量，
+ *   在「热门」里会排在第 100 位之后 —— 而 153 个模板的列表没人会滚到那儿。
+ *   没有 `addedAt` 的老模板按热门排，排在有 `addedAt` 的后面。
  * - `size` —— 格子数升序。用户挑模板时想的是「做个 1x1 极简的还是 5x6 大表」，
  *   这是一个真实且分布均匀的维度（1~2 列 6 个 / 3 列 51 个 / 4~6 列 61 个）。
  * - `name` —— 名称字典序（中文按拼音）。
@@ -126,6 +131,18 @@ export function sortTemplates(
     switch (sort) {
         case "popular":
             return list.sort((a, b) => byPopular(a, b, trending));
+
+        case "newest":
+            return list.sort((a, b) => {
+                const dateA = a.addedAt ?? "";
+                const dateB = b.addedAt ?? "";
+                // 有上线月份的一定排在没有的前面
+                if (dateA && !dateB) return -1;
+                if (!dateA && dateB) return 1;
+                if (dateA !== dateB) return dateB.localeCompare(dateA);
+                // 同一个月上线 → 按热门
+                return byPopular(a, b, trending);
+            });
 
         case "size":
             return list.sort((a, b) => {

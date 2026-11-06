@@ -36,6 +36,25 @@ const CATEGORY_MAP: Record<TemplateCategory | "all", string> = {
     custom: "自定义",
 };
 
+/**
+ * 角标样式。
+ *
+ * 只有「纯粹系列」和「新模板」两种需要显示 —— 其余角标类型没在用，
+ * 显示出来反而是噪音。
+ */
+const BADGE_STYLES: Record<string, { emoji: string; label: string; class: string }> = {
+    new: {
+        emoji: "🆕",
+        label: "新模板",
+        class: "bg-green-100 text-green-600 border-green-200",
+    },
+    pure: {
+        emoji: "💎",
+        label: "纯粹系列",
+        class: "bg-blue-100 text-blue-600 border-blue-200",
+    },
+};
+
 const CATEGORY_ORDER: (TemplateCategory | "all")[] = [
     "all",
     "character",
@@ -351,11 +370,12 @@ function usageLabel(id: string): string {
                                     {{ displayName(template.name) }}
                                 </span>
                                 <span
-                                    v-if="template.badge === 'pure'"
-                                    class="shrink-0 px-1.5 py-0.5 rounded text-[10px] font-bold bg-blue-100 text-blue-600 border border-blue-200"
-                                    title="纯粹系列"
+                                    v-if="template.badge && BADGE_STYLES[template.badge]"
+                                    class="shrink-0 px-1.5 py-0.5 rounded text-[10px] font-bold border"
+                                    :class="BADGE_STYLES[template.badge]?.class"
+                                    :title="BADGE_STYLES[template.badge]?.label"
                                 >
-                                    💎
+                                    {{ BADGE_STYLES[template.badge]?.emoji }}
                                 </span>
                                 <span
                                     v-else-if="template.hot"
