@@ -28,7 +28,7 @@
  * 数据来源：经 vite 的 dev proxy 调用 /api/search（服务端代理，带鉴权与缓存）。
  * 网络失败时回落到硬编码的 28 个真实角色，保证原型永远能用。
  */
-import { computed, nextTick, onMounted, onUnmounted, ref, watch } from 'vue'
+import { computed, onMounted, ref, watch } from 'vue'
 import { VueDraggable } from 'vue-draggable-plus'
 import { PROTO_POOL } from '~/pages/hangla-proto-items'
 import { bgmThumb, proxyImage } from '~/logic/imageUrl'
@@ -396,8 +396,6 @@ const totalCount = ref(0)
 const loadingMore = ref(false)
 const loadMoreError = ref('')
 const scrollEl = ref<HTMLElement | null>(null)
-const sentinelEl = ref<HTMLElement | null>(null)
-let scrollObserver: IntersectionObserver | null = null
 
 /**
  * 竞态守卫。
@@ -532,47 +530,34 @@ function clearFilters() {
 }
 
 /**
- * 无限滚动。
+ * 滚动到「距底部还有 600px」就取下一页 —— 就是「提前预取」。
  *
- * rootMargin 提前 600px（大约一屏）触发 —— 这就是「更智能」的地方：
- * 不是等用户滚到底才转圈，而是在还看不见的时候就把下一页取回来，滚起来是连续的。
+ * 这里刻意用 @scroll 算距离，而不是 IntersectionObserver：
+ *   - 它直接对应「用户真的在滚」这个动作，不依赖 observer 的 root 算对没有
+ *   - 少一个需要挂载/卸载的生命周期，也就少一类「ref 为空所以从来不触发」的隐患
+ *   - 预取阈值就是一行减法，行为完全可预测
+ *
+ * 注意：自动加载只是「顺手」，真正保底的入口是底部那条常驻的「加载更多」——
+ * 无论自动触发有没有生效，用户总能手动点。
  */
-function setupInfiniteScroll() {
-    scrollObserver?.disconnect()
-    const root = scrollEl.value
-    const target = sentinelEl.value
-    if (!root || !target || typeof IntersectionObserver === 'undefined') return
-    scrollObserver = new IntersectionObserver(
-        (entries) => {
-            if (entries.some((e) => e.isIntersecting)) void loadMore()
-        },
-        { root, rootMargin: '600px 0px', threshold: 0 },
-    )
-    scrollObserver.observe(target)
+function onResultsScroll(e: Event) {
+    const el = e.target as HTMLElement | null
+    if (!el) return
+    const distanceToBottom = el.scrollHeight - el.scrollTop - el.clientHeight
+    if (distanceToBottom < 600) void loadMore()
 }
-
-onUnmounted(() => {
-    scrollObserver?.disconnect()
-    scrollObserver = null
-})
 
 function openDialog(tierKey: number) {
     dialogTierKey.value = tierKey
     // 刻意不在里清空选择：误触关闭再打开不该丢掉已选的（用户反馈「没有记忆」）
     dialogOpen.value = true
-    // 面板是 v-if 才渲染的，等它挂上再接管滚动
-    void nextTick(() => {
-        setupInfiniteScroll()
-        void runSearch()
-    })
+    void runSearch()
 }
 
 function closeDialog() {
     // 也不重置 platformFilter：筛选项属于「记忆」的一部分，面板里看得到
     dialogOpen.value = false
     filterSheetOpen.value = false
-    scrollObserver?.disconnect()
-    scrollObserver = null
 }
 
 /** 切换类型时把排序收敛到该类型支持的范围 */
@@ -1162,7 +1147,11 @@ const stateSummary = computed(() => ({
 
     <!-- ===== 弹框：搜索 / 筛选 / 排序 → 添加 ===== -->
     <Teleport to="body">
-      <div v-if="dialogOpen" class="fixed inset-0 z-50 flex flex-col bg-gray-50">
+      <div
+        v-if="dialogOpen"
+        class="fixed left-0 top-0 z-50 flex flex-col bg-gray-50"
+        style="height: 100vh; height: 100dvh"
+      >
         <!-- 顶栏 -->
         <div class="shrink-0 bg-white px-3 pt-2 flex items-center gap-2">
           <span class="text-sm font-black">加进榜里</span>
@@ -1231,7 +1220,12 @@ const stateSummary = computed(() => ({
           在它合入生产之前，本地这里仍只会显示 10 条。
           picker 目前只取第一页，翻页留给正式实现。
         -->
-        <div ref="scrollEl" class="flex-1 min-h-0 overflow-y-auto p-2">
+        <div
+          ref="scrollEl"
+          class="flex-1 min-h-0 overflow-y-auto p-2"
+          style="-webkit-overflow-scrolling: touch; overscroll-behavior: contain"
+          @scroll.passive="onResultsScroll"
+        >
           <div v-if="!loading && rawResults.length" class="text-[10px] text-gray-400 pb-1.5">
             已加载 {{ rawResults.length }} 条<span v-if="totalCount"> / 共 {{ totalCount }} 条</span>
             <span v-if="rawResults.length !== results.length" class="text-gray-300">
@@ -1272,22 +1266,15 @@ const stateSummary = computed(() => ({
               >{{ placedByUid.get(it.uid)?.name }}</div>
             </button>
           </div>
-          <!--
-            无限滚动的哨兵。
-            真正触发加载的时机在 IntersectionObserver 里（rootMargin 提前 600px）——
-            所以正常情况下用户根本看不到这行文字，滚动是连续不断的。
-            这一行是给「加载不动」的情况一个可点击的出路，以及明确告知「到底了」。
-          -->
-          <div ref="sentinelEl" class="h-10 flex items-center justify-center text-[10px] text-gray-400">
-            <template v-if="loadingMore">加载中…</template>
-            <template v-else-if="loadMoreError">
+          <!-- 列表末尾的状态。加载中的入口在下方那条常驻栏里（保证任何情况下都能手动点） -->
+          <div class="h-8 flex items-center justify-center text-[10px] text-gray-400">
+            <template v-if="loadMoreError">
               <button class="underline text-amber-600" @click="loadMore">加载失败，点这里重试</button>
             </template>
-            <template v-else-if="hasMore">继续向下滚动</template>
-            <template v-else-if="reachedCap">
+            <template v-else-if="!hasMore && reachedCap">
               结果很多 · 已加载 {{ rawResults.length }} 条，输入关键词能更快找到
             </template>
-            <template v-else-if="results.length">没有更多了</template>
+            <template v-else-if="!hasMore && results.length">没有更多了</template>
           </div>
 
           <p v-if="usedFallback" class="text-[10px] text-amber-600 mt-2">
@@ -1372,6 +1359,28 @@ const stateSummary = computed(() => ({
               <button class="btn-primary flex-1 py-2 text-xs" @click="filterSheetOpen = false">完成</button>
             </div>
           </div>
+        </div>
+
+        <!--
+          常驻的「加载更多」条。
+
+          为什么要在固定区域再放一个，而不只靠自动加载：
+          用户报「挑错器滑不动、不加载」时，自动触发到底有没有生效是看不见的；
+          把入口放在**不依赖列表滚动**的位置，无论自动加载行不行，用户总能手动推一下。
+          顺手也把「已加载 N / 共 M」写在旁边，不再靠猜。
+        -->
+        <div
+          v-if="hasMore || loadingMore"
+          class="shrink-0 bg-white border-t border-gray-100 px-3 py-1.5 flex items-center gap-2"
+        >
+          <span class="text-[10px] text-gray-400 flex-1">
+            已加载 {{ rawResults.length }} 条<span v-if="totalCount"> / 共 {{ totalCount }} 条</span>
+          </span>
+          <button
+            class="text-[11px] font-bold text-primary px-2 py-1 disabled:opacity-50"
+            :disabled="loadingMore"
+            @click="loadMore"
+          >{{ loadingMore ? '加载中…' : '加载更多' }}</button>
         </div>
 
         <!-- 底部：已选 N + 添加 -->
