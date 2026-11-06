@@ -1,27 +1,20 @@
 import type { ExportTemplateConfig, GridItem } from "~/types";
 import { TEMPLATES } from "~/logic/templates";
 import { THEME } from "~/logic/constants/theme";
+import {
+    BORDER_WIDTH,
+    CELL_HEIGHT,
+    CELL_WIDTH,
+    CHALLENGE_TITLE_HEIGHT,
+    IMAGE_LOAD_TIMEOUT_MS,
+    LABEL_HEIGHT,
+    PADDING,
+    QR_WATERMARK_HEIGHT,
+    TITLE_HEIGHT,
+    WATERMARK_HEIGHT,
+} from "~/logic/constants/pixelSpec";
 import { proxyImage } from "~/logic/imageUrl";
 import { waitForFonts } from "~/logic/fontReady";
-
-// Constants derived from THEME for static export
-// We keep CELL_WIDTH = 300 to maintain the high resolution for static image export
-const CELL_WIDTH = 300;
-const CELL_HEIGHT = CELL_WIDTH / THEME.layout.cellAspectRatio;
-const BORDER_WIDTH = 4;
-const LABEL_HEIGHT = CELL_HEIGHT * THEME.layout.labelHeightRatio;
-
-/**
- * 单张图片的客户端加载超时（毫秒）。
- *
- * 第二道防线：服务端 `/api/img` 已有 20s 回源超时，但这里再兜一次，
- * 保证即使代理或网络完全不响应，导出也会有确定结局（该格降级为空占位图），
- * 而不会让整张图永远卡在某一格上。
- */
-const IMAGE_LOAD_TIMEOUT_MS = 25_000;
-
-const STANDARD_WATERMARK_HEIGHT = 60;
-const STANDARD_QR_WATERMARK_HEIGHT = 180;
 
 interface DrawOptions {
     list: GridItem[];
@@ -98,7 +91,7 @@ export class CanvasGenerator {
         creator?: string,
     ): { mode: "horizontal" | "vertical"; height: number } {
         // Measure Components
-        const padding = 60;
+        const padding = PADDING;
         const safeWidth = width - padding * 2;
 
         // 1. Brand Width (Logo 50 + Text ~200 + Gap 20)
@@ -206,14 +199,14 @@ export class CanvasGenerator {
             options.showQRCode !== false &&
             !!options.qrCodeUrl;
         const gridHeight = rows * actualCellHeight;
-        const titleHeight = isChallenge ? 250 : 160;
-        const padding = 60;
+        const titleHeight = isChallenge ? CHALLENGE_TITLE_HEIGHT : TITLE_HEIGHT;
+        const padding = PADDING;
         const canvasWidth = gridWidth + padding * 2;
 
         // Calculate Footer Layout ahead of time
         let watermarkHeight = hasStandardQRCode
-            ? STANDARD_QR_WATERMARK_HEIGHT
-            : STANDARD_WATERMARK_HEIGHT;
+            ? QR_WATERMARK_HEIGHT
+            : WATERMARK_HEIGHT;
         let footerLayout: { mode: "horizontal" | "vertical"; height: number } =
             { mode: "horizontal", height: 160 };
 
@@ -575,8 +568,8 @@ export class CanvasGenerator {
                 const qrX = padding;
                 const qrY =
                     height -
-                    STANDARD_QR_WATERMARK_HEIGHT +
-                    (STANDARD_QR_WATERMARK_HEIGHT - qrSize) / 2;
+                    QR_WATERMARK_HEIGHT +
+                    (QR_WATERMARK_HEIGHT - qrSize) / 2;
                 this.ctx.drawImage(qr, qrX, qrY, qrSize, qrSize);
 
                 this.ctx.textAlign = "right";

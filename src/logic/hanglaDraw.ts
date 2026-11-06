@@ -18,25 +18,25 @@
  */
 import QRCode from "qrcode";
 import { THEME } from "~/logic/constants/theme";
+import {
+    BORDER_WIDTH,
+    CELL_HEIGHT,
+    CELL_WIDTH,
+    IMAGE_LOAD_TIMEOUT_MS,
+    LABEL_HEIGHT,
+    PADDING,
+    QR_WATERMARK_HEIGHT,
+    TITLE_HEIGHT,
+    WATERMARK_HEIGHT,
+} from "~/logic/constants/pixelSpec";
 import { bgmThumb, proxyImage } from "~/logic/imageUrl";
 import { waitForFonts } from "~/logic/fontReady";
 
 // ---------------------------------------------------------------- 与主站一致的像素规格
-
-/** 单元格宽度（主站 canvasDraw.ts 同值） */
-const CELL_WIDTH = 300;
-/** 单元格高度：由 THEME 的 120/187 长宽比算出 = 467.5 */
-const CELL_HEIGHT = CELL_WIDTH / THEME.layout.cellAspectRatio;
-/** 名字条高度：467.5 × 25/187 = 62.5 */
-const LABEL_HEIGHT = CELL_HEIGHT * THEME.layout.labelHeightRatio;
-/** 描边宽度 */
-const BORDER_WIDTH = 4;
-/** 画布内边距 */
-const PADDING = 60;
-/** 标题区高度（等同主站 standard 的 160） */
-const TITLE_HEIGHT = 160;
-/** 底部水印区高度（等同主站带二维码的 180） */
-const WATERMARK_HEIGHT = 180;
+//
+// 全部来自 ~/logic/constants/pixelSpec —— 那是唯一真相。
+// /hangla 和主站用同一套单元格 / 名字条 / 描边 / 内边距 / 水印带尺寸，
+// 所以两个工具产出的图片是同族的。这里**不允许**再自己写一份本地常量。
 
 // ---------------------------------------------------------------- /hangla 特有
 
@@ -52,9 +52,6 @@ const AUTHOR_HEIGHT = 50;
 export const ITEMS_PER_LINE = 5;
 /** 导出时的取图宽度：单元 300px，取 /r/400/ 保证不被放大（canvas 是 1:1 像素） */
 const EXPORT_IMAGE_WIDTH = 400;
-/** 单张图的客户端加载超时：与主站一样，避免某张图把整次导出挂死 */
-const IMAGE_LOAD_TIMEOUT_MS = 25_000;
-
 // ---------------------------------------------------------------- 类型
 
 export interface DrawItem {
@@ -236,7 +233,7 @@ export async function drawHanglaBoard(
         0,
     );
     // 用户可以关掉二维码；关掉后底部只留一条窄水印
-    const watermarkHeight = qrUrl && showQr ? WATERMARK_HEIGHT : 60;
+    const watermarkHeight = qrUrl && showQr ? QR_WATERMARK_HEIGHT : WATERMARK_HEIGHT;
     const canvasHeight =
         titleBlockHeight + gridHeight + watermarkHeight + PADDING;
 
@@ -430,7 +427,8 @@ async function drawWatermark(
             // 锚到水印带（同主站 getStandardFooterLayout 的思路），
             // 不能锚在 height - PADDING/2 上 —— 那样下沿会超出画布被裁掉
             const qrY =
-                height - WATERMARK_HEIGHT + (WATERMARK_HEIGHT - qrSize) / 2;
+                height - QR_WATERMARK_HEIGHT +
+                (QR_WATERMARK_HEIGHT - qrSize) / 2;
             ctx.drawImage(qr, cursorX, qrY, qrSize, qrSize);
             cursorX += qrSize + 18;
             urlY = qrY + qrSize / 2;
