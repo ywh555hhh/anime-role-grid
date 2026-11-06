@@ -34,10 +34,10 @@
 const FONT_WAIT_TIMEOUT_MS = 4000;
 
 export interface FontNeed {
-   /** CSS font 简写，例如 `bold 44px "Noto Serif SC", serif` */
-   font: string;
-   /** 这个字体下**真正会被画出来**的字符串 */
-   text: string;
+    /** CSS font 简写，例如 `bold 44px "Noto Serif SC", serif` */
+    font: string;
+    /** 这个字体下**真正会被画出来**的字符串 */
+    text: string;
 }
 
 /**
@@ -49,31 +49,31 @@ export interface FontNeed {
  * @param timeoutMs 上限。超时则放弃等待，用当前可用字体继续（不能把导出挂死）。
  */
 export async function waitForFonts(
-   needs: readonly FontNeed[] = [],
-   timeoutMs: number = FONT_WAIT_TIMEOUT_MS,
+    needs: readonly FontNeed[] = [],
+    timeoutMs: number = FONT_WAIT_TIMEOUT_MS,
 ): Promise<void> {
-   if (typeof document === "undefined" || !document.fonts) return;
+    if (typeof document === "undefined" || !document.fonts) return;
 
-   const jobs: Promise<unknown>[] = [document.fonts.ready];
+    const jobs: Promise<unknown>[] = [document.fonts.ready];
 
-   for (const need of needs) {
-      if (!need.text) continue;
-      try {
-         // 按字符串补齐 unicode 子集；这才是「画之前字体真的可用」的保证
-         jobs.push(document.fonts.load(need.font, need.text));
-      } catch {
-         /* 单条字体简写不合法不该拖垮整次导出 */
-      }
-   }
+    for (const need of needs) {
+        if (!need.text) continue;
+        try {
+            // 按字符串补齐 unicode 子集；这才是「画之前字体真的可用」的保证
+            jobs.push(document.fonts.load(need.font, need.text));
+        } catch {
+            /* 单条字体简写不合法不该拖垮整次导出 */
+        }
+    }
 
-   try {
-      await Promise.race([
-         Promise.allSettled(jobs),
-         new Promise<void>((resolve) => {
-            window.setTimeout(resolve, timeoutMs);
-         }),
-      ]);
-   } catch {
-      /* 拿不到就用回退字体，不该阻断导出 */
-   }
+    try {
+        await Promise.race([
+            Promise.allSettled(jobs),
+            new Promise<void>((resolve) => {
+                window.setTimeout(resolve, timeoutMs);
+            }),
+        ]);
+    } catch {
+        /* 拿不到就用回退字体，不该阻断导出 */
+    }
 }

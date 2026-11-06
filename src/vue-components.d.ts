@@ -41,37 +41,37 @@
  * 删除页面时（比如原型验证完）也要把对应声明删掉。
  */
 
-declare module '~/pages/Home.vue' {
-    import type { DefineComponent } from 'vue'
+declare module "~/pages/Home.vue" {
+    import type { DefineComponent } from "vue";
 
-    const component: DefineComponent<Record<string, unknown>, Record<string, unknown>, unknown>
-    export default component
+    const component: DefineComponent<Record<string, unknown>, Record<string, unknown>, unknown>;
+    export default component;
 }
 
-declare module '~/pages/CreateTemplate.vue' {
-    import type { DefineComponent } from 'vue'
+declare module "~/pages/CreateTemplate.vue" {
+    import type { DefineComponent } from "vue";
 
-    const component: DefineComponent<Record<string, unknown>, Record<string, unknown>, unknown>
-    export default component
+    const component: DefineComponent<Record<string, unknown>, Record<string, unknown>, unknown>;
+    export default component;
 }
 
-declare module '~/pages/ViewTemplate.vue' {
-    import type { DefineComponent } from 'vue'
+declare module "~/pages/ViewTemplate.vue" {
+    import type { DefineComponent } from "vue";
 
-    const component: DefineComponent<Record<string, unknown>, Record<string, unknown>, unknown>
-    export default component
+    const component: DefineComponent<Record<string, unknown>, Record<string, unknown>, unknown>;
+    export default component;
 }
 
-declare module '~/pages/NetCheck.vue' {
-    import type { DefineComponent } from 'vue'
+declare module "~/pages/NetCheck.vue" {
+    import type { DefineComponent } from "vue";
 
-    const component: DefineComponent<Record<string, unknown>, Record<string, unknown>, unknown>
-    export default component
+    const component: DefineComponent<Record<string, unknown>, Record<string, unknown>, unknown>;
+    export default component;
 }
 
-declare module '~/pages/HanglaProto.vue' {
-    import type { DefineComponent } from 'vue'
+declare module "~/pages/HanglaProto.vue" {
+    import type { DefineComponent } from "vue";
 
-    const component: DefineComponent<Record<string, unknown>, Record<string, unknown>, unknown>
-    export default component
+    const component: DefineComponent<Record<string, unknown>, Record<string, unknown>, unknown>;
+    export default component;
 }

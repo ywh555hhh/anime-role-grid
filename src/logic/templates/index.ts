@@ -17,19 +17,19 @@
  *
  * 用法不变，仍然是 `import { TEMPLATES } from '~/logic/templates'`。
  */
-import type { Template } from './types';
-import { PURE_TEMPLATES } from './pure';
-import { CHARACTER_TEMPLATES } from './character';
-import { WORK_TEMPLATES } from './work';
-import { RELATION_TEMPLATES } from './relation';
-import { FUN_TEMPLATES } from './fun';
-import { NSFW_TEMPLATES } from './nsfw';
-import { LIFE_TEMPLATES } from './life';
-import { NEW_2025_TEMPLATES } from './new2025';
-import { TROPES_TEMPLATES } from './tropes';
-import { buildCustomTemplates } from './custom';
+import type { Template } from "./types";
+import { PURE_TEMPLATES } from "./pure";
+import { CHARACTER_TEMPLATES } from "./character";
+import { WORK_TEMPLATES } from "./work";
+import { RELATION_TEMPLATES } from "./relation";
+import { FUN_TEMPLATES } from "./fun";
+import { NSFW_TEMPLATES } from "./nsfw";
+import { LIFE_TEMPLATES } from "./life";
+import { NEW_2025_TEMPLATES } from "./new2025";
+import { TROPES_TEMPLATES } from "./tropes";
+import { buildCustomTemplates } from "./custom";
 
-export type { Template, TemplateBadge, TemplateCategory } from './types';
+export type { Template, TemplateBadge, TemplateCategory } from "./types";
 
 export const TEMPLATES: Template[] = [
     ...PURE_TEMPLATES,

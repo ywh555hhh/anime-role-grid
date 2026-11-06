@@ -4,7 +4,7 @@
  *
  * 不写死 30 份配置，而是按行列现算 —— 少一份数据源，少一处会忘更新的地方。
  */
-import type { Template } from './types';
+import type { Template } from "./types";
 
 /** 行数上限 */
 const MAX_ROWS = 5;
@@ -25,11 +25,11 @@ export function buildCustomTemplates(): Template[] {
             list.push({
                 id: `custom_${r}x${c}`,
                 name: `自定义 ${r}x${c}`,
-                category: 'custom',
+                category: "custom",
                 label: `${r}行`,
                 cols: c,
-                defaultTitle: '自定义标题',
-                items: Array(r * c).fill('自定义'),
+                defaultTitle: "自定义标题",
+                items: Array(r * c).fill("自定义"),
             });
         }
     }

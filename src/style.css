@@ -1,125 +1,125 @@
 :root {
- font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
- line-height: 1.5;
- font-weight: 400;
+    font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
+    line-height: 1.5;
+    font-weight: 400;
 
- color-scheme: light dark;
- color: rgba(255, 255, 255, 0.87);
- background-color: #242424;
+    color-scheme: light dark;
+    color: rgba(255, 255, 255, 0.87);
+    background-color: #242424;
 
- font-synthesis: none;
- text-rendering: optimizeLegibility;
- -webkit-font-smoothing: antialiased;
- -moz-osx-font-smoothing: grayscale;
+    font-synthesis: none;
+    text-rendering: optimizeLegibility;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
 }
 
 a {
- font-weight: 500;
- color: inherit;
- text-decoration: inherit;
+    font-weight: 500;
+    color: inherit;
+    text-decoration: inherit;
 }
 
 a:hover {
- color: inherit;
+    color: inherit;
 }
 
 body {
- margin: 0;
- display: flex;
- place-items: center;
- min-width: 320px;
- height: 100vh;
- /* Fixed Height */
- width: 100vw;
- /* Fixed Width */
- overflow-x: hidden;
- /* Prevent horizontal scroll, allow vertical */
+    margin: 0;
+    display: flex;
+    place-items: center;
+    min-width: 320px;
+    height: 100vh;
+    /* Fixed Height */
+    width: 100vw;
+    /* Fixed Width */
+    overflow-x: hidden;
+    /* Prevent horizontal scroll, allow vertical */
 }
 
 h1 {
- font-size: 3.2em;
- line-height: 1.1;
+    font-size: 3.2em;
+    line-height: 1.1;
 }
 
 button {
- cursor: pointer;
+    cursor: pointer;
 }
 
 .card {
- padding: 2em;
+    padding: 2em;
 }
 
 #app {
- width: 100%;
- height: 100%;
- margin: 0;
- padding: 0;
- text-align: left;
+    width: 100%;
+    height: 100%;
+    margin: 0;
+    padding: 0;
+    text-align: left;
 }
 
 @media (prefers-color-scheme: light) {
- :root {
-  color: #213547;
-  background-color: #ffffff;
- }
+    :root {
+        color: #213547;
+        background-color: #ffffff;
+    }
 
- a:hover {
-  color: #e4007f;
- }
+    a:hover {
+        color: #e4007f;
+    }
 
- /* button overrides removed - controlled via UnoCSS */
+    /* button overrides removed - controlled via UnoCSS */
 }
 
 /* Global "Nuke" for scrollbars in Streamer Mode */
 :root.noscroll,
 :root.noscroll body {
- overflow: hidden !important;
- height: 100vh !important;
- touch-action: none !important;
- /* Disables touch scrolling too */
+    overflow: hidden !important;
+    height: 100vh !important;
+    touch-action: none !important;
+    /* Disables touch scrolling too */
 }
 
 /* Custom Scrollbar Styling (Smart & Natural) */
 .scrollbar-thin {
- scrollbar-width: thin;
- /* Firefox */
- scrollbar-color: #e5e7eb transparent;
- /* Firefox */
+    scrollbar-width: thin;
+    /* Firefox */
+    scrollbar-color: #e5e7eb transparent;
+    /* Firefox */
 }
 
 .dark .scrollbar-thin {
- scrollbar-color: #4b5563 transparent;
+    scrollbar-color: #4b5563 transparent;
 }
 
 /* Webkit (Chrome, Edge, Safari) */
 .scrollbar-thin::-webkit-scrollbar {
- width: 6px;
- height: 6px;
+    width: 6px;
+    height: 6px;
 }
 
 .scrollbar-thin::-webkit-scrollbar-track {
- background: transparent;
+    background: transparent;
 }
 
 .scrollbar-thin::-webkit-scrollbar-thumb {
- background-color: #d1d5db;
- /* Lighter gray for better blend */
- border-radius: 20px;
- border: 2px solid transparent;
- /* Creates padding effect if background-clip used, but here simpler */
+    background-color: #d1d5db;
+    /* Lighter gray for better blend */
+    border-radius: 20px;
+    border: 2px solid transparent;
+    /* Creates padding effect if background-clip used, but here simpler */
 }
 
 .scrollbar-thin:hover::-webkit-scrollbar-thumb {
- background-color: #9ca3af;
- /* Darker on hover */
+    background-color: #9ca3af;
+    /* Darker on hover */
 }
 
 .dark .scrollbar-thin::-webkit-scrollbar-thumb {
- background-color: #4b5563;
+    background-color: #4b5563;
 }
 
 .dark .scrollbar-thin:hover::-webkit-scrollbar-thumb {
- background-color: #6b7280;
+    background-color: #6b7280;
 }
 
 /* ==========================================================================
@@ -137,13 +137,11 @@ button {
    条件用「触屏」或「窄屏」：桌面端的紧凑排版不受影响。
    ========================================================================== */
 @media (pointer: coarse), (max-width: 640px) {
- input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not(
-  [type="color"]
- ),
- textarea,
- select {
-  font-size: 16px;
- }
+    input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="color"]),
+    textarea,
+    select {
+        font-size: 16px;
+    }
 }
 
 /* ==========================================================================
@@ -154,16 +152,274 @@ button {
    等于它一直在空转（输入框实际只吃到了旁边的 UnoCSS 工具类）。这里补上真定义。
    ========================================================================== */
 .input-std {
- /* 输入框字号必须 ≥16px，理由见上面那段（iOS 自动放大） */
- font-size: 16px;
- border: 1px solid #d1d5db;
- border-radius: 0.5rem;
- background: #ffffff;
- color: #111827;
- outline: none;
- transition: border-color 0.15s ease;
+    /* 输入框字号必须 ≥16px，理由见上面那段（iOS 自动放大） */
+    font-size: 16px;
+    border: 1px solid #d1d5db;
+    border-radius: 0.5rem;
+    background: #ffffff;
+    color: #111827;
+    outline: none;
+    transition: border-color 0.15s ease;
 }
 
 .input-std:focus {
- border-color: #e4007f;
+    border-color: #e4007f;
+}
+
+/* ==========================================================================
+   字体工具类
+   ==========================================================================
+
+   以前这些是写在模板里的内联 style：
+       style="font-family: 'Noto Serif SC', serif"
+   但 Prettier 格式化 Vue 模板时会把属性里的引号转义成 `&quot;`，
+   而 vue-tsc 解析不了转义后的内联样式 —— 于是「一跑格式化就编译不过」。
+
+   改成类就不存在这个问题：引号只出现在这一个地方，且**永远不会被转义**。
+
+   这也顺带符合项目自己的规范：样式用类表达，而不是散落在模板里的内联 style。
+   ========================================================================== */
+
+/* 中文衬线字体：与导出图（canvasDraw / hanglaDraw）用的是同一款 */
+.font-serif-sc {
+    font-family: "Noto Serif SC", serif;
+}
+
+/*
+   导出水印专用：额外挂两款中文衬线兜底。
+
+   导出时字体可能根本没加载出来（见 logic/fontReady.ts —— 字体被墙时
+   canvas 会逐字回退），多挂几个中文字体让水印至少能显示成中文。
+*/
+.font-serif-sc-export {
+    font-family: "Noto Serif SC", "FZQingKeBenYueSong", "FangSong", serif;
+}
+
+/* ==========================================================================
+   全局工具类
+   ==========================================================================
+
+   以前这些定义散在 10 个组件的 <style scoped> 里，而且有两个组件
+   各自抄了一份**完全相同**的动画定义（GridCanvas 与 GridEditor 的
+   `hint-cycle`）。现在统一收在这里：
+
+   - **动画与 keyframes**：UnoCSS 没有对应的原子类，放全局最合适
+   - **隐藏滚动条**：跨组件复用的工具类
+   - **第三方库产生的 DOM**（vue-draggable-plus 的拖拽幽灵）：本来就无法用
+     scoped 精确限定，`:deep()` 只是绕了一圈
+
+   组件里一律只写类名，规则在这里查。
+   ========================================================================== */
+
+/* ---------- 动画 ---------- */
+
+/* 提示语的呼吸效果：淡入 → 停留 → 淡出，8 秒一轮 */
+@keyframes hint-cycle {
+    0% {
+        opacity: 0;
+        transform: translateY(5px);
+    }
+    5% {
+        opacity: 1;
+        transform: translateY(0);
+    }
+    40% {
+        opacity: 1;
+        transform: translateY(0);
+    }
+    45% {
+        opacity: 0;
+        transform: translateY(-5px);
+    }
+    100% {
+        opacity: 0;
+        transform: translateY(-5px);
+    }
+}
+
+.animate-hint-cycle {
+    animation: hint-cycle 8s ease-in-out infinite;
+}
+
+/* 引导页图标的慢速摇摆 */
+@keyframes wobble-slow {
+    0% {
+        transform: rotate(-5deg);
+    }
+    50% {
+        transform: rotate(5deg);
+    }
+    100% {
+        transform: rotate(-5deg);
+    }
+}
+
+.animate-wobble-slow {
+    animation: wobble-slow 2s ease-in-out infinite;
+    will-change: transform;
+    transform: translateZ(0);
+    backface-visibility: hidden;
+}
+
+/* 删除模式下的抖动提示 */
+@keyframes shake {
+    0%,
+    100% {
+        transform: translate3d(0, 0, 0);
+    }
+    10%,
+    90% {
+        transform: translate3d(-1px, 0, 0) rotate(-1deg);
+    }
+    20%,
+    80% {
+        transform: translate3d(2px, 0, 0) rotate(2deg);
+    }
+    30%,
+    50%,
+    70% {
+        transform: translate3d(-2px, 0, 0) rotate(-2deg);
+    }
+    40%,
+    60% {
+        transform: translate3d(2px, 0, 0) rotate(2deg);
+    }
+}
+
+.animate-shake {
+    animation: shake 0.5s cubic-bezier(0.36, 0.07, 0.19, 0.97) both infinite;
+}
+
+/*
+   弹窗「弹入」（缩放 + 淡入）。
+
+   刻意**不叫** animate-bounce-in：
+   UnoCSS 的 animate-* 工具类里已经有 `animate-bounce-in`（一个上下弹跳的小球），
+   EasterEggModal 用的就是它。同名会同时撞上「类名」和「@keyframes 名」，
+   后者覆盖前者，两边的动画都会变形。所以这里另起一个名字。
+*/
+@keyframes pop-in {
+    0% {
+        transform: scale(0.9);
+        opacity: 0;
+    }
+    100% {
+        transform: scale(1);
+        opacity: 1;
+    }
+}
+
+.animate-pop-in {
+    animation: pop-in 0.3s cubic-bezier(0.18, 0.89, 0.32, 1.28);
+}
+
+/* 缩放弹入 */
+@keyframes scale-in {
+    from {
+        transform: scale(0.9);
+        opacity: 0;
+    }
+    to {
+        transform: scale(1);
+        opacity: 1;
+    }
+}
+
+.animate-scale-in {
+    animation: scale-in 0.3s ease-out;
+}
+
+/* ---------- 隐藏滚动条 ---------- */
+
+.no-scrollbar::-webkit-scrollbar {
+    display: none;
+}
+
+.no-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+}
+
+/* ---------- 弹窗调度器：保证经调度器渲染的弹窗永远在最上层 ---------- */
+
+/*
+   App.vue 里的顺序是 <ModalDispatcher /> 然后 <router-view />，
+   所以同层级 z-index 下弹窗会渲染在页面内容**下面**。
+   这里统一提到 9999。
+   注意只作用于「经调度器渲染」的弹窗 —— 页面里内联渲染的弹窗
+   （搜索框、导出框）不在这个包裹层内，层级关系保持原样。
+*/
+.modal-dispatcher-root .fixed {
+    z-index: 9999 !important;
+}
+
+/* ---------- vue-draggable-plus：Grid 的拖拽幽灵 ---------- */
+
+/* 拖拽时跟随鼠标的那张预览图：铺满格子、粉色描边 */
+.ghost-preview {
+    position: absolute !important;
+    top: 0;
+    left: 0;
+    width: 100% !important;
+    height: 100% !important;
+    opacity: 1 !important;
+    z-index: 50;
+    border: 3px solid #e4007f;
+    background-color: white;
+    overflow: hidden;
+}
+
+/* 幽灵内部的内容也要铺满 */
+.ghost-preview > div {
+    width: 100% !important;
+    height: 100% !important;
+    border: none !important;
+    border-radius: 0 !important;
+    box-shadow: none !important;
+    background: transparent !important;
+}
+
+.ghost-preview img {
+    width: 100% !important;
+    height: 100% !important;
+    object-fit: cover !important;
+    object-position: top !important;
+    border-radius: 0 !important;
+}
+
+/* 幽灵上不显示名字条和删除按钮 */
+.ghost-preview .absolute {
+    display: none !important;
+}
+
+/* ---------- vue-draggable-plus：StreamerDock 的拖拽态 ---------- */
+
+.sortable-ghost {
+    opacity: 0.4;
+    filter: grayscale(100%);
+}
+
+.hidden-ghost {
+    display: none;
+}
+
+/* 拖拽中隐藏删除按钮 */
+.sortable-drag .dock-delete-btn,
+.dock-drag-fallback .dock-delete-btn,
+.sortable-ghost .dock-delete-btn {
+    display: none !important;
+}
+
+/*
+   移动端拖拽回退：vue-draggable-plus 在触屏上用 fallback 元素跟随手指，
+   这里要保证它**立刻**出现且没有过渡动画 —— 否则会有橡皮筋式的延迟感。
+*/
+.sortable-fallback,
+.dock-drag-fallback {
+    opacity: 1 !important;
+    z-index: 99999 !important;
+    pointer-events: none;
+    width: auto !important;
+    display: block !important;
+    transition: none !important;
 }

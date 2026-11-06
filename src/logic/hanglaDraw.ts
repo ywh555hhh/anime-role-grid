@@ -114,8 +114,7 @@ function loadImage(url: string): Promise<HTMLImageElement> {
             window.clearTimeout(timer);
             try {
                 await img.decode();
-                if (!img.naturalWidth || !img.naturalHeight)
-                    throw new Error("0 尺寸");
+                if (!img.naturalWidth || !img.naturalHeight) throw new Error("0 尺寸");
                 resolve(img);
             } catch (e) {
                 console.warn("[hangla] 图片解码失败，降级为占位图", e);
@@ -175,17 +174,8 @@ function drawCover(
  * 尺寸完全由内容决定：宽度 = 层级标签列 + 5 格 + 两侧内边距；
  * 高度 = 标题区 + 各层级行（按物品数换行）+ 水印区 + 内边距。
  */
-export async function drawHanglaBoard(
-    options: HanglaDrawOptions,
-): Promise<string> {
-    const {
-        tiers,
-        title,
-        author,
-        showNames = true,
-        showQr = true,
-        qrUrl,
-    } = options;
+export async function drawHanglaBoard(options: HanglaDrawOptions): Promise<string> {
+    const { tiers, title, author, showNames = true, showQr = true, qrUrl } = options;
 
     // 按「真正要画的文字」补齐字体子集。
     //
@@ -202,9 +192,7 @@ export async function drawHanglaBoard(
         "oshigrid.me/hangla【我推的格子】",
     ].join("");
     // 子集只看「字体族 + 字重 + 字符」，与字号无关，所以合并成一次调用就够
-    await waitForFonts([
-        { font: `bold 44px ${THEME.typography.fontFamily}`, text: drawnText },
-    ]);
+    await waitForFonts([{ font: `bold 44px ${THEME.typography.fontFamily}`, text: drawnText }]);
 
     const cellTotalHeight = CELL_HEIGHT + (showNames ? LABEL_HEIGHT : 0);
 
@@ -217,25 +205,17 @@ export async function drawHanglaBoard(
      * 每层占几行（层内超过 columns 就换行）。
      * 注意：**空层也保留**，占 1 行高 + 一个色块标签 —— tier list 的骨架不能少。
      */
-    const linesOf = (t: DrawTier) =>
-        Math.max(1, Math.ceil(t.items.length / columns));
+    const linesOf = (t: DrawTier) => Math.max(1, Math.ceil(t.items.length / columns));
 
     const gridWidth = TIER_LABEL_WIDTH + columns * CELL_WIDTH;
     const canvasWidth = gridWidth + PADDING * 2;
     const authorText = author?.trim() ?? "";
     const titleBlockHeight =
-        TITLE_HEIGHT +
-        SUBTITLE_HEIGHT +
-        (authorText ? AUTHOR_HEIGHT : 0) +
-        GAP_BEFORE_GRID;
-    const gridHeight = tiers.reduce(
-        (sum, t) => sum + linesOf(t) * cellTotalHeight,
-        0,
-    );
+        TITLE_HEIGHT + SUBTITLE_HEIGHT + (authorText ? AUTHOR_HEIGHT : 0) + GAP_BEFORE_GRID;
+    const gridHeight = tiers.reduce((sum, t) => sum + linesOf(t) * cellTotalHeight, 0);
     // 用户可以关掉二维码；关掉后底部只留一条窄水印
     const watermarkHeight = qrUrl && showQr ? QR_WATERMARK_HEIGHT : WATERMARK_HEIGHT;
-    const canvasHeight =
-        titleBlockHeight + gridHeight + watermarkHeight + PADDING;
+    const canvasHeight = titleBlockHeight + gridHeight + watermarkHeight + PADDING;
 
     const canvas = document.createElement("canvas");
     canvas.width = canvasWidth;
@@ -256,11 +236,7 @@ export async function drawHanglaBoard(
 
     ctx.fillStyle = THEME.colors.accent;
     ctx.font = `bold 32px ${THEME.typography.fontFamily}`;
-    ctx.fillText(
-        "从夯到拉的排序头脑战",
-        canvasWidth / 2,
-        TITLE_HEIGHT + SUBTITLE_HEIGHT / 2,
-    );
+    ctx.fillText("从夯到拉的排序头脑战", canvasWidth / 2, TITLE_HEIGHT + SUBTITLE_HEIGHT / 2);
 
     // ---- 排表人（可选，留空则不占高度）----
     if (authorText) {
@@ -281,9 +257,7 @@ export async function drawHanglaBoard(
     // 先把所有图并发载入（与主站一样，失败降级为占位图）
     const allItems = tiers.flatMap((t) => t.items);
     const images = await Promise.all(
-        allItems.map((it) =>
-            loadImage(proxyImage(bgmThumb(it.image, EXPORT_IMAGE_WIDTH))),
-        ),
+        allItems.map((it) => loadImage(proxyImage(bgmThumb(it.image, EXPORT_IMAGE_WIDTH)))),
     );
     // 按**对象身份**索引图片，而不是按 id / uid。
     // 按 id 会在角色/作品 id 碰撞时串图；按 uid 则依赖调用方一定传对。
@@ -314,18 +288,8 @@ export async function drawHanglaBoard(
         ctx.fillStyle = "#ffffff";
         ctx.textAlign = "center";
         ctx.textBaseline = "middle";
-        fitText(
-            ctx,
-            tier.name,
-            TIER_LABEL_WIDTH - 32,
-            Math.min(44, tierHeight / 2),
-            16,
-        );
-        ctx.fillText(
-            tier.name,
-            gridLeft + TIER_LABEL_WIDTH / 2,
-            rowTop + tierHeight / 2,
-        );
+        fitText(ctx, tier.name, TIER_LABEL_WIDTH - 32, Math.min(44, tierHeight / 2), 16);
+        ctx.fillText(tier.name, gridLeft + TIER_LABEL_WIDTH / 2, rowTop + tierHeight / 2);
         ctx.restore();
 
         // ---- 逐格绘制：只画「真的有物品」的格子 ----
@@ -359,11 +323,7 @@ export async function drawHanglaBoard(
                 ctx.textAlign = "center";
                 ctx.textBaseline = "middle";
                 fitText(ctx, item.name, CELL_WIDTH - 16, 28, 12);
-                ctx.fillText(
-                    item.name,
-                    x + CELL_WIDTH / 2,
-                    y + CELL_HEIGHT + LABEL_HEIGHT / 2,
-                );
+                ctx.fillText(item.name, x + CELL_WIDTH / 2, y + CELL_HEIGHT + LABEL_HEIGHT / 2);
             }
 
             // 这一格的外框
@@ -390,12 +350,7 @@ export async function drawHanglaBoard(
     ctx.strokeRect(gridLeft, gridTop, gridWidth, gridHeight);
 
     // ---- 水印：与主站同构（logo + 【我推的格子】 + 二维码） ----
-    await drawWatermark(
-        ctx,
-        canvasWidth,
-        canvasHeight,
-        qrUrl && showQr ? qrUrl : undefined,
-    );
+    await drawWatermark(ctx, canvasWidth, canvasHeight, qrUrl && showQr ? qrUrl : undefined);
 
     return canvas.toDataURL("image/png");
 }
@@ -426,9 +381,7 @@ async function drawWatermark(
             const qrSize = 120;
             // 锚到水印带（同主站 getStandardFooterLayout 的思路），
             // 不能锚在 height - PADDING/2 上 —— 那样下沿会超出画布被裁掉
-            const qrY =
-                height - QR_WATERMARK_HEIGHT +
-                (QR_WATERMARK_HEIGHT - qrSize) / 2;
+            const qrY = height - QR_WATERMARK_HEIGHT + (QR_WATERMARK_HEIGHT - qrSize) / 2;
             ctx.drawImage(qr, cursorX, qrY, qrSize, qrSize);
             cursorX += qrSize + 18;
             urlY = qrY + qrSize / 2;

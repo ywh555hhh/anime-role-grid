@@ -47,9 +47,7 @@ export class CanvasGenerator {
             img.referrerPolicy = "no-referrer";
 
             const timer = setTimeout(() => {
-                console.warn(
-                    `Image load timed out after ${IMAGE_LOAD_TIMEOUT_MS}ms: ${url}`,
-                );
+                console.warn(`Image load timed out after ${IMAGE_LOAD_TIMEOUT_MS}ms: ${url}`);
                 this.resolvePlaceholder(resolve);
             }, IMAGE_LOAD_TIMEOUT_MS);
 
@@ -109,8 +107,7 @@ export class CanvasGenerator {
         if (creator || filler) {
             let text = "";
             if (creator && !filler) text = `制表: ${creator}`;
-            else if (creator && filler)
-                text = `制表: ${creator}  |  填表: ${filler}`;
+            else if (creator && filler) text = `制表: ${creator}  |  填表: ${filler}`;
             else if (!creator && filler) text = `填表: ${filler}`;
 
             // Approx width: Chinese char ~ 30px, Space ~ 10px
@@ -157,8 +154,7 @@ export class CanvasGenerator {
         const template = TEMPLATES.find((t) => t.id === templateId);
 
         const cols = template ? template.cols : templateConfig?.cols || 3;
-        const templateTitle =
-            options.templateName || template?.name || "自定义模版";
+        const templateTitle = options.templateName || template?.name || "自定义模版";
         const defaultTitle = template?.defaultTitle || customTitle;
 
         // 字体要按「真正会画出来的文字」补齐子集 —— 详见 fontReady.ts 的说明。
@@ -195,20 +191,18 @@ export class CanvasGenerator {
 
         const isChallenge = options.variant === "challenge";
         const hasStandardQRCode =
-            options.variant !== "challenge" &&
-            options.showQRCode !== false &&
-            !!options.qrCodeUrl;
+            options.variant !== "challenge" && options.showQRCode !== false && !!options.qrCodeUrl;
         const gridHeight = rows * actualCellHeight;
         const titleHeight = isChallenge ? CHALLENGE_TITLE_HEIGHT : TITLE_HEIGHT;
         const padding = PADDING;
         const canvasWidth = gridWidth + padding * 2;
 
         // Calculate Footer Layout ahead of time
-        let watermarkHeight = hasStandardQRCode
-            ? QR_WATERMARK_HEIGHT
-            : WATERMARK_HEIGHT;
-        let footerLayout: { mode: "horizontal" | "vertical"; height: number } =
-            { mode: "horizontal", height: 160 };
+        let watermarkHeight = hasStandardQRCode ? QR_WATERMARK_HEIGHT : WATERMARK_HEIGHT;
+        let footerLayout: { mode: "horizontal" | "vertical"; height: number } = {
+            mode: "horizontal",
+            height: 160,
+        };
 
         if (isChallenge) {
             footerLayout = this.getFooterLayout(
@@ -219,8 +213,7 @@ export class CanvasGenerator {
             watermarkHeight = footerLayout.height;
         }
 
-        const canvasHeight =
-            titleHeight + gridHeight + watermarkHeight + padding;
+        const canvasHeight = titleHeight + gridHeight + watermarkHeight + padding;
 
         this.canvas.width = canvasWidth;
         this.canvas.height = canvasHeight;
@@ -232,20 +225,9 @@ export class CanvasGenerator {
         if (isChallenge) {
             this.ctx.fillStyle = "#ffffff";
             this.ctx.fillRect(0, 0, canvasWidth, canvasHeight);
-            this.drawChallengeHeader(
-                customTitle,
-                templateTitle,
-                canvasWidth,
-                titleHeight,
-            );
+            this.drawChallengeHeader(customTitle, templateTitle, canvasWidth, titleHeight);
         } else {
-            this.drawTitle(
-                customTitle,
-                defaultTitle,
-                templateTitle,
-                canvasWidth,
-                titleHeight,
-            );
+            this.drawTitle(customTitle, defaultTitle, templateTitle, canvasWidth, titleHeight);
         }
 
         // 图片统一走同源代理（/api/img）。
@@ -275,14 +257,7 @@ export class CanvasGenerator {
             const img = images[i] || null;
 
             if (item) {
-                this.drawCellContent(
-                    x,
-                    y,
-                    item,
-                    img,
-                    options.showName,
-                    options.showLabel,
-                );
+                this.drawCellContent(x, y, item, img, options.showName, options.showLabel);
             }
         }
 
@@ -361,10 +336,7 @@ export class CanvasGenerator {
         this.ctx.font = `bold ${fontSize}px ${THEME.typography.fontFamily}`;
 
         // Measure and shrink if needed
-        while (
-            this.ctx.measureText(titleText).width > maxWidth &&
-            fontSize > 20
-        ) {
+        while (this.ctx.measureText(titleText).width > maxWidth && fontSize > 20) {
             fontSize -= 2;
             this.ctx.font = `bold ${fontSize}px ${THEME.typography.fontFamily}`;
         }
@@ -404,10 +376,7 @@ export class CanvasGenerator {
             this.ctx.rect(x, y, CELL_WIDTH, imageAreaHeight);
             this.ctx.clip();
 
-            const scale = Math.max(
-                CELL_WIDTH / img.width,
-                imageAreaHeight / img.height,
-            );
+            const scale = Math.max(CELL_WIDTH / img.width, imageAreaHeight / img.height);
             const w = img.width * scale;
             const h = img.height * scale;
 
@@ -438,19 +407,12 @@ export class CanvasGenerator {
             const nameText = item.character?.name || "";
             const maxNameWidth = CELL_WIDTH * 0.9;
 
-            while (
-                this.ctx.measureText(nameText).width > maxNameWidth &&
-                fontSize > 10
-            ) {
+            while (this.ctx.measureText(nameText).width > maxNameWidth && fontSize > 10) {
                 fontSize -= 1;
                 this.ctx.font = `bold ${fontSize}px ${THEME.typography.fontFamily}`;
             }
 
-            this.ctx.fillText(
-                nameText,
-                x + CELL_WIDTH / 2,
-                nameY + LABEL_HEIGHT / 2,
-            );
+            this.ctx.fillText(nameText, x + CELL_WIDTH / 2, nameY + LABEL_HEIGHT / 2);
             this.ctx.restore();
         }
 
@@ -472,19 +434,12 @@ export class CanvasGenerator {
             this.ctx.textBaseline = "middle";
 
             const maxLabelWidth = CELL_WIDTH * 0.9;
-            while (
-                this.ctx.measureText(item.label).width > maxLabelWidth &&
-                labelFontSize > 10
-            ) {
+            while (this.ctx.measureText(item.label).width > maxLabelWidth && labelFontSize > 10) {
                 labelFontSize -= 1;
                 this.ctx.font = `bold ${labelFontSize}px ${THEME.typography.fontFamily}`;
             }
 
-            this.ctx.fillText(
-                item.label,
-                x + CELL_WIDTH / 2,
-                labelY + LABEL_HEIGHT / 2,
-            );
+            this.ctx.fillText(item.label, x + CELL_WIDTH / 2, labelY + LABEL_HEIGHT / 2);
             this.ctx.restore();
         }
     }
@@ -546,8 +501,7 @@ export class CanvasGenerator {
         showQRCode?: boolean,
     ) {
         const isStandard = variant !== "challenge";
-        const hasStandardQRCode =
-            isStandard && showQRCode !== false && !!qrCodeUrl;
+        const hasStandardQRCode = isStandard && showQRCode !== false && !!qrCodeUrl;
         const leftY = height - padding / 2;
         const x = width - padding;
         const y = leftY;
@@ -556,8 +510,7 @@ export class CanvasGenerator {
         this.ctx.textBaseline = "bottom";
 
         if (hasStandardQRCode && qrCodeUrl) {
-            const { qrSize, logoSize, fontSize, textGap } =
-                this.getStandardFooterLayout(width);
+            const { qrSize, logoSize, fontSize, textGap } = this.getStandardFooterLayout(width);
 
             try {
                 const [logo, qr] = await Promise.all([
@@ -566,10 +519,7 @@ export class CanvasGenerator {
                 ]);
 
                 const qrX = padding;
-                const qrY =
-                    height -
-                    QR_WATERMARK_HEIGHT +
-                    (QR_WATERMARK_HEIGHT - qrSize) / 2;
+                const qrY = height - QR_WATERMARK_HEIGHT + (QR_WATERMARK_HEIGHT - qrSize) / 2;
                 this.ctx.drawImage(qr, qrX, qrY, qrSize, qrSize);
 
                 this.ctx.textAlign = "right";
@@ -581,13 +531,7 @@ export class CanvasGenerator {
                 const w2 = this.ctx.measureText(part2).width;
                 const w3 = this.ctx.measureText(part3).width;
 
-                this.ctx.drawImage(
-                    logo,
-                    x - logoSize,
-                    y - logoSize + 8,
-                    logoSize,
-                    logoSize,
-                );
+                this.ctx.drawImage(logo, x - logoSize, y - logoSize + 8, logoSize, logoSize);
 
                 const textEndX = x - logoSize - textGap;
                 this.ctx.fillStyle = THEME.colors.watermark;
@@ -630,13 +574,7 @@ export class CanvasGenerator {
         try {
             const logo = await this.loadImage("/logo.png");
             const logoSize = 40;
-            this.ctx.drawImage(
-                logo,
-                x - logoSize,
-                y - logoSize + 5,
-                logoSize,
-                logoSize,
-            );
+            this.ctx.drawImage(logo, x - logoSize, y - logoSize + 5, logoSize, logoSize);
 
             const textEndX = x - logoSize - 10;
 
@@ -656,12 +594,7 @@ export class CanvasGenerator {
         this.ctx.restore();
     }
 
-    private drawChallengeHeader(
-        title: string,
-        subtitle: string,
-        width: number,
-        height: number,
-    ) {
+    private drawChallengeHeader(title: string, subtitle: string, width: number, height: number) {
         const centerX = width / 2;
 
         // --- 1. Main Title (Dynamic Sizing) ---
@@ -676,10 +609,7 @@ export class CanvasGenerator {
         let mainFontSize = 72;
         this.ctx.font = `bold ${mainFontSize}px "Noto Serif SC", serif`;
 
-        while (
-            this.ctx.measureText(title).width > maxWidth &&
-            mainFontSize > 30
-        ) {
+        while (this.ctx.measureText(title).width > maxWidth && mainFontSize > 30) {
             mainFontSize -= 2;
             this.ctx.font = `bold ${mainFontSize}px "Noto Serif SC", serif`;
         }
@@ -694,11 +624,7 @@ export class CanvasGenerator {
         if (subtitle) {
             this.ctx.font = `bold 32px ${THEME.typography.fontFamily}`;
             this.ctx.fillStyle = THEME.colors.accent; // pink
-            this.ctx.fillText(
-                `— ${subtitle} —`,
-                centerX,
-                titleY + mainFontSize / 2 + 35,
-            );
+            this.ctx.fillText(`— ${subtitle} —`, centerX, titleY + mainFontSize / 2 + 35);
         }
     }
 
@@ -748,13 +674,7 @@ export class CanvasGenerator {
                 const totalTopWidth = logoSize + 20 + brandWidth;
                 const startX = centerX - totalTopWidth / 2;
 
-                ctx.drawImage(
-                    logo,
-                    startX,
-                    topY - logoSize / 2,
-                    logoSize,
-                    logoSize,
-                );
+                ctx.drawImage(logo, startX, topY - logoSize / 2, logoSize, logoSize);
 
                 const textX = startX + logoSize + 20;
                 ctx.textAlign = "left";
@@ -765,14 +685,10 @@ export class CanvasGenerator {
                 ctx.fillStyle = THEME.colors.accent;
                 ctx.fillText(part2, textX + ctx.measureText(part1).width, topY);
                 ctx.fillStyle = THEME.colors.watermark || "#9ca3af";
-                ctx.fillText(
-                    part3,
-                    textX + ctx.measureText(part1 + part2).width,
-                    topY,
-                );
+                ctx.fillText(part3, textX + ctx.measureText(part1 + part2).width, topY);
 
                 // 2. Attribution (Auto-Shrink)
-                let attrY = topY + 50;
+                const attrY = topY + 50;
                 const hasCreator = !!creator;
                 const hasFiller = !!filler;
 
@@ -782,17 +698,13 @@ export class CanvasGenerator {
 
                     let text = "";
                     if (hasCreator && !hasFiller) text = `制表: ${creator}`;
-                    else if (hasCreator && hasFiller)
-                        text = `制表: ${creator} | 填表: ${filler}`;
+                    else if (hasCreator && hasFiller) text = `制表: ${creator} | 填表: ${filler}`;
                     else if (!hasCreator && hasFiller) text = `填表: ${filler}`;
 
                     // Auto-shrink logic
                     let attrFontSize = 24;
                     ctx.font = `bold ${attrFontSize}px ${THEME.typography.fontFamily}`;
-                    while (
-                        ctx.measureText(text).width > boxWidth &&
-                        attrFontSize > 12
-                    ) {
+                    while (ctx.measureText(text).width > boxWidth && attrFontSize > 12) {
                         attrFontSize -= 2;
                         ctx.font = `bold ${attrFontSize}px ${THEME.typography.fontFamily}`;
                     }
@@ -858,8 +770,7 @@ export class CanvasGenerator {
                     ctx.fillStyle = "#6b7280";
                     let text = "";
                     if (hasCreator && !hasFiller) text = `制表: ${creator}`;
-                    else if (hasCreator && hasFiller)
-                        text = `制表: ${creator}  |  填表: ${filler}`;
+                    else if (hasCreator && hasFiller) text = `制表: ${creator}  |  填表: ${filler}`;
                     else if (!hasCreator && hasFiller) text = `填表: ${filler}`;
 
                     // Simple truncating if needed (though getFooterLayout ensure it fits mostly)

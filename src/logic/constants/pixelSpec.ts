@@ -18,7 +18,7 @@
  * 比例全部来自 `THEME.layout`（Bangumi 图原始比例 120/187、名字条 25/187），
  * 所以 UI 端与导出图端的规格也不会各说各话。
  */
-import { THEME } from './theme';
+import { THEME } from "./theme";
 
 /**
  * 单元格宽度（px）。
