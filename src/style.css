@@ -1,126 +1,125 @@
 :root {
-  font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
-  line-height: 1.5;
-  font-weight: 400;
+ font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
+ line-height: 1.5;
+ font-weight: 400;
 
-  color-scheme: light dark;
-  color: rgba(255, 255, 255, 0.87);
-  background-color: #242424;
+ color-scheme: light dark;
+ color: rgba(255, 255, 255, 0.87);
+ background-color: #242424;
 
-  font-synthesis: none;
-  text-rendering: optimizeLegibility;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
+ font-synthesis: none;
+ text-rendering: optimizeLegibility;
+ -webkit-font-smoothing: antialiased;
+ -moz-osx-font-smoothing: grayscale;
 }
 
 a {
-  font-weight: 500;
-  color: inherit;
-  text-decoration: inherit;
+ font-weight: 500;
+ color: inherit;
+ text-decoration: inherit;
 }
 
 a:hover {
-  color: inherit;
+ color: inherit;
 }
 
 body {
-  margin: 0;
-  display: flex;
-  place-items: center;
-  min-width: 320px;
-  height: 100vh;
-  /* Fixed Height */
-  width: 100vw;
-  /* Fixed Width */
-  overflow-x: hidden;
-  /* Prevent horizontal scroll, allow vertical */
+ margin: 0;
+ display: flex;
+ place-items: center;
+ min-width: 320px;
+ height: 100vh;
+ /* Fixed Height */
+ width: 100vw;
+ /* Fixed Width */
+ overflow-x: hidden;
+ /* Prevent horizontal scroll, allow vertical */
 }
 
 h1 {
-  font-size: 3.2em;
-  line-height: 1.1;
+ font-size: 3.2em;
+ line-height: 1.1;
 }
 
-
 button {
-  cursor: pointer;
+ cursor: pointer;
 }
 
 .card {
-  padding: 2em;
+ padding: 2em;
 }
 
 #app {
-  width: 100%;
-  height: 100%;
-  margin: 0;
-  padding: 0;
-  text-align: left;
+ width: 100%;
+ height: 100%;
+ margin: 0;
+ padding: 0;
+ text-align: left;
 }
 
 @media (prefers-color-scheme: light) {
-  :root {
-    color: #213547;
-    background-color: #ffffff;
-  }
+ :root {
+  color: #213547;
+  background-color: #ffffff;
+ }
 
-  a:hover {
-    color: #e4007f;
-  }
+ a:hover {
+  color: #e4007f;
+ }
 
-  /* button overrides removed - controlled via UnoCSS */
+ /* button overrides removed - controlled via UnoCSS */
 }
 
 /* Global "Nuke" for scrollbars in Streamer Mode */
 :root.noscroll,
 :root.noscroll body {
-  overflow: hidden !important;
-  height: 100vh !important;
-  touch-action: none !important;
-  /* Disables touch scrolling too */
+ overflow: hidden !important;
+ height: 100vh !important;
+ touch-action: none !important;
+ /* Disables touch scrolling too */
 }
 
 /* Custom Scrollbar Styling (Smart & Natural) */
 .scrollbar-thin {
-  scrollbar-width: thin;
-  /* Firefox */
-  scrollbar-color: #e5e7eb transparent;
-  /* Firefox */
+ scrollbar-width: thin;
+ /* Firefox */
+ scrollbar-color: #e5e7eb transparent;
+ /* Firefox */
 }
 
 .dark .scrollbar-thin {
-  scrollbar-color: #4b5563 transparent;
+ scrollbar-color: #4b5563 transparent;
 }
 
 /* Webkit (Chrome, Edge, Safari) */
 .scrollbar-thin::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
+ width: 6px;
+ height: 6px;
 }
 
 .scrollbar-thin::-webkit-scrollbar-track {
-  background: transparent;
+ background: transparent;
 }
 
 .scrollbar-thin::-webkit-scrollbar-thumb {
-  background-color: #d1d5db;
-  /* Lighter gray for better blend */
-  border-radius: 20px;
-  border: 2px solid transparent;
-  /* Creates padding effect if background-clip used, but here simpler */
+ background-color: #d1d5db;
+ /* Lighter gray for better blend */
+ border-radius: 20px;
+ border: 2px solid transparent;
+ /* Creates padding effect if background-clip used, but here simpler */
 }
 
 .scrollbar-thin:hover::-webkit-scrollbar-thumb {
-  background-color: #9ca3af;
-  /* Darker on hover */
+ background-color: #9ca3af;
+ /* Darker on hover */
 }
 
 .dark .scrollbar-thin::-webkit-scrollbar-thumb {
-  background-color: #4b5563;
+ background-color: #4b5563;
 }
 
 .dark .scrollbar-thin:hover::-webkit-scrollbar-thumb {
-  background-color: #6b7280;
+ background-color: #6b7280;
 }
 
 /* ==========================================================================
@@ -138,12 +137,13 @@ button {
    条件用「触屏」或「窄屏」：桌面端的紧凑排版不受影响。
    ========================================================================== */
 @media (pointer: coarse), (max-width: 640px) {
-
-  input:not([type='checkbox']):not([type='radio']):not([type='range']):not([type='color']),
-  textarea,
-  select {
-    font-size: 16px;
-  }
+ input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not(
+  [type="color"]
+ ),
+ textarea,
+ select {
+  font-size: 16px;
+ }
 }
 
 /* ==========================================================================
@@ -154,16 +154,16 @@ button {
    等于它一直在空转（输入框实际只吃到了旁边的 UnoCSS 工具类）。这里补上真定义。
    ========================================================================== */
 .input-std {
-  /* 输入框字号必须 ≥16px，理由见上面那段（iOS 自动放大） */
-  font-size: 16px;
-  border: 1px solid #d1d5db;
-  border-radius: 0.5rem;
-  background: #ffffff;
-  color: #111827;
-  outline: none;
-  transition: border-color 0.15s ease;
+ /* 输入框字号必须 ≥16px，理由见上面那段（iOS 自动放大） */
+ font-size: 16px;
+ border: 1px solid #d1d5db;
+ border-radius: 0.5rem;
+ background: #ffffff;
+ color: #111827;
+ outline: none;
+ transition: border-color 0.15s ease;
 }
 
 .input-std:focus {
-  border-color: #e4007f;
+ border-color: #e4007f;
 }

@@ -205,7 +205,9 @@ export async function drawHanglaBoard(
         "oshigrid.me/hangla【我推的格子】",
     ].join("");
     // 子集只看「字体族 + 字重 + 字符」，与字号无关，所以合并成一次调用就够
-    await waitForFonts([{ font: `bold 44px ${THEME.typography.fontFamily}`, text: drawnText }]);
+    await waitForFonts([
+        { font: `bold 44px ${THEME.typography.fontFamily}`, text: drawnText },
+    ]);
 
     const cellTotalHeight = CELL_HEIGHT + (showNames ? LABEL_HEIGHT : 0);
 
