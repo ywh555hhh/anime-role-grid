@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, onMounted } from "vue";
+import { onMounted } from "vue";
 import Header from "~/components/Header.vue";
 import Footer from "~/components/Footer.vue";
 import GuideModal from "~/components/GuideModal.vue";
@@ -15,7 +15,7 @@ import { TEMPLATES } from "~/logic/templates";
 // Store
 const store = useGridStore();
 const modalStore = useModalStore; // NEW
-const { loadTemplate, currentTemplateId, isStreamerMode } = store;
+const { loadTemplate, currentTemplateId, currentTemplateName, isStreamerMode } = store;
 
 // Init Logic (First Time Guide)
 // Logic moved to onMounted and uses modalStore
@@ -66,9 +66,9 @@ onMounted(() => {
 });
 
 // Template Logic (for UI Display)
-const currentTemplateName = computed(() => {
-    return TEMPLATES.find((t) => t.id === currentTemplateId.value)?.name || "默认模板";
-});
+//
+// 模板名直接用 store 里的那个 —— 它对**自定义模板**也正确
+// （返回用户自己起的名字），而这里的本地 computed 只会返回「默认模板」。
 
 function handleManualJoinGroup() {
     modalStore.openModal(
@@ -196,16 +196,24 @@ function handleResetTags() {
 
                         <!-- Template Switcher -->
                         <div class="flex flex-col items-center gap-3 w-full mt-2">
+                            <!--
+                                这里只做**状态展示**，不再放切换按钮了。
+
+                                以前「当前模板：xxx ▸」是个 14px 的小按钮，
+                                而真正的主操作栏在页面最底下 ——
+                                手机用户滚到那里看到的是导出按钮，压根看不到这里。
+
+                                现在「切换模板」被提升到了底部操作栏里，
+                                和「保存高清图片」同视觉级别（见 GridActionButtons）。
+                                一个动作只留一个入口，用户不用纠结按哪个；
+                                这里保留纯文字状态，让人知道自己正在做哪个模板。
+                            -->
                             <div class="flex items-center gap-2">
                                 <img src="/logo.png" class="w-5 h-5 object-contain" />
                                 <label class="text-sm text-black font-bold">当前模板:</label>
-                                <button
-                                    @click="handleOpenGallery"
-                                    class="btn flex items-center justify-center gap-2 bg-white border-2 border-black px-4 py-1.5 rounded-md text-sm font-bold min-w-[160px] transition-colors hover:border-primary hover:text-primary"
-                                >
-                                    <span>{{ currentTemplateName }}</span>
-                                    <div i-carbon-chevron-right class="text-xs" />
-                                </button>
+                                <span class="text-sm text-gray-600 truncate max-w-[200px]">
+                                    {{ currentTemplateName }}
+                                </span>
                             </div>
 
                             <button

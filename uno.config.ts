@@ -69,6 +69,23 @@ export default defineConfig({
             "btn bg-primary text-white hover:bg-primary-hover px-4 py-2 flex items-center justify-center gap-2 font-bold shadow-md hover:shadow-lg",
         "btn-outline-primary":
             "btn bg-white text-primary border-2 border-primary hover:bg-primary-light px-4 py-2 flex items-center justify-center gap-2 font-bold shadow-sm",
+        /**
+         * 大号描边按钮 —— 与 `btn-primary` 同视觉级别。
+         *
+         * 为什么单独定义一个 shortcut，而不是在用法上直接堆
+         * `text-lg justify-between px-5 shadow-md`：
+         *
+         * UnoCSS 里 **shortcut 和工具类谁赢，由它们在产物 CSS 里的先后决定**，
+         * 不是由 class 属性的书写顺序决定。实测：
+         *   `.justify-between` 在 `.btn-outline-primary` 之后 → 覆盖成功 ✓
+         *   `.px-5`          在 `.px-4` 之后        → 覆盖成功 ✓
+         *   `.shadow-sm`     在 `.shadow-md` 之后  → **shadow-md 被覆盖 ✗**
+         *
+         * 也就是说「靠 class 堆叠去改 shortcut」是不可靠的。
+         * 所以这里把属性**写死进 shortcut 本身**，不依赖层叠顺序。
+         */
+        "btn-outline-primary-lg":
+            "btn bg-white text-primary border-2 border-primary hover:bg-primary-light px-5 py-2 flex items-center justify-between gap-2 font-bold text-lg shadow-md hover:shadow-lg",
         "btn-outline-gray":
             "btn bg-white text-gray-600 border-2 border-gray-300 hover:bg-gray-50 px-4 py-2 flex items-center justify-center gap-2 font-medium hover:text-gray-800 transition-colors",
         "card-base":

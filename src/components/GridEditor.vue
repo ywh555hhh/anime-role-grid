@@ -482,9 +482,11 @@ function handleVideoExport(settings: VideoSettings) {
                     <div class="mt-4 w-full flex justify-center">
                         <GridActionButtons
                             :saving="saving"
+                            :template-name="currentTemplateName"
                             @save="handleSave"
                             @export-video="isVideoModalOpen = true"
                             @create-new="router.push('/create')"
+                            @open-gallery="emit('open-gallery')"
                         >
                             <template #extra-actions>
                                 <button
