@@ -3,7 +3,7 @@
 > **Visualize Your Taste in ACG.**
 > 一个现代化的、高颜值的二次元成分表生成器。
 
-![Example](./example.png)
+![Example](./docs/example.png)
 
 ## ✨ 核心特性 (v3.0)
 

@@ -70,6 +70,21 @@ graph TD
 *   [**API_Reference.md**](API_Reference.md): 后端接口定义。
 *   [**Agent_Guidelines.md**](Agent_Guidelines.md): 给 AI 助手看的操作规范。
 
+### 🔴 动手前必读
+*   [**Pitfalls.md**](Pitfalls.md): **踩坑清单**。每条都是「错误 → 后果 → 规则 → 现状」。
+    标 ⏳ 的是仍待修的欠账（当前有 4 条），标 ✅ 的有工具或测试在守着。
+*   [**../.agent/rules/code.md**](../.agent/rules/code.md): 项目最高法典（铁律 / 目录隔离 / 提交检查清单）。
+
+### 📝 决策过程 (RFCs)
+*   [**RFCs/**](RFCs/): 记录决策的文档。
+    [001 弹窗调度器](RFCs/001-modal-dispatcher.md) ·
+    [002 工程纪律落地](RFCs/002-tooling-policy.md)
+
+### 📦 归档 (Archive)
+*   [**archive/**](archive/): 记录决策来龙去脉的**非现役**文档。
+    两套从未实现的架构设想（`v2/` 平行主干、`v3/` 通用引擎）都在这里。
+    详见 [archive/README.md](archive/README.md)。
+
 ---
 
 ## 3. 关键数据流向 (Critical Flows)

@@ -227,8 +227,12 @@ UnoCSS 的 `animate-bounce-in` 原样保留给 EasterEggModal。
 
 ## 7. 后续
 
-- `src_legacy_backup/` 与 `legacy_html/`（39 个文件、零引用）仍在版本库里，
-  建议单独一个提交归档掉
-- `docs/v2`、`docs/v3` 两套废弃架构文档也该归档
-- 建议加 pre-commit hook（lint-staged）作为最后一道防线，
-  但**前提是** CI 里也跑同一套 —— 否则 hook 会被 `--no-verify` 绕开
+- [x] `src_legacy_backup/` 与 `legacy_html/`（39 个文件、零引用）已从版本库移除
+      —— 见 `codex/architecture-cleanup` 分支上的清理提交
+- [x] `docs/v2`、`docs/v3` 两套废弃架构文档已归档到 `docs/archive/architecture/`
+      —— 其中 `docs/v2/00_Legacy_Pitfalls_and_Guidelines.md` 因为
+      **「记录的教训今天仍然有效」**被提升为现役文档 `docs/Pitfalls.md`
+- [ ] 建议加 pre-commit hook（lint-staged）作为最后一道防线，
+      但**前提是** CI 里也跑同一套 —— 否则 hook 会被 `--no-verify` 绕开
+- [ ] `docs/Pitfalls.md` 里标 ⏳ 的四条欠账待排期：
+      手写 SQL、巨型组件、业务与 UI 耦合、以及公开的 Bangumi Token

@@ -58,8 +58,11 @@ trigger: always_on
 *   **必须**: 使用 Drizzle ORM 构建查询。
 ## 4. 架构防腐 (Architecture Integrity)
 ### 4.1 目录隔离
-*   `src/v2` 的代码 **严禁** 引用 `src/logic` (V1) 的代码，除非是明确的 `LegacyAdapter`。
-*   `shared` 目录 **严禁** 引用 `src` 或 `functions` 的代码（防止循环依赖）。
+*   `shared/` 目录 **严禁** 引用 `src` 或 `functions` 的代码（防止循环依赖）。
+    它是前后端唯一的契约层，必须保持零依赖。
+*   `src/logic/` 是**纯业务逻辑层**：不 import Vue 组件、不碰 DOM 之外的浏览器 API。
+    需要 Vue 响应式时，用 composable 把它包在 `src/stores/` 或 `src/composables/` 里。
+    （V2「平行主干」架构已于 2026-11 归档，从未实现 —— 见 `docs/archive/README.md`。）
 ### 4.2 避免“幻觉代码”
 *   在修改代码前，**先阅读**相关目录下的 `README.md` 或现有代码风格。
 *   不要随意发明新的工具函数，先检查 `vueuse` 或 `lodash` 是否已有实现。

@@ -29,6 +29,13 @@ npm run check            # type-check + lint + test:run
 
 > 工具链的取舍与规则来源见 `docs/RFCs/002-tooling-policy.md`。
 
+### 文档
+
+- `docs/INDEX.md` —— **开发者导航**，先看这个确认要改的功能属于哪个板块
+- `docs/Pitfalls.md` —— **踩坑清单**，每条都标了「现状」（⏳ = 仍待修的欠账）
+- `docs/RFCs/` —— 决策过程
+- `docs/archive/` —— 归档区，**非现役**（两套从未实现的架构设想都在里面）
+
 ## Tech Stack
 
 - **Frontend**: Vue 3 (Script Setup) + TypeScript + Vite + UnoCSS

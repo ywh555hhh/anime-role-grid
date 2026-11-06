@@ -1,7 +1,18 @@
 # V2 文档索引 (Documentation Index)
 
+> [!WARNING]
+> **本目录已归档（2026-11-06）。V2 从未实现。**
+>
+> 「平行主干」方案被否决了 —— 实际演进方向是**在 V1 代码上持续加固**
+> （D1 快照预计算、图片同源代理、/hangla 分站），而不是重写。
+>
+> 下面这些文档描述的是**一个不存在的架构**。它们的**决策理由**仍有参考价值，
+> 但其中的目录结构、接口定义**不要照着写**。
+>
+> 唯一例外：避坑指南（00）因为「记录的教训今天仍然有效」，
+> 已被提升为现役文档 → **[docs/Pitfalls.md](../../../Pitfalls.md)**。
+
 本目录包含了 **Context Engine (V2)** 重构的基础文档。
-V2 的所有开发工作必须严格遵守这些文档中定义的标准。
 
 | 文档 | 描述 |
 | :--- | :--- |
@@ -14,7 +25,7 @@ V2 的所有开发工作必须严格遵守这些文档中定义的标准。
 | **[10_AI_Coding_Standards.md](./10_AI_Coding_Standards.md)** | **AI 开发宪章**：**必须遵守**的前后端代码规范，防止代码劣化。 |
 | **[07_Advanced_Features.md](./07_Advanced_Features.md)** | **高级特性**：Party War (党争统计)、Streamer Mode (主播模式) 的 V2 适配方案。 |
 | **[08_Monetization_Strategy.md](./08_Monetization_Strategy.md)** | **商业化**：会员分级体系与定制皮肤系统的技术要求。 |
-| **[00_Legacy_Pitfalls_and_Guidelines.md](./00_Legacy_Pitfalls_and_Guidelines.md)** | **🔴 避坑指南**：从 V1 继承的血泪教训（数据库、部署、性能）。**必读**。 |
+| **[00_Legacy_Pitfalls_and_Guidelines.md](../../../Pitfalls.md)** | **🔴 避坑指南**：从 V1 继承的血泪教训（数据库、部署、性能）。<br>⚠️ 已移出本目录 → 现役文档 **[docs/Pitfalls.md](../../../Pitfalls.md)**（加了「现状」一栏） |
 
 ## 开发哲学
 1.  **严格类型 (Strict Types)**: 拒绝 `any`。类型定义必须在 `shared/` 目录中前后端共享。
