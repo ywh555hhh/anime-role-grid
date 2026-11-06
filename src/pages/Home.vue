@@ -108,20 +108,31 @@ function selectTemplate(id: string) {
 
 // function selectTemplate removed due to duplication
 
+/**
+ * 打开模板画廊。
+ *
+ * 以前这里是「先试弹热门推荐，只有热门推荐在冷却期里才回落到画廊」——
+ * 也就是说**用户点了「切换模板」，大概率看到的不是画廊**，
+ * 而是「热门推荐」，还得再点一次「更多」才能到画廊。
+ *
+ * 那套逻辑本来是为了「进站先推点内容」，但它**劫持了用户的显式点击**。
+ * 现在「切换模板」是操作栏里和「保存高清图片」同级别的大按钮，
+ * 用户点它就是要画廊 —— 给什么就该给什么。
+ *
+ * 热门推荐仍然会自动弹（见 onMounted 里的入场策略），
+ * 但那它自己的事，不该插在用户和明确目标之间。
+ */
 function handleOpenGallery() {
-    // Trigger specific logic: Click Switch Template -> Try Trending -> Fallback to Real Gallery
-    tryShowTrending(() => {
-        modalStore.openModal(
-            TemplateGalleryModal,
-            {
-                show: true,
-                currentId: currentTemplateId.value,
-                onClose: () => modalStore.closeModal(),
-                onSelect: selectTemplate,
-            },
-            MODAL_PRIORITY.INTERACTION,
-        );
-    });
+    modalStore.openModal(
+        TemplateGalleryModal,
+        {
+            show: true,
+            currentId: currentTemplateId.value,
+            // 关闭不用传 onClose —— 调度器已经处理了 @close → closeModal()
+            onSelect: selectTemplate,
+        },
+        MODAL_PRIORITY.INTERACTION,
+    );
 }
 
 function handleShowGuide() {
