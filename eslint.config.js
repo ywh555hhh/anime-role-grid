@@ -32,8 +32,6 @@ export default tseslint.config(
             "node_modules/**",
             ".wrangler/**",
             "workers/**/.wrangler/**",
-            "src_legacy_backup/**",
-            "legacy_html/**",
             "public/**",
         ],
     },

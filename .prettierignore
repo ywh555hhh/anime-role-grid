@@ -4,10 +4,6 @@ node_modules
 .wrangler
 package-lock.json
 
-# 死代码：不参与格式化（见 docs 里的 legacy 说明）
-src_legacy_backup
-legacy_html
-
 # 静态资源
 public
 
