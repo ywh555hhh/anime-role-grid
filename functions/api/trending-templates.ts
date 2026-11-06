@@ -5,7 +5,7 @@ interface Env {
 /**
  * 快照键。**写入方是 `workers/snapshot-refresh/src/index.ts`，两边必须一致**。
  */
-const SNAPSHOT_KEY = 'trending-templates';
+const SNAPSHOT_KEY = "trending-templates";
 
 /** 新鲜度窗口（秒）：在此时间内直接返回缓存，不碰 D1 */
 const FRESH_TTL_SECONDS = 1800;
@@ -18,10 +18,10 @@ const FRESH_TTL_SECONDS = 1800;
 const CACHE_ENTRY_TTL_SECONDS = 604800;
 
 /** 记录这份快照是什么时候从数据库取到的，用于判断新鲜度 */
-const HEADER_FETCHED_AT = 'x-snapshot-fetched-at';
+const HEADER_FETCHED_AT = "x-snapshot-fetched-at";
 
 /** 观测标记 */
-const HEADER_STATUS = 'X-Trending-Templates-Cache';
+const HEADER_STATUS = "X-Trending-Templates-Cache";
 
 /**
  * 热门模板列表
@@ -39,44 +39,44 @@ export const onRequestGet: PagesFunction<Env> = async (context) => {
     try {
         const cache = caches.default;
         const cacheKey = new Request(`https://trending-templates-cache.internal/${SNAPSHOT_KEY}`, {
-            method: 'GET',
+            method: "GET",
         });
         const cached = await cache.match(cacheKey);
 
         // 1) 缓存仍新鲜 → 直接返回
         if (cached && isFresh(cached)) {
-            return forClient(cached, 'HIT');
+            return forClient(cached, "HIT");
         }
 
         // 2) 回源：读快照
         try {
             const snapshot = await env.DB.prepare(
-                'SELECT data, updated_at FROM snapshot_cache WHERE key = ?',
+                "SELECT data, updated_at FROM snapshot_cache WHERE key = ?",
             )
                 .bind(SNAPSHOT_KEY)
                 .first<{ data: string; updated_at: number }>();
 
             const response = buildSnapshotResponse(snapshot);
             await putCache(cacheKey, response);
-            return forClient(response, cached ? 'REFRESH' : 'MISS');
+            return forClient(response, cached ? "REFRESH" : "MISS");
         } catch (error) {
             // 3) 回源失败 → 降级到旧快照，而不是报 500
-            console.error('[TrendingTemplates] 读快照失败，尝试降级到旧快照:', error);
-            if (cached) return forClient(cached, 'STALE-DB-ERROR');
+            console.error("[TrendingTemplates] 读快照失败，尝试降级到旧快照:", error);
+            if (cached) return forClient(cached, "STALE-DB-ERROR");
             return new Response(
-                JSON.stringify({ error: 'Trending templates are temporarily unavailable' }),
+                JSON.stringify({ error: "Trending templates are temporarily unavailable" }),
                 {
                     status: 503,
-                    headers: { 'Content-Type': 'application/json', 'Cache-Control': 'no-store' },
+                    headers: { "Content-Type": "application/json", "Cache-Control": "no-store" },
                 },
             );
         }
     } catch (error) {
-        console.error('[TrendingTemplates] unexpected failure:', error);
+        console.error("[TrendingTemplates] unexpected failure:", error);
         // 不把原始 D1 错误泄露给客户端
-        return new Response(JSON.stringify({ error: 'Failed to load trending templates' }), {
+        return new Response(JSON.stringify({ error: "Failed to load trending templates" }), {
             status: 500,
-            headers: { 'Content-Type': 'application/json', 'Cache-Control': 'no-store' },
+            headers: { "Content-Type": "application/json", "Cache-Control": "no-store" },
         });
     }
 };
@@ -100,7 +100,7 @@ async function putCache(key: Request, response: Response): Promise<void> {
     try {
         await caches.default.put(key, response.clone());
     } catch (error) {
-        console.error('[TrendingTemplates] 写边缘缓存失败:', error);
+        console.error("[TrendingTemplates] 写边缘缓存失败:", error);
     }
 }
 
@@ -109,22 +109,20 @@ function forClient(response: Response, status: string): Response {
         status: response.status,
         headers: new Headers(response.headers),
     });
-    out.headers.set('Cache-Control', `public, max-age=${FRESH_TTL_SECONDS}`);
+    out.headers.set("Cache-Control", `public, max-age=${FRESH_TTL_SECONDS}`);
     out.headers.set(HEADER_STATUS, status);
     return out;
 }
 
-function buildSnapshotResponse(
-    snapshot: { data: string; updated_at: number } | null,
-): Response {
+function buildSnapshotResponse(snapshot: { data: string; updated_at: number } | null): Response {
     let results: unknown[] = [];
 
-    if (!snapshot || typeof snapshot.data !== 'string') {
+    if (!snapshot || typeof snapshot.data !== "string") {
         // 与 /api/trending 同样的原则：快照缺失时返回空列表而不是回落实时聚合，
         // 保证读路径不可能击穿 D1 配额。
         console.error(
             `[TrendingTemplates] 快照缺失 key=${SNAPSHOT_KEY}，返回空列表。` +
-                ' 请检查 workers/snapshot-refresh 是否已运行。',
+                " 请检查 workers/snapshot-refresh 是否已运行。",
         );
     } else {
         try {
@@ -141,10 +139,10 @@ function buildSnapshotResponse(
 
     return new Response(JSON.stringify({ results }), {
         headers: {
-            'Content-Type': 'application/json',
-            'Cache-Control': `public, max-age=${CACHE_ENTRY_TTL_SECONDS}`,
+            "Content-Type": "application/json",
+            "Cache-Control": `public, max-age=${CACHE_ENTRY_TTL_SECONDS}`,
             [HEADER_FETCHED_AT]: String(Math.floor(Date.now() / 1000)),
-            'X-Trending-Templates-Snapshot-Age': snapshot ? String(ageSeconds) : 'none',
+            "X-Trending-Templates-Snapshot-Age": snapshot ? String(ageSeconds) : "none",
         },
     });
 }

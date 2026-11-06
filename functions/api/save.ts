@@ -1,20 +1,25 @@
 interface Env {
     DB: D1Database;
+    /**
+     * IP 哈希用的盐。没配就**拒绝写入** —— 没有盐的哈希等于裸 MD5，
+     * 可以被彩虹表直接反查，那就不是匿名了。
+     */
+    PRIVACY_SALT: string;
 }
 
 interface SaveRequest {
     templateId: string;
     customTitle?: string;
     items: Array<{
-        label: string,
-        imgUrl?: string,
+        label: string;
+        imgUrl?: string;
         character?: {
-            name: string,
-            image?: string,
-            bangumiId?: number,
-            category?: string,
-            subjectType?: string
-        }
+            name: string;
+            image?: string;
+            bangumiId?: number;
+            category?: string;
+            subjectType?: string;
+        };
     }>;
 }
 
@@ -22,43 +27,43 @@ interface SaveRequest {
  * Identify device type from User Agent
  */
 function getDeviceType(userAgent: string | null): string {
-    if (!userAgent) return 'Unknown';
+    if (!userAgent) return "Unknown";
     if (/mobile|android|iphone|ipad|ipod/i.test(userAgent)) {
-        return 'Mobile';
+        return "Mobile";
     }
-    return 'Desktop';
+    return "Desktop";
 }
 
 /**
  * Generate privacy-preserving hash from IP
  * Uses SHA-256 with a static salt
  */
-async function generateUserHash(ip: string, env: any): Promise<string> {
+async function generateUserHash(ip: string, env: Env): Promise<string> {
     if (!env || !env.PRIVACY_SALT) {
-        throw new Error('FATAL: PRIVACY_SALT is not configured. refusing to save data.');
+        throw new Error("FATAL: PRIVACY_SALT is not configured. refusing to save data.");
     }
     const SALT = env.PRIVACY_SALT;
     const msgBuffer = new TextEncoder().encode(ip + SALT);
-    const hashBuffer = await crypto.subtle.digest('SHA-256', msgBuffer);
+    const hashBuffer = await crypto.subtle.digest("SHA-256", msgBuffer);
     const hashArray = Array.from(new Uint8Array(hashBuffer));
-    return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+    return hashArray.map((b) => b.toString(16).padStart(2, "0")).join("");
 }
 
 export const onRequestPost: PagesFunction<Env> = async (context) => {
     const { request, env } = context;
 
     try {
-        const body = await request.json() as SaveRequest;
+        const body = (await request.json()) as SaveRequest;
         const { templateId, customTitle, items } = body;
 
         if (!templateId || !Array.isArray(items)) {
-            return new Response(JSON.stringify({ error: 'Invalid payload' }), { status: 400 });
+            return new Response(JSON.stringify({ error: "Invalid payload" }), { status: 400 });
         }
 
         // 1. Collect Metadata
-        const ip = request.headers.get('CF-Connecting-IP') || '0.0.0.0';
-        const userAgent = request.headers.get('User-Agent');
-        const referer = request.headers.get('Referer');
+        const ip = request.headers.get("CF-Connecting-IP") || "0.0.0.0";
+        const userAgent = request.headers.get("User-Agent");
+        const referer = request.headers.get("Referer");
 
         // 2. Compute Privacy Data
         const userHash = await generateUserHash(ip, env);
@@ -73,8 +78,8 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
         // Insert Main Record with Analytics Data
         statements.push(
             env.DB.prepare(
-                'INSERT INTO saves (id, template_id, custom_title, user_hash, device_type, referer) VALUES (?, ?, ?, ?, ?, ?)'
-            ).bind(saveId, templateId, customTitle || null, userHash, deviceType, referer || null)
+                "INSERT INTO saves (id, template_id, custom_title, user_hash, device_type, referer) VALUES (?, ?, ?, ?, ?, ?)",
+            ).bind(saveId, templateId, customTitle || null, userHash, deviceType, referer || null),
         );
 
         // Insert Items
@@ -84,7 +89,7 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
                 let imgUrl = item.imgUrl || item.character.image || null;
 
                 // OPTIMIZATION: Do not save Base64 data to D1 to save space
-                if (imgUrl && imgUrl.startsWith('data:image')) {
+                if (imgUrl && imgUrl.startsWith("data:image")) {
                     imgUrl = null;
                 }
 
@@ -95,8 +100,17 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
 
                 statements.push(
                     env.DB.prepare(
-                        'INSERT INTO save_items (save_id, slot_index, slot_label, character_name, img_url, bangumi_id, item_category, subject_type) VALUES (?, ?, ?, ?, ?, ?, ?, ?)'
-                    ).bind(saveId, i, item.label, item.character.name, imgUrl, bangumiId, category, subjectType)
+                        "INSERT INTO save_items (save_id, slot_index, slot_label, character_name, img_url, bangumi_id, item_category, subject_type) VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
+                    ).bind(
+                        saveId,
+                        i,
+                        item.label,
+                        item.character.name,
+                        imgUrl,
+                        bangumiId,
+                        category,
+                        subjectType,
+                    ),
                 );
             }
         }
@@ -107,10 +121,10 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
         }
 
         return new Response(JSON.stringify({ success: true, id: saveId }), {
-            headers: { 'Content-Type': 'application/json' }
+            headers: { "Content-Type": "application/json" },
         });
-
-    } catch (e: any) {
-        return new Response(JSON.stringify({ error: e.message }), { status: 500 });
+    } catch (e: unknown) {
+        const message = e instanceof Error ? e.message : "Internal Server Error";
+        return new Response(JSON.stringify({ error: message }), { status: 500 });
     }
-}
+};

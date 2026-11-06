@@ -1,43 +1,44 @@
-import 'dotenv/config'
+import "dotenv/config";
 
-const accessToken = process.env.VITE_BANGUMI_ACCESS_TOKEN
-const userAgent = process.env.VITE_BANGUMI_USER_AGENT
+const accessToken = process.env.VITE_BANGUMI_ACCESS_TOKEN;
+const userAgent = process.env.VITE_BANGUMI_USER_AGENT;
 
 async function testYearFilter(keyword: string, year: number) {
     if (!accessToken || !userAgent) {
-        console.error('Missing env vars')
-        return
+        console.error("Missing env vars");
+        return;
     }
 
-    const url = 'https://api.bgm.tv/v0/search/subjects'
-    const query = `${keyword} ${year}`
-    console.log(`Testing Query: "${query}"`)
+    const url = "https://api.bgm.tv/v0/search/subjects";
+    const query = `${keyword} ${year}`;
+    console.log(`Testing Query: "${query}"`);
 
     try {
         const res = await fetch(url, {
-            method: 'POST',
+            method: "POST",
             headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${accessToken}`,
-                'User-Agent': userAgent,
+                "Content-Type": "application/json",
+                Authorization: `Bearer ${accessToken}`,
+                "User-Agent": userAgent,
             },
             body: JSON.stringify({
                 keyword: query,
                 filter: { type: [2] },
-                limit: 5
-            })
-        })
-        const data = await res.json()
+                limit: 5,
+            }),
+        });
+        const data = (await res.json()) as { data?: { date?: string; name: string }[] };
         if (data.data) {
-            console.log(`Hits: ${data.data.length}`)
-            data.data.forEach((d: any) => console.log(`- ${d.date} | ${d.name}`))
+            console.log(`Hits: ${data.data.length}`);
+            data.data.forEach((d: { date?: string; name: string }) =>
+                console.log(`- ${d.date} | ${d.name}`),
+            );
         } else {
-            console.log('No data:', data)
+            console.log("No data:", data);
         }
-
     } catch (e) {
-        console.error(e)
+        console.error(e);
     }
 }
 
-testYearFilter('Gundam', 2022) 
+testYearFilter("Gundam", 2022);

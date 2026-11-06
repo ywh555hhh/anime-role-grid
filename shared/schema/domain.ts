@@ -3,13 +3,13 @@
  * @description Zod Schemas for Domain Entities
  * Used for API Validation (Backend) and Form Validation (Frontend).
  */
-import { z } from 'zod';
+import { z } from "zod";
 
 // =============================================================================
 // 1. Photo Schema
 // =============================================================================
 export const PhotoMetaSchema = z.object({
-    name: z.string().min(1, 'Name is required'),
+    name: z.string().min(1, "Name is required"),
     originId: z.string().optional(),
     sourceWork: z.string().optional(),
     copyright: z.string().optional(),
@@ -19,7 +19,7 @@ export const PhotoSchema = z.object({
     id: z.string().uuid(),
     url: z.string().url(),
     meta: PhotoMetaSchema,
-    provider: z.enum(['bangumi', 'local', 'anilist', 'other']),
+    provider: z.enum(["bangumi", "local", "anilist", "other"]),
 });
 
 // =============================================================================
@@ -34,19 +34,26 @@ export const CardStateSchema = z.object({
 export const CardSchema = z.object({
     id: z.string().uuid(),
     photoId: z.string().uuid(),
-    gameData: z.record(z.unknown()).default({}),
+    gameData: z.record(z.string(), z.unknown()).default({}),
     state: CardStateSchema,
 });
 
 // =============================================================================
 // 3. Template Schema
 // =============================================================================
-export const TemplateCategorySchema = z.enum(['character', 'work', 'relation', 'fun', 'nsfw', 'custom']);
+export const TemplateCategorySchema = z.enum([
+    "character",
+    "work",
+    "relation",
+    "fun",
+    "nsfw",
+    "custom",
+]);
 
 export const GridSlotSchema = z.object({
     index: z.number().int().min(0),
     label: z.string(),
-    rules: z.record(z.unknown()).optional(),
+    rules: z.record(z.string(), z.unknown()).optional(),
     aspectRatio: z.number().positive().optional(),
 });
 

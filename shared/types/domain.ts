@@ -20,7 +20,7 @@ export interface Photo {
     };
 
     // Where did this photo come from?
-    provider: 'bangumi' | 'local' | 'anilist' | 'other';
+    provider: "bangumi" | "local" | "anilist" | "other";
 }
 
 // =============================================================================
@@ -45,7 +45,7 @@ export interface Card {
 // =============================================================================
 // 3. Template (The Game Board)
 // =============================================================================
-export type TemplateCategory = 'character' | 'work' | 'relation' | 'fun' | 'nsfw' | 'custom';
+export type TemplateCategory = "character" | "work" | "relation" | "fun" | "nsfw" | "custom";
 
 export interface GridSlot {
     index: number; // 0-based index

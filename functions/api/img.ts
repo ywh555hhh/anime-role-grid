@@ -16,30 +16,28 @@
  */
 
 /** 允许回源的站域名后缀 */
-const ALLOWED_SUFFIXES = ['bgm.tv', 'chii.in'] as const
+const ALLOWED_SUFFIXES = ["bgm.tv", "chii.in"] as const;
 
 /** 缓存时长（秒）：图片内容不可变，缓存一年 */
-const CACHE_SECONDS = 31_536_000
+const CACHE_SECONDS = 31_536_000;
 
 /** 回源请求头 */
-const UPSTREAM_UA = 'AnimeRoleGrid/1.0 (+https://oshigrid.me)'
+const UPSTREAM_UA = "AnimeRoleGrid/1.0 (+https://oshigrid.me)";
 
 /**
  * 回源超时（毫秒）。
  * 若上游长时间无响应（网络异常、被黑洞等），必须主动放弃，
  * 否则用户的 <img> 会一直挂着转圈，而不是快速显示为裂图。
  */
-const UPSTREAM_TIMEOUT_MS = 20_000
+const UPSTREAM_TIMEOUT_MS = 20_000;
 
 /**
  * 判断主机名是否在允许回源的白名单内。
  * 这是本项目唯一的 SSRF 判定入口，parseTarget 与 fetch 前都会调用它。
  */
 function isAllowedHost(hostname: string): boolean {
-    const host = hostname.toLowerCase()
-    return ALLOWED_SUFFIXES.some(
-        (suffix) => host === suffix || host.endsWith(`.${suffix}`),
-    )
+    const host = hostname.toLowerCase();
+    return ALLOWED_SUFFIXES.some((suffix) => host === suffix || host.endsWith(`.${suffix}`));
 }
 
 /**
@@ -47,109 +45,104 @@ function isAllowedHost(hostname: string): boolean {
  * @returns 合法则返回强制 https 后的 URL，否则返回 null
  */
 function parseTarget(raw: string | null): URL | null {
-    if (!raw) return null
+    if (!raw) return null;
 
-    let target: URL
+    let target: URL;
     try {
-        target = new URL(raw)
+        target = new URL(raw);
     } catch {
-        return null
+        return null;
     }
 
-    if (target.protocol !== 'http:' && target.protocol !== 'https:') return null
-    if (!isAllowedHost(target.hostname)) return null
+    if (target.protocol !== "http:" && target.protocol !== "https:") return null;
+    if (!isAllowedHost(target.hostname)) return null;
 
     // 统一升级到 https，避免上游返回 http 资源造成混合内容
-    target.protocol = 'https:'
-    return target
+    target.protocol = "https:";
+    return target;
 }
 
-function jsonError(
-    status: number,
-    error: string,
-    extra?: Record<string, unknown>,
-): Response {
+function jsonError(status: number, error: string, extra?: Record<string, unknown>): Response {
     return new Response(JSON.stringify({ error, ...extra }), {
         status,
         headers: {
-            'Content-Type': 'application/json; charset=utf-8',
-            'Cache-Control': 'no-store',
+            "Content-Type": "application/json; charset=utf-8",
+            "Cache-Control": "no-store",
         },
-    })
+    });
 }
 
 export const onRequestGet: PagesFunction = async (context) => {
-    let requestUrl: URL
+    let requestUrl: URL;
     try {
-        requestUrl = new URL(context.request.url)
+        requestUrl = new URL(context.request.url);
     } catch {
-        return jsonError(400, 'Malformed request URL')
+        return jsonError(400, "Malformed request URL");
     }
 
-    const target = parseTarget(requestUrl.searchParams.get('url'))
+    const target = parseTarget(requestUrl.searchParams.get("url"));
     if (!target) {
-        return jsonError(400, 'Invalid or disallowed "url" parameter')
+        return jsonError(400, 'Invalid or disallowed "url" parameter');
     }
 
     // SSRF 防护：目标地址只能来自上面的白名单校验结果。
     // 协议已被强制为 https，主机名必须命中 ALLOWED_SUFFIXES。
     // 这里在发起请求前再确认一次，保证 fetch 的目标永远是已校验的值。
-    if (target.protocol !== 'https:' || !isAllowedHost(target.hostname)) {
-        return jsonError(400, 'Disallowed upstream target')
+    if (target.protocol !== "https:" || !isAllowedHost(target.hostname)) {
+        return jsonError(400, "Disallowed upstream target");
     }
-    const upstreamUrl = target.toString()
+    const upstreamUrl = target.toString();
 
-    const cache = caches.default
+    const cache = caches.default;
     // 用独立的内部域名做缓存键，与本站其它缓存隔离
-    const cacheKey = new Request(
-        `https://img-cache.internal/${encodeURIComponent(upstreamUrl)}`,
-        { method: 'GET' },
-    )
+    const cacheKey = new Request(`https://img-cache.internal/${encodeURIComponent(upstreamUrl)}`, {
+        method: "GET",
+    });
 
-    const cached = await cache.match(cacheKey)
-    if (cached) return cached
+    const cached = await cache.match(cacheKey);
+    if (cached) return cached;
 
-    let upstream: Response
+    let upstream: Response;
     try {
         upstream = await fetch(upstreamUrl, {
             headers: {
                 // 刻意不发送 Referer
-                'User-Agent': UPSTREAM_UA,
-                Accept: 'image/avif,image/webp,image/*,*/*;q=0.8',
+                "User-Agent": UPSTREAM_UA,
+                Accept: "image/avif,image/webp,image/*,*/*;q=0.8",
             },
-            redirect: 'follow',
+            redirect: "follow",
             signal: AbortSignal.timeout(UPSTREAM_TIMEOUT_MS),
-        })
+        });
     } catch (error) {
-        const timedOut = error instanceof Error && error.name === 'TimeoutError'
+        const timedOut = error instanceof Error && error.name === "TimeoutError";
         return jsonError(
             timedOut ? 504 : 502,
-            timedOut ? 'Upstream timed out' : 'Upstream fetch failed',
+            timedOut ? "Upstream timed out" : "Upstream fetch failed",
             { detail: String(error) },
-        )
+        );
     }
 
     if (!upstream.ok) {
-        return jsonError(502, 'Upstream returned an error', {
+        return jsonError(502, "Upstream returned an error", {
             upstreamStatus: upstream.status,
-        })
+        });
     }
 
-    const headers = new Headers()
-    headers.set('Content-Type', upstream.headers.get('Content-Type') || 'image/jpeg')
+    const headers = new Headers();
+    headers.set("Content-Type", upstream.headers.get("Content-Type") || "image/jpeg");
 
-    const contentLength = upstream.headers.get('Content-Length')
-    if (contentLength) headers.set('Content-Length', contentLength)
+    const contentLength = upstream.headers.get("Content-Length");
+    if (contentLength) headers.set("Content-Length", contentLength);
 
-    headers.set('Cache-Control', `public, max-age=${CACHE_SECONDS}, immutable`)
-    headers.set('X-Content-Type-Options', 'nosniff')
-    headers.set('X-Image-Proxy', 'anime-role-grid')
+    headers.set("Cache-Control", `public, max-age=${CACHE_SECONDS}, immutable`);
+    headers.set("X-Content-Type-Options", "nosniff");
+    headers.set("X-Image-Proxy", "anime-role-grid");
 
-    const response = new Response(upstream.body, { status: 200, headers })
+    const response = new Response(upstream.body, { status: 200, headers });
 
     // 写入边缘缓存；失败也不影响本次响应
-    const forCache = response.clone()
-    context.waitUntil(cache.put(cacheKey, forCache).catch(() => undefined))
+    const forCache = response.clone();
+    context.waitUntil(cache.put(cacheKey, forCache).catch(() => undefined));
 
-    return response
-}
+    return response;
+};

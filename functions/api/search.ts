@@ -1,3 +1,8 @@
+interface Env {
+    /** Bangumi API 的访问令牌。配在 Cloudflare Pages 的环境变量里，绝不下发到浏览器。 */
+    BANGUMI_TOKEN: string;
+}
+
 /**
  * 只接受非负整数，其它一律丢弃。
  *
@@ -6,9 +11,9 @@
  * 也让「上游 URL 的取值仅来自白名单 + 已校验整数」这件事对读者一目了然。
  */
 function toNonNegativeInt(value: unknown): number | null {
-    const n = typeof value === 'number' ? value : Number(value)
-    if (!Number.isInteger(n) || n < 0) return null
-    return n
+    const n = typeof value === "number" ? value : Number(value);
+    if (!Number.isInteger(n) || n < 0) return null;
+    return n;
 }
 
 /**
@@ -19,18 +24,18 @@ function toNonNegativeInt(value: unknown): number | null {
  */
 function isOwnOrigin(origin: string): boolean {
     try {
-        const { hostname, protocol } = new URL(origin)
-        if (protocol !== 'https:' && protocol !== 'http:') return false
+        const { hostname, protocol } = new URL(origin);
+        if (protocol !== "https:" && protocol !== "http:") return false;
         return (
-            hostname === 'oshigrid.me' ||
-            hostname.endsWith('.oshigrid.me') ||
-            hostname.endsWith('.anime-role-grid.pages.dev') ||
+            hostname === "oshigrid.me" ||
+            hostname.endsWith(".oshigrid.me") ||
+            hostname.endsWith(".anime-role-grid.pages.dev") ||
             // 本地开发：vite dev / wrangler pages dev
-            hostname === 'localhost' ||
-            hostname === '127.0.0.1'
-        )
+            hostname === "localhost" ||
+            hostname === "127.0.0.1"
+        );
     } catch {
-        return false
+        return false;
     }
 }
 
@@ -45,34 +50,42 @@ function isOwnOrigin(origin: string): boolean {
  *   因此只对自家来源回显 Origin，其余一律不发 CORS 头。
  */
 function withCors(response: Response, request: Request): Response {
-    const origin = request.headers.get('Origin')
-    if (!origin || !isOwnOrigin(origin)) return response
+    const origin = request.headers.get("Origin");
+    if (!origin || !isOwnOrigin(origin)) return response;
 
     const out = new Response(response.body, {
         status: response.status,
         headers: new Headers(response.headers),
-    })
-    out.headers.set('Access-Control-Allow-Origin', origin)
+    });
+    out.headers.set("Access-Control-Allow-Origin", origin);
     // 同一 URL 对不同 Origin 的响应不同，必须声明 Vary
-    out.headers.set('Vary', 'Origin')
-    return out
+    out.headers.set("Vary", "Origin");
+    return out;
 }
 
-export const onRequestPost = async (context: any) => {
+export const onRequestPost: PagesFunction<Env> = async (context) => {
     const { request, env } = context;
 
     try {
         // 1. Parse Request
-        const body = await request.clone().json(); // Clone because we might need it for cache key
+        // Clone because we might need it for cache key
+        // body 形状在下方被原样转发给 Bangumi，所以刻意放宽成 index signature，
+        // 只把本页真正要用的三个字段单独收窄。
+        const body = (await request.clone().json()) as {
+            searchMode?: string;
+            limit?: unknown;
+            offset?: unknown;
+            [key: string]: unknown;
+        };
         // 分页参数必须提出来放到 query string 上：
         // Bangumi v0 的搜索**不读 body 里的 limit/offset**，只认 URL 查询参数。
         // 实测：body 里传 limit=1 / limit=25 都只返回 10 条；offset=10 / 20 拿到的是同一页。
         const { searchMode, limit, offset, ...bangumiPayload } = body;
 
         // 2. Determine Endpoint
-        let targetUrl = 'https://api.bgm.tv/v0/search/characters';
-        if (searchMode === 'subject') targetUrl = 'https://api.bgm.tv/v0/search/subjects';
-        else if (searchMode === 'person') targetUrl = 'https://api.bgm.tv/v0/search/persons';
+        let targetUrl = "https://api.bgm.tv/v0/search/characters";
+        if (searchMode === "subject") targetUrl = "https://api.bgm.tv/v0/search/subjects";
+        else if (searchMode === "person") targetUrl = "https://api.bgm.tv/v0/search/persons";
 
         // SSRF 安全：上游主机来自上面三个**字面量常量**，客户端无法影响；
         // 客户端只能影响 query 的值，而 searchParams.set 会做百分号编码，
@@ -80,8 +93,8 @@ export const onRequestPost = async (context: any) => {
         const upstream = new URL(targetUrl);
         const pageLimit = toNonNegativeInt(limit);
         const pageOffset = toNonNegativeInt(offset);
-        if (pageLimit !== null) upstream.searchParams.set('limit', String(pageLimit));
-        if (pageOffset !== null) upstream.searchParams.set('offset', String(pageOffset));
+        if (pageLimit !== null) upstream.searchParams.set("limit", String(pageLimit));
+        if (pageOffset !== null) upstream.searchParams.set("offset", String(pageOffset));
 
         // 3. CACHE STRATEGY (Risk B)
         // Create a unique cache key based on the request body
@@ -89,30 +102,30 @@ export const onRequestPost = async (context: any) => {
         // 缓存键必须带上分页参数，否则第 2 页会命中第 1 页的缓存。
         // （body 里已经不再有 limit/offset，所以显式补上。）
         cacheUrl.searchParams.set(
-            'cache_key',
+            "cache_key",
             JSON.stringify({ ...bangumiPayload, limit: pageLimit, offset: pageOffset }),
         );
         // Critical Fix: Cache API only accepts GET requests. We synthesize a GET request as the key.
         const cacheKey = new Request(cacheUrl.toString(), {
-            method: 'GET',
+            method: "GET",
         });
         const cache = caches.default;
 
         let response = await cache.match(cacheKey);
 
         if (!response) {
-            console.log('[Search] Cache miss, fetching from Bangumi...');
+            console.log("[Search] Cache miss, fetching from Bangumi...");
 
             // Get Token
             const token = env.BANGUMI_TOKEN;
-            if (!token) throw new Error('Server Config Error: Missing Bangumi Token');
+            if (!token) throw new Error("Server Config Error: Missing Bangumi Token");
 
             const bgmRes = await fetch(upstream.toString(), {
-                method: 'POST',
+                method: "POST",
                 headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${token}`,
-                    'User-Agent': 'AnimeGrid/1.0 (https://github.com/ywh555hhh/anime-role-grid)',
+                    "Content-Type": "application/json",
+                    Authorization: `Bearer ${token}`,
+                    "User-Agent": "AnimeGrid/1.0 (https://github.com/ywh555hhh/anime-role-grid)",
                 },
                 body: JSON.stringify(bangumiPayload),
             });
@@ -121,9 +134,9 @@ export const onRequestPost = async (context: any) => {
             if (!bgmRes.ok) {
                 // Return generic 502/500, do NOT leak upstream body
                 console.error(`[Bangumi Error] ${bgmRes.status} ${bgmRes.statusText}`);
-                return new Response(JSON.stringify({ error: 'Upstream Service Unavailable' }), {
+                return new Response(JSON.stringify({ error: "Upstream Service Unavailable" }), {
                     status: 502,
-                    headers: { 'Content-Type': 'application/json' }
+                    headers: { "Content-Type": "application/json" },
                 });
             }
 
@@ -134,26 +147,25 @@ export const onRequestPost = async (context: any) => {
             // 否则第一个调用方的 Origin 会被缓存下来、回给后来的其他人。
             response = new Response(JSON.stringify(data), {
                 headers: {
-                    'Content-Type': 'application/json',
-                    'Cache-Control': 'public, max-age=3600' // Cache for 1 hour
-                }
+                    "Content-Type": "application/json",
+                    "Cache-Control": "public, max-age=3600", // Cache for 1 hour
+                },
             });
 
             // Put into cache (must use await waitUntill in Workers, but here we just await)
             await cache.put(cacheKey, response.clone());
         } else {
-            console.log('[Search] Cache hit!');
+            console.log("[Search] Cache hit!");
         }
 
         // CORS 头按当前请求现算（同源调用拿不到也不影响）
         return withCors(response, request);
-
-    } catch (err: any) {
+    } catch (err: unknown) {
         // Global Error Masking (Risk C)
-        console.error('[Internal Proxy Error]', err);
-        return new Response(JSON.stringify({ error: 'Internal Server Error' }), {
+        console.error("[Internal Proxy Error]", err);
+        return new Response(JSON.stringify({ error: "Internal Server Error" }), {
             status: 500,
-            headers: { 'Content-Type': 'application/json' },
+            headers: { "Content-Type": "application/json" },
         });
     }
 };

@@ -3,7 +3,7 @@
  * @description API Communication Standards
  * Defines the envelope for all API responses and shared headers.
  */
-import { z } from 'zod';
+import { z } from "zod";
 
 // =============================================================================
 // 1. Authentication Headers
@@ -11,7 +11,7 @@ import { z } from 'zod';
 // The stateless identity header.
 // Frontend generates a hash (IP + UserAgent + Salt) and sends it in this header.
 export const AuthHeaderSchema = z.object({
-    'x-user-hash': z.string().min(8).max(128).describe('Anonymous User Hash'),
+    "x-user-hash": z.string().min(8).max(128).describe("Anonymous User Hash"),
 });
 
 // =============================================================================
@@ -48,10 +48,10 @@ export type ApiResponse<T> = ApiResponseSuccess<T> | ApiResponseError;
 // 3. Error Codes (Constants)
 // =============================================================================
 export const API_ERROR_CODES = {
-    VALIDATION_ERROR: 'VALIDATION_ERROR', // 400 Bad Request
-    UNAUTHORIZED: 'UNAUTHORIZED',         // 401 Unauthorized
-    FORBIDDEN: 'FORBIDDEN',               // 403 Forbidden
-    NOT_FOUND: 'NOT_FOUND',               // 404 Not Found
-    INTERNAL_ERROR: 'INTERNAL_ERROR',     // 500 Internal Server Error
-    RATE_LIMIT: 'RATE_LIMIT',             // 429 Too Many Requests
+    VALIDATION_ERROR: "VALIDATION_ERROR", // 400 Bad Request
+    UNAUTHORIZED: "UNAUTHORIZED", // 401 Unauthorized
+    FORBIDDEN: "FORBIDDEN", // 403 Forbidden
+    NOT_FOUND: "NOT_FOUND", // 404 Not Found
+    INTERNAL_ERROR: "INTERNAL_ERROR", // 500 Internal Server Error
+    RATE_LIMIT: "RATE_LIMIT", // 429 Too Many Requests
 } as const;

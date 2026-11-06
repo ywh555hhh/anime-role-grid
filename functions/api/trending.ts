@@ -12,7 +12,7 @@ interface Env {
  * period 会参与缓存键和快照键；如果允许任意值，攻击者只要循环请求
  * ?period=x1、?period=x2…… 就能每次都绕过缓存/快照直查数据库。
  */
-const VALID_PERIODS = new Set(['24h', 'week', 'all']);
+const VALID_PERIODS = new Set(["24h", "week", "all"]);
 
 /**
  * 快照键前缀。
@@ -20,7 +20,7 @@ const VALID_PERIODS = new Set(['24h', 'week', 'all']);
  * **写入方是 `workers/snapshot-refresh/src/index.ts`，两边必须保持一致**，
  * 改动时请同时更新两处。
  */
-const SNAPSHOT_KEY_PREFIX = 'trending:';
+const SNAPSHOT_KEY_PREFIX = "trending:";
 
 /**
  * 新鲜度窗口（秒）：缓存条目在这个时间内视为「新鲜」，直接返回、不碰 D1。
@@ -40,10 +40,10 @@ const FRESH_TTL_SECONDS = 1800;
 const CACHE_ENTRY_TTL_SECONDS = 604800;
 
 /** 记录这份快照是什么时候从数据库取到的，用于判断新鲜度 */
-const HEADER_FETCHED_AT = 'x-snapshot-fetched-at';
+const HEADER_FETCHED_AT = "x-snapshot-fetched-at";
 
 /** 观测标记：本次响应来自哪里 */
-const HEADER_STATUS = 'X-Trending-Cache';
+const HEADER_STATUS = "X-Trending-Cache";
 
 /**
  * 热榜读取
@@ -68,44 +68,44 @@ export const onRequestGet: PagesFunction<Env> = async (context) => {
         try {
             url = new URL(request.url);
         } catch {
-            return jsonError(400, 'Malformed request URL');
+            return jsonError(400, "Malformed request URL");
         }
 
-        const requested = url.searchParams.get('period') || '24h';
-        const period = VALID_PERIODS.has(requested) ? requested : '24h';
+        const requested = url.searchParams.get("period") || "24h";
+        const period = VALID_PERIODS.has(requested) ? requested : "24h";
 
         const cache = caches.default;
         const cacheKey = new Request(`https://trending-cache.internal/${period}`, {
-            method: 'GET',
+            method: "GET",
         });
         const cached = await cache.match(cacheKey);
 
         // 1) 缓存仍新鲜 → 直接返回，完全不碰 D1
         if (cached && isFresh(cached)) {
-            return forClient(cached, 'HIT');
+            return forClient(cached, "HIT");
         }
 
         // 2) 回源：读快照（主键查找，只读 1 行）
         try {
             const snapshot = await env.DB.prepare(
-                'SELECT data, updated_at FROM snapshot_cache WHERE key = ?',
+                "SELECT data, updated_at FROM snapshot_cache WHERE key = ?",
             )
                 .bind(`${SNAPSHOT_KEY_PREFIX}${period}`)
                 .first<{ data: string; updated_at: number }>();
 
             const response = buildSnapshotResponse(snapshot, period);
             await putCache(cacheKey, response);
-            return forClient(response, cached ? 'REFRESH' : 'MISS');
+            return forClient(response, cached ? "REFRESH" : "MISS");
         } catch (error) {
             // 3) 回源失败（D1 额度耗尽 / 故障）→ 降级到旧快照，而不是报 500
             console.error(`[Trending] 读快照失败，尝试降级到旧快照 period=${period}:`, error);
-            if (cached) return forClient(cached, 'STALE-DB-ERROR');
+            if (cached) return forClient(cached, "STALE-DB-ERROR");
             // 连旧快照都没有（服务刚上线、缓存被清空），只能如实报错
-            return jsonError(503, 'Trending is temporarily unavailable');
+            return jsonError(503, "Trending is temporarily unavailable");
         }
     } catch (error) {
-        console.error('[Trending] unexpected failure:', error);
-        return jsonError(500, 'Failed to load trending');
+        console.error("[Trending] unexpected failure:", error);
+        return jsonError(500, "Failed to load trending");
     }
 };
 
@@ -117,8 +117,8 @@ function jsonError(status: number, error: string): Response {
     return new Response(JSON.stringify({ error }), {
         status,
         headers: {
-            'Content-Type': 'application/json',
-            'Cache-Control': 'no-store',
+            "Content-Type": "application/json",
+            "Cache-Control": "no-store",
         },
     });
 }
@@ -139,7 +139,7 @@ async function putCache(key: Request, response: Response): Promise<void> {
     try {
         await caches.default.put(key, response.clone());
     } catch (error) {
-        console.error('[Trending] 写边缘缓存失败:', error);
+        console.error("[Trending] 写边缘缓存失败:", error);
     }
 }
 
@@ -166,7 +166,7 @@ function forClient(response: Response, status: string): Response {
         status: response.status,
         headers: new Headers(response.headers),
     });
-    out.headers.set('Cache-Control', `public, max-age=${FRESH_TTL_SECONDS}`);
+    out.headers.set("Cache-Control", `public, max-age=${FRESH_TTL_SECONDS}`);
     out.headers.set(HEADER_STATUS, status);
     return out;
 }
@@ -177,12 +177,12 @@ function buildSnapshotResponse(
 ): Response {
     let results: unknown[] = [];
 
-    if (!snapshot || typeof snapshot.data !== 'string') {
+    if (!snapshot || typeof snapshot.data !== "string") {
         // 引导阶段（快照还没被写过）或快照被误删。
         // 返回空列表：便宜、无副作用，且不会击穿配额。
         console.error(
             `[Trending] 快照缺失 key=${SNAPSHOT_KEY_PREFIX}${period}，返回空列表。` +
-                ' 请检查 workers/snapshot-refresh 是否已运行。',
+                " 请检查 workers/snapshot-refresh 是否已运行。",
         );
     } else {
         try {
@@ -202,11 +202,11 @@ function buildSnapshotResponse(
 
     return new Response(JSON.stringify({ results }), {
         headers: {
-            'Content-Type': 'application/json',
-            'Cache-Control': `public, max-age=${CACHE_ENTRY_TTL_SECONDS}`,
+            "Content-Type": "application/json",
+            "Cache-Control": `public, max-age=${CACHE_ENTRY_TTL_SECONDS}`,
             [HEADER_FETCHED_AT]: String(Math.floor(Date.now() / 1000)),
             // 便于观测快照新鲜度（这是数据本身的年龄，与缓存新鲜度无关）
-            'X-Trending-Snapshot-Age': snapshot ? String(ageSeconds) : 'none',
+            "X-Trending-Snapshot-Age": snapshot ? String(ageSeconds) : "none",
         },
     });
 }
