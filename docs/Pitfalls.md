@@ -60,7 +60,12 @@
 - **规则**：UI 只负责抛出事件，规则由独立的规则引擎监听
 - **现状**：⏳ **仍待修**。`matchEasterEgg` 仍在 `GridEditor.vue` 的保存流程里直接调用。
   （弹窗调度本身已经做对了 —— `modalStore` 的优先级队列，
-  见 `src/stores/modalStore.ts`。）
+  见 `src/stores/modalStore.ts`。
+  但它有一个**已知缺陷**：高优先级抢占低优先级时，被抢占弹窗的 Promise
+  永远不会 resolve，调用方 `await` 会永久挂起。
+  `src/tests/modalStore.test.ts` 特意**只测不涉及抢占的路径**，
+  不去给这个 bug 背书。修的时候记得：抢占要 `resolve(false)`，
+  让调用方能感知「被打断了」。）
 
 ---
 
