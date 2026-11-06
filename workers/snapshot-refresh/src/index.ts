@@ -52,7 +52,7 @@ interface Env {
  */
 const SNAPSHOT_KEYS = {
     trending: (period: string) => `trending:${period}`,
-    trendingTemplates: 'trending-templates',
+    trendingTemplates: "trending-templates",
 } as const;
 
 /**
@@ -62,7 +62,7 @@ const SNAPSHOT_KEYS = {
  * 使整个聚合从约 1.4M 行涨到 1.82M 行（+30%）。
  * 读取端的白名单也同样不含 12h，因此 ?period=12h 会被归一到 24h。
  */
-const TRENDING_PERIODS = ['24h', 'week', 'all'] as const;
+const TRENDING_PERIODS = ["24h", "week", "all"] as const;
 
 /** 热榜每个周期取前多少名（与旧实现一致） */
 const TRENDING_LIMIT = 63;
@@ -81,9 +81,9 @@ const WRITE_BATCH_SIZE = 50;
 
 /** 各周期对应的聚合列名。用 as const 保留字面量类型，避免下面的取值需要强制转换 */
 const TRENDING_WINDOW_COLUMN = {
-    '24h': 'c24h',
-    week: 'cWeek',
-    all: 'cAll',
+    "24h": "c24h",
+    week: "cWeek",
+    all: "cAll",
 } as const;
 
 // =============================================================================
@@ -166,7 +166,7 @@ async function refreshTrending(db: D1Database): Promise<{ aggRows: number; writt
 
         return db
             .prepare(
-                'INSERT OR REPLACE INTO snapshot_cache (key, data, updated_at) VALUES (?, ?, ?)',
+                "INSERT OR REPLACE INTO snapshot_cache (key, data, updated_at) VALUES (?, ?, ?)",
             )
             .bind(SNAPSHOT_KEYS.trending(period), JSON.stringify(top), now);
     });
@@ -191,9 +191,7 @@ async function refreshTrendingTemplates(db: D1Database): Promise<{ written: numb
         .all<{ id: string; count: number }>();
 
     await db
-        .prepare(
-            'INSERT OR REPLACE INTO snapshot_cache (key, data, updated_at) VALUES (?, ?, ?)',
-        )
+        .prepare("INSERT OR REPLACE INTO snapshot_cache (key, data, updated_at) VALUES (?, ?, ?)")
         .bind(
             SNAPSHOT_KEYS.trendingTemplates,
             JSON.stringify(results),
@@ -270,10 +268,7 @@ async function computeTemplateStats(db: D1Database, templateId: string): Promise
     return bySlot;
 }
 
-async function refreshStats(
-    db: D1Database,
-    maxTemplates: number,
-): Promise<{ templates: number }> {
+async function refreshStats(db: D1Database, maxTemplates: number): Promise<{ templates: number }> {
     const { results: templates } = await db
         .prepare(
             `SELECT template_id, COUNT(*) AS saves
@@ -298,10 +293,10 @@ async function refreshStats(
             cacheWrites.push(
                 db
                     .prepare(
-                        'INSERT OR REPLACE INTO statistics_cache (template_id, period, data, updated_at) VALUES (?, ?, ?, ?)',
+                        "INSERT OR REPLACE INTO statistics_cache (template_id, period, data, updated_at) VALUES (?, ?, ?, ?)",
                     )
                     // period 固定为 'all'：/api/stats 只会请求这一档
-                    .bind(chunk[j].template_id, 'all', JSON.stringify(computed[j]), now),
+                    .bind(chunk[j].template_id, "all", JSON.stringify(computed[j]), now),
             );
         }
     }
@@ -342,26 +337,26 @@ async function runRefresh(env: Env, trigger: string): Promise<RefreshOutcome> {
     try {
         outcome.trending = await refreshTrending(env.DB);
     } catch (error) {
-        outcome.failures.push({ task: 'trending', error: String(error) });
-        console.error('[snapshot-refresh] trending failed:', error);
+        outcome.failures.push({ task: "trending", error: String(error) });
+        console.error("[snapshot-refresh] trending failed:", error);
     }
 
     try {
         outcome.trendingTemplates = await refreshTrendingTemplates(env.DB);
     } catch (error) {
-        outcome.failures.push({ task: 'trending-templates', error: String(error) });
-        console.error('[snapshot-refresh] trending-templates failed:', error);
+        outcome.failures.push({ task: "trending-templates", error: String(error) });
+        console.error("[snapshot-refresh] trending-templates failed:", error);
     }
 
     try {
         outcome.stats = await refreshStats(env.DB, STATS_MAX_TEMPLATES);
     } catch (error) {
-        outcome.failures.push({ task: 'stats', error: String(error) });
-        console.error('[snapshot-refresh] stats failed:', error);
+        outcome.failures.push({ task: "stats", error: String(error) });
+        console.error("[snapshot-refresh] stats failed:", error);
     }
 
     outcome.ms = Date.now() - startedAt;
-    console.log('[snapshot-refresh]', JSON.stringify(outcome));
+    console.log("[snapshot-refresh]", JSON.stringify(outcome));
     return outcome;
 }
 
@@ -369,14 +364,14 @@ function isAuthorized(request: Request, env: Env): boolean {
     const expected = env.REFRESH_TOKEN;
     // 未配置令牌时禁用手动触发，避免被随意调用（每次调用都要花掉额度）
     if (!expected) return false;
-    return request.headers.get('authorization') === `Bearer ${expected}`;
+    return request.headers.get("authorization") === `Bearer ${expected}`;
 }
 
 export default {
     /** 定时触发：由 wrangler.toml 的 [triggers] crons 驱动 */
     async scheduled(_controller, env, ctx) {
         ctx.waitUntil(
-            runRefresh(env, 'cron').then((outcome) => {
+            runRefresh(env, "cron").then((outcome) => {
                 // 只要有任务失败就把整次运行标记为失败，
                 // 这样它在 Cloudflare dashboard / 告警里是可见的，
                 // 而不是静默地「半成功」——快照陈旧是很难被发现的故障。
@@ -395,23 +390,22 @@ export default {
         try {
             url = new URL(request.url);
         } catch {
-            return new Response('Malformed request URL', { status: 400 });
+            return new Response("Malformed request URL", { status: 400 });
         }
 
-        if (url.pathname !== '/refresh') {
-            return new Response('Not found', { status: 404 });
+        if (url.pathname !== "/refresh") {
+            return new Response("Not found", { status: 404 });
         }
         if (!isAuthorized(request, env)) {
-            return new Response('Unauthorized', { status: 401 });
+            return new Response("Unauthorized", { status: 401 });
         }
-        if (request.method !== 'POST') {
-            return new Response('Use POST', { status: 405 });
+        if (request.method !== "POST") {
+            return new Response("Use POST", { status: 405 });
         }
 
-        const result = await runRefresh(env, 'manual');
+        const result = await runRefresh(env, "manual");
         return new Response(JSON.stringify(result, null, 2), {
-            headers: { 'Content-Type': 'application/json; charset=utf-8' },
+            headers: { "Content-Type": "application/json; charset=utf-8" },
         });
     },
 } satisfies ExportedHandler<Env>;
-
