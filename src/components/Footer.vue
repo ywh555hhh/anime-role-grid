@@ -1,8 +1,26 @@
 <script setup lang="ts">
-import { ref } from "vue";
 import JoinGroupModal from "./JoinGroupModal.vue";
+import { useModalStore, MODAL_PRIORITY } from "~/stores/modalStore";
 
-const showQQModal = ref(false);
+const modalStore = useModalStore;
+
+/**
+ * 打开社群列表。
+ *
+ * 以前这里是内联渲染的 `<JoinGroupModal :show="...">` ——
+ * 也就是**绕过了弹窗调度器**。后果是：调度器里正弹着别的弹窗时，
+ * 这里再弹一个，两者会抢层级。
+ *
+ * 现在统一走 modalStore：排队、优先级、互斥都由调度器管。
+ */
+function openCommunity() {
+    modalStore.openModal(
+        JoinGroupModal,
+        // 不用传 onClose —— 调度器已经处理了 @close → closeModal()
+        { show: true },
+        MODAL_PRIORITY.INTERACTION,
+    );
+}
 // Footer component with credits
 </script>
 
@@ -35,7 +53,7 @@ const showQQModal = ref(false);
                 <span class="font-bold tracking-widest">Discord</span>
             </a>
             <button
-                @click="showQQModal = true"
+                @click="openCommunity"
                 class="flex items-center gap-2 hover:text-primary transition-colors group bg-transparent p-0 border-none outline-none hover:border-none"
             >
                 <!-- Custom QQ Icon SVG -->
@@ -73,7 +91,10 @@ const showQQModal = ref(false);
             </a>
         </div>
 
-        <JoinGroupModal :show="showQQModal" @close="showQQModal = false" />
+        <!--
+            JoinGroupModal 现在由全局调度器（App.vue 的 ModalDispatcher）渲染，
+            这里不再内联挂一份 —— 否则会同时出现两个实例。
+        -->
 
         <!-- Credits -->
         <div class="space-y-4 text-sm">

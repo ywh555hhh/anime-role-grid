@@ -28,6 +28,18 @@ const generateId = () => `modal_${Date.now()}_${_id++}`;
  * 2. 维护一个 queue (等待显示的)
  * 3. 总是优先显示 priority 最高的
  * 4. 高优先级可以打断低优先级 (插队)，低优先级会被放回队列
+ *
+ * ## 打开弹窗时不用传 onClose
+ * ModalDispatcher 已经在 `<component>` 上绑了 `@close="handleClose"`，
+ * 而 handleClose 会调 `closeModal()` —— 也就是**关闭当前弹窗**这件事
+ * 调度器自己就管了。
+ *
+ * 所以 `openModal(X, { show: true })` 就够了。
+ * 传 `onClose` 反而有害：没有任何组件声明这个 prop，
+ * 它会作为 fallthrough attr 落到根元素上，变成一个多余的 DOM 事件监听器。
+ *
+ * 组件要通知父级额外的事，用**具名 emit**（如 `select` / `open-gallery`），
+ * 调度器会把它转发出去。
  */
 export const useModalStore = (() => {
     // State

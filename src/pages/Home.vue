@@ -21,6 +21,7 @@ const { loadTemplate, currentTemplateId, isStreamerMode } = store;
 // Logic moved to onMounted and uses modalStore
 
 import { tryShowTrending } from "~/logic/trendingTrigger";
+import { canShow, markShown, markShownThisVisit } from "~/logic/growth";
 
 // Init Logic
 onMounted(() => {
@@ -31,29 +32,34 @@ onMounted(() => {
         store.loadTemplate(initialID);
     }
 
-    // --- Auto-Show Guides (Queue) ---
+    // --- 入场自动弹窗 ---
+    //
+    // **同一次访问最多弹一个**。
+    //
+    // 之前这里是「每天第一次弹『大家都在填』，关掉它立刻链式弹『热门推荐』」——
+    // 用户刚关掉一个弹窗又来一个，太打断。而且频控散在两个文件里
+    // （localStorage.lastGuideDate / lastTrendingTime），两种粒度。
+    //
+    // 现在频控统一在 `~/logic/growth`：
+    //   - 当天第一次进站 → 弹『大家都在填』（日历日粒度，跨零点就恢复）
+    //   - 当天之后的访问 → 弹『热门推荐』（1 小时冷却）
+    //   - **两者不再连弹**
     if (typeof window !== "undefined") {
-        const today = new Date().toDateString();
-        const lastGuideDate = localStorage.getItem("lastGuideDate");
-
-        if (lastGuideDate !== today) {
-            // 1. First Time Guide (Daily)
+        if (canShow("daily-picks")) {
             modalStore.openModal(
                 FirstTimeGuide,
                 {
-                    onClose: () => {
-                        modalStore.closeModal();
-                        // Chain: Try Trending after Guide
-                        tryShowTrending();
+                    // 引导里的「热门模板」按钮现在是真的会切换模板
+                    onSelectTemplate: (templateId: string) => {
+                        loadTemplate(templateId);
                     },
+                    // 关闭不用传 onClose —— 调度器已经处理了 @close → closeModal()
                 },
                 MODAL_PRIORITY.GUIDE,
             );
-            localStorage.setItem("lastGuideDate", today);
+            markShown("daily-picks");
+            markShownThisVisit();
         } else {
-            // Not daily reset, but maybe 1h cooldown passed?
-            // "Daily auto popup 1. Guide 2. Template"
-            // If Guide skipped, try Trending immediately
             tryShowTrending();
         }
     }

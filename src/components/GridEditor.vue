@@ -78,7 +78,20 @@ const { isFullscreen, toggle: toggleFullscreen } = useFullscreen();
 // Local State
 const showSearch = ref(false);
 
-const showJoinGroupModal = ref(false);
+/**
+ * 打开社群列表。
+ *
+ * 和 Footer 走同一套调度器 —— 以前这里是内联渲染的，
+ * 会和调度器里的弹窗抢层级。
+ */
+function openCommunity() {
+    modalStore.openModal(
+        JoinGroupModal,
+        // 不用传 onClose —— 调度器已经处理了 @close → closeModal()
+        { show: true },
+        MODAL_PRIORITY.INTERACTION,
+    );
+}
 const showCharacterName = ref(false);
 const showLabel = ref(true); // 新增：控制标签文字显示
 const showQRCode = ref(true);
@@ -719,11 +732,11 @@ function handleVideoExport(settings: VideoSettings) {
             @open-join-group="
                 () => {
                     isSuccessModalOpen = false;
-                    showJoinGroupModal = true;
+                    openCommunity();
                 }
             "
         />
-        <JoinGroupModal :show="showJoinGroupModal" @close="showJoinGroupModal = false" />
+        <!-- JoinGroupModal 由全局调度器渲染，这里不再内联挂一份 -->
 
         <!-- MOVED ImageExportModal TO GLOBAL DISPATCHER -->
         <!-- Removed from here to prevent duplicate render -->
